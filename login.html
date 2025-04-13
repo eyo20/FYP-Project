@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login</title>
+ 
+ 
+	<style type="text/css">
+ 
+		#login-title
+		{
+			background-color:#ddd;
+			background-image:url(image/login.png);
+			background-repeat:no-repeat;
+			background-position:7px 7px;
+			background-size:24px 24px;
+			border-radius:8px 8px 0px 0px;
+			height:40px;
+		}
+		
+		#login-form
+		{
+			padding:10px;
+			text-align:center;
+		}
+		
+		#login-form input[type=email], [type=password]
+		{
+			width:250px;
+			border-radius:5px;
+			border:1px solid #ddd;
+			height:25px;
+			padding:5px 10px 5px 40px
+		}
+		
+		#login-form input[type=email]
+		{
+			background-image:url(image/email.png);
+			background-repeat:no-repeat;
+			background-position:10px 10px;
+		}
+		
+		#login-form input[type=password]
+		{
+			background-image:url(image/key.png);
+			background-repeat:no-repeat;
+			background-position:10px 10px;
+		}
+		
+		#login-form input[type=submit]
+		{
+			background-color:#0066ff;
+			width:300px;
+			padding:10px;
+			border:0px;
+			color:white;
+			font-weight:bold
+		}
+		
+		#login-form input[type=submit]:hover
+		{
+			background-color:#2c61b7;
+			cursor:pointer
+		}
+		
+		#login-form p a
+		{
+			text-decoration:none;
+			text-align:center;
+			font-family:Arial Narrow;
+			font-size:0.8em;
+		}
+		
+		#login-form p a:hover
+		{
+			font-style:italic;
+			color:red;
+		}
+		
+		</style>
+		
+		</head>
+		
+		<body>
+		
+		<div style="margin:0 auto;	border:1px solid #ddd;	border-radius:10px; width:400px; padding:0px">
+		
+			<div id="login-title">
+				<h4 style="margin:0px; padding:12px 40px; color:blue; font-family:Arial;">Login Panel</h4>
+			</div>
+			
+			<div id="login-form">
+				<form name="loginfrm">
+					<p><input type="email" name="user_email" /></p>
+					<p><input type="password" name="user_password" /></p>
+					<p><input type="submit" name="loginbtn" value="LOGIN" /></p>
+				</form>
+				
+				<p><a href="#">Forgot your password?</a></p>
+				
+			</div>
+			
+			
+		</div>
+ 
+ 
+</body>
+
+</html>
