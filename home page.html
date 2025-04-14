@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeerLearn - 同伴辅导平台</title>
+    <style>
+        /* 重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* 颜色变量 */
+        :root {
+            --primary-color: #2B3990;     /* 深蓝色 */
+            --secondary-color: #00AEEF;   /* 亮蓝色 */
+            --accent-color: #C4D600;      /* 黄绿色 */
+            --light-color: #F8F9FA;       /* 浅灰色 */
+            --dark-color: #333333;        /* 深灰色 */
+            --white: #FFFFFF;             /* 白色 */
+            --logo-gradient-blue: #00AEEF; /* Logo渐变色起始 */
+            --logo-gradient-green: #00A99D; /* Logo渐变色结束 */
+        }
+        
+        /* 容器样式 */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #b1c100;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #009bd5;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 70px;
+        }
+        
+        .navbar > .container {
+            display: flex;
+            justify-content: space-between;/* 左右两端分散 */
+            align-items: center;/* 垂直居中对齐 */
+            flex-grow: 1;
+        }
+        
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 0 15px;
+        }
+        
+        .nav-link {
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-buttons .btn {
+            margin-left: 15px;
+        }
+        
+        /* 英雄区域 */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 80px 0;
+            background-color: var(--light-color);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hero-content {
+            flex: 0 0 50%;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            margin-bottom: 30px;
+        }
+        
+        .hero-buttons {
+            margin-top: 25px;
+        }
+        
+        .hero-image {
+            flex: 0 0 45%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        /* 几何装饰 */
+        .shape {
+            position: absolute;
+            z-index: 0;
+        }
+        
+        .shape-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            opacity: 0.5;
+            top: 20%;
+            right: 10%;
+        }
+        
+        .shape-triangle {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid var(--accent-color);
+            opacity: 0.3;
+            bottom: 10%;
+            left: 5%;
+        }
+        
+        /* 特点区域 */
+        .features {
+            padding: 80px 0;
+            background-color: var(--white);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 50px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--light-color);
+            border-radius: 50%;
+        }
+        
+        .feature-icon i {
+            font-size: 30px;
+            color: var(--primary-color);
+        }
+        
+        .feature-title {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .feature-desc {
+            color: var(--dark-color);
+        }
+        
+        /* 流程区域 */
+        .process {
+            padding: 80px 0;
+            background-color: var(--light-color);
+        }
+        
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 50px;
+        }
+        
+        .process-step {
+            flex: 0 0 18%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .step-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .step-desc {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+        }
+        
+        .process-line {
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: var(--secondary-color);
+            z-index: 1;
+        }
+        
+        /* 社区区域 */
+        .community {
+            padding: 80px 0;
+            background-color: var(--white);
+        }
+        
+        .community-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .community-text {
+            flex: 0 0 45%;
+        }
+        
+        .community-title {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .community-list {
+            margin-bottom: 30px;
+        }
+        
+        .community-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .community-item i {
+            color: var(--accent-color);
+            margin-right: 10px;
+            font-size: 1.25rem;
+        }
+        
+        .community-image {
+            flex: 0 0 45%;
+        }
+        
+        .community-image img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        
+        /* CTA区域 */
+        .cta {
+            padding: 80px 0;
+            background-color: var(--primary-color);
+            text-align: center;
+            color: var(--white);
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta-text {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-stats {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .cta-stat {
+            margin: 0 30px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+        }
+        
+        /* 页脚 */
+        .footer {
+            padding: 60px 0 30px;
+            background-color: var(--dark-color);
+            color: var(--white);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .footer-contact p {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links h4 {
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: var(--light-color);
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+        
+        .social-links {
+            display: flex;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 40px 0;
+            }
+            
+            .hero-content, .hero-image {
+                flex: 0 0 100%;
+            }
+            
+            .hero-content {
+                margin-bottom: 40px;
+            }
+            
+            .process-steps {
+                flex-wrap: wrap;
+            }
+            
+            .process-step {
+                flex: 0 0 45%;
+                margin-bottom: 30px;
+            }
+            
+            .process-line {
+                display: none;
+            }
+            
+            .community-content {
+                flex-direction: column;
+            }
+            
+            .community-text, .community-image {
+                flex: 0 0 100%;
+            }
+            
+            .community-text {
+                margin-bottom: 40px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 15px 0;
+            }
+            
+            .logo {
+                margin-bottom: 15px;
+            }
+            
+            .nav-container {
+                margin-bottom: 15px;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-item {
+                margin: 5px 10px;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-step {
+                flex: 0 0 100%;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+            
+            .cta-stats {
+                flex-direction: column;
+            }
+            
+            .cta-stat {
+                margin: 15px 0;
+            }
+        }
+    </style>
+    <!-- 引入字体图标库 (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <a href="#">
+                    <img src="fyp_peerlearn_logo.png" alt="PeerLearn Logo">
+                </a>
+            </div>
+            
+            <div class="nav-container">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">FOR STUDENTS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">FOR TUTORS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">学习社区</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">关于我们</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="#" class="btn btn-primary">登录/注册</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">通过同伴力量提升学习效果</h1>
+                <p class="hero-subtitle">连接有专业知识的学生导师，获得个性化学习体验,根据学术需求搜索可用的导师。</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary">开始学习</a>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <img src="hero area.png" alt="学生学习小组">
+            </div>
+        </div>
+        
+        <!-- 装饰几何形状 -->
+        <div class="shape shape-circle"></div>
+        <div class="shape shape-triangle"></div>
+    </section>
+    
+    <!-- 特点区域 -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">我们的核心价值</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">同伴学习</h3>
+                    <p class="feature-desc">向同类学习，获得更好理解，建立学习伙伴关系，激发学习动力。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">提升成绩</h3>
+                    <p class="feature-desc">80%的学生报告学术表现提升，通过同伴指导克服学习难题。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3 class="feature-title">个性化体验</h3>
+                    <p class="feature-desc">根据需求匹配最合适的导师，定制学习计划，满足个人学习风格。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="feature-title">学习社区</h3>
+                    <p class="feature-desc">加入讨论，参与集体学习活动，分享资源，扩展学习网络。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 流程区域 -->
+    <section class="process">
+        <div class="container">
+            <h2 class="section-title">简单几步，开始高效学习</h2>
+            
+            <div class="process-steps">
+                <div class="process-line"></div>
+                
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">注册账户</h3>
+                    <p class="step-desc">创建你的个人资料，设置学习偏好。</p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">浏览并筛选导师</h3>
+                    <p class="step-desc">根据学科、评分和专长选择合适导师。</p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">预约学习时间</h3>
+                    <p class="step-desc">选择方便的时间，描述你的学习需求。</p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">参与学习会话</h3>
+                    <p class="step-desc">线上或线下，享受个性化辅导。</p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">5</div>
+                    <h3 class="step-title">提供反馈</h3>
+                    <p class="step-desc">评价体验，帮助其他学生选择。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 社区区域 -->
+    <section class="community">
+        <div class="container">
+            <div class="community-content">
+                <div class="community-text">
+                    <h2 class="community-title">加入我们的学习社区</h2>
+                    <div class="community-list">
+                        <div class="community-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <p>参加每月学习活动和讲座</p>
+                        </div>
+                        <div class="community-item">
+                            <i class="fas fa-book"></i>
+                            <p>获取专业学习资源和材料</p>
+                        </div>
+                        <div class="community-item">
+                            <i class="fas fa-comments"></i>
+                            <p>参与主题讨论，解答问题</p>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary">加入社区</a>
+                </div>
+                
+                <div class="community-image">
+                    <!-- 这里留空放社区照片 -->
+                    <div class="img-placeholder" style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
+                        <span>社区图片位置</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA区域 -->
+    <section class="cta">
+        <div class="container">
+            <h2 class="cta-title">准备好提升你的学习体验了吗？</h2>
+            <p class="cta-text">加入PeerLearn，连接专业导师，提高学习效率，建立终身受益的学习习惯。</p>
+            <a href="#" class="btn btn-primary">立即开始</a>
+            
+            <div class="cta-stats">
+                <div class="cta-stat">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">活跃学生</div>
+                </div>
+                <div class="cta-stat">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">成功学习会话</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <img src="peerlearn-logo.png" alt="PeerLearn Logo">
+                    </div>
+                    <p>连接学生与导师的平台，打造高效学习体验。</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <ul>
+                        <li><a href="#">首页</a></li>
+                        <li><a href="#">找导师</a></li>
+                        <li><a href="#">成为导师</a></li>
+                        <li><a href="#">学习社区</a></li>
+                        <li><a href="#">关于我们</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>法律信息</h4>
+                    <ul>
+                        <li><a href="#">使用条款</a></li>
+                        <li><a href="#">隐私政策</a></li>
+                        <li><a href="#">Cookie政策</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>联系我们</h4>
+                    <p><i class="fas fa-envelope"></i> info@peerlearn.com</p>
+                    <p><i class="fas fa-phone"></i> +123 456 7890</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 地址信息</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 PeerLearn. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
