@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeerLearn - 同伴辅导平台</title>
+    <title>PeerLearn - Peer Tutoring Platform</title>
     <style>
-        /* 重置与基础样式 */
+        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -23,19 +23,19 @@
             color: inherit;
         }
         
-        /* 颜色变量 */
+        /* Color Variables */
         :root {
-            --primary-color: #2B3990;     /* 深蓝色 */
-            --secondary-color: #00AEEF;   /* 亮蓝色 */
-            --accent-color: #C4D600;      /* 黄绿色 */
-            --light-color: #F8F9FA;       /* 浅灰色 */
-            --dark-color: #333333;        /* 深灰色 */
-            --white: #FFFFFF;             /* 白色 */
-            --logo-gradient-blue: #00AEEF; /* Logo渐变色起始 */
-            --logo-gradient-green: #00A99D; /* Logo渐变色结束 */
+            --primary-color: #2B3990;     /* Deep Blue */
+            --secondary-color: #00AEEF;   /* Light Blue */
+            --accent-color: #C4D600;      /* Yellow-Green */
+            --light-color: #F8F9FA;       /* Light Grey */
+            --dark-color: #333333;        /* Dark Grey */
+            --white: #FFFFFF;             /* White */
+            --logo-gradient-blue: #00AEEF; /* Logo Gradient Start */
+            --logo-gradient-green: #00A99D; /* Logo Gradient End */
         }
         
-        /* 容器样式 */
+        /* Container Styles */
         .container {
             width: 90%;
             max-width: 1200px;
@@ -43,7 +43,7 @@
             padding: 0 15px;
         }
         
-        /* 按钮样式 */
+        /* Button Styles */
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -72,7 +72,7 @@
             background-color: #009bd5;
         }
         
-        /* 导航栏 */
+        /* Navigation Bar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -96,8 +96,8 @@
         
         .navbar > .container {
             display: flex;
-            justify-content: space-between;/* 左右两端分散 */
-            align-items: center;/* 垂直居中对齐 */
+            justify-content: space-between;/* Left-right distribution */
+            align-items: center;/* Vertical center alignment */
             flex-grow: 1;
         }
         
@@ -130,7 +130,7 @@
             margin-left: 15px;
         }
         
-        /* 英雄区域 */
+        /* Hero Section */
         .hero {
             display: flex;
             align-items: center;
@@ -175,7 +175,7 @@
             border-radius: 10px;
         }
         
-        /* 几何装饰 */
+        /* Geometric Decorations */
         .shape {
             position: absolute;
             z-index: 0;
@@ -202,7 +202,7 @@
             left: 5%;
         }
         
-        /* 特点区域 */
+        /* Features Section */
         .features {
             padding: 80px 0;
             background-color: var(--white);
@@ -259,7 +259,7 @@
             color: var(--dark-color);
         }
         
-        /* 流程区域 */
+        /* Process Section */
         .process {
             padding: 80px 0;
             background-color: var(--light-color);
@@ -314,7 +314,7 @@
             z-index: 1;
         }
         
-        /* 社区区域 */
+        /* Community Section */
         .community {
             padding: 80px 0;
             background-color: var(--white);
@@ -361,7 +361,7 @@
             border-radius: 10px;
         }
         
-        /* CTA区域 */
+        /* CTA Section */
         .cta {
             padding: 80px 0;
             background-color: var(--primary-color);
@@ -402,7 +402,7 @@
             font-size: 0.9rem;
         }
         
-        /* 页脚 */
+        /* Footer */
         .footer {
             padding: 60px 0 30px;
             background-color: var(--dark-color);
@@ -481,7 +481,7 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
         
-        /* 响应式设计 */
+        /* Responsive Design */
         @media (max-width: 992px) {
             .hero {
                 flex-direction: column;
@@ -575,11 +575,11 @@
             }
         }
     </style>
-    <!-- 引入字体图标库 (Font Awesome) -->
+    <!-- Import Font Icon Library (Font Awesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
-    <!-- 导航栏 -->
+    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="container">
             <div class="logo">
@@ -597,177 +597,177 @@
                         <a href="#" class="nav-link">FOR TUTORS</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">学习社区</a>
+                        <a href="#" class="nav-link">LEARNING COMMUNITY</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">关于我们</a>
+                        <a href="#" class="nav-link">ABOUT US</a>
                     </li>
                 </ul>
             </div>
             
             <div class="nav-buttons">
-                <a href="#" class="btn btn-primary">登录/注册</a>
+                <a href="#" class="btn btn-primary">LOGIN/REGISTER</a>
             </div>
         </div>
     </nav>
     
-    <!-- 英雄区域 -->
+    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">通过同伴力量提升学习效果</h1>
-                <p class="hero-subtitle">连接有专业知识的学生导师，获得个性化学习体验,根据学术需求搜索可用的导师。</p>
+                <h1 class="hero-title">Enhance Learning Through Peer Power</h1>
+                <p class="hero-subtitle">Connect with knowledgeable student tutors, get personalized learning experiences, and search for available tutors based on your academic needs.</p>
                 <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">开始学习</a>
+                    <a href="#" class="btn btn-primary">Start Learning</a>
                 </div>
             </div>
             
             <div class="hero-image">
-                <img src="hero area.png" alt="学生学习小组">
+                <img src="hero area.png" alt="Student Learning Group">
             </div>
         </div>
         
-        <!-- 装饰几何形状 -->
+        <!-- Decorative Geometric Shapes -->
         <div class="shape shape-circle"></div>
         <div class="shape shape-triangle"></div>
     </section>
     
-    <!-- 特点区域 -->
+    <!-- Features Section -->
     <section class="features">
         <div class="container">
-            <h2 class="section-title">我们的核心价值</h2>
+            <h2 class="section-title">Our Core Values</h2>
             
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h3 class="feature-title">同伴学习</h3>
-                    <p class="feature-desc">向同类学习，获得更好理解，建立学习伙伴关系，激发学习动力。</p>
+                    <h3 class="feature-title">Peer Learning</h3>
+                    <p class="feature-desc">Learn from peers, gain better understanding, build learning partnerships, and spark motivation.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3 class="feature-title">提升成绩</h3>
-                    <p class="feature-desc">80%的学生报告学术表现提升，通过同伴指导克服学习难题。</p>
+                    <h3 class="feature-title">Improved Grades</h3>
+                    <p class="feature-desc">80% of students report improved academic performance through peer guidance to overcome learning challenges.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-tools"></i>
                     </div>
-                    <h3 class="feature-title">个性化体验</h3>
-                    <p class="feature-desc">根据需求匹配最合适的导师，定制学习计划，满足个人学习风格。</p>
+                    <h3 class="feature-title">Personalized Experience</h3>
+                    <p class="feature-desc">Match with the most suitable tutors based on your needs, customize learning plans, and accommodate your learning style.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-comments"></i>
                     </div>
-                    <h3 class="feature-title">学习社区</h3>
-                    <p class="feature-desc">加入讨论，参与集体学习活动，分享资源，扩展学习网络。</p>
+                    <h3 class="feature-title">Learning Community</h3>
+                    <p class="feature-desc">Join discussions, participate in group learning activities, share resources, and expand your learning network.</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- 流程区域 -->
+    <!-- Process Section -->
     <section class="process">
         <div class="container">
-            <h2 class="section-title">简单几步，开始高效学习</h2>
+            <h2 class="section-title">A Few Simple Steps to Effective Learning</h2>
             
             <div class="process-steps">
                 <div class="process-line"></div>
                 
                 <div class="process-step">
                     <div class="step-number">1</div>
-                    <h3 class="step-title">注册账户</h3>
-                    <p class="step-desc">创建你的个人资料，设置学习偏好。</p>
+                    <h3 class="step-title">Create Account</h3>
+                    <p class="step-desc">Create your profile and set your learning preferences.</p>
                 </div>
                 
                 <div class="process-step">
                     <div class="step-number">2</div>
-                    <h3 class="step-title">浏览并筛选导师</h3>
-                    <p class="step-desc">根据学科、评分和专长选择合适导师。</p>
+                    <h3 class="step-title">Browse & Filter Tutors</h3>
+                    <p class="step-desc">Choose suitable tutors based on subject, ratings, and expertise.</p>
                 </div>
                 
                 <div class="process-step">
                     <div class="step-number">3</div>
-                    <h3 class="step-title">预约学习时间</h3>
-                    <p class="step-desc">选择方便的时间，描述你的学习需求。</p>
+                    <h3 class="step-title">Schedule Learning Time</h3>
+                    <p class="step-desc">Select a convenient time and describe your learning needs.</p>
                 </div>
                 
                 <div class="process-step">
                     <div class="step-number">4</div>
-                    <h3 class="step-title">参与学习会话</h3>
-                    <p class="step-desc">线上或线下，享受个性化辅导。</p>
+                    <h3 class="step-title">Join Learning Session</h3>
+                    <p class="step-desc">Discuss online and enjoy personalized coaching.</p>
                 </div>
                 
                 <div class="process-step">
                     <div class="step-number">5</div>
-                    <h3 class="step-title">提供反馈</h3>
-                    <p class="step-desc">评价体验，帮助其他学生选择。</p>
+                    <h3 class="step-title">Provide Feedback</h3>
+                    <p class="step-desc">Rate your experience to help other students choose.</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- 社区区域 -->
+    <!-- Community Section -->
     <section class="community">
         <div class="container">
             <div class="community-content">
                 <div class="community-text">
-                    <h2 class="community-title">加入我们的学习社区</h2>
+                    <h2 class="community-title">Join Our Learning Community</h2>
                     <div class="community-list">
                         <div class="community-item">
                             <i class="fas fa-calendar-alt"></i>
-                            <p>参加每月学习活动和讲座</p>
+                            <p>Attend monthly learning events and lectures</p>
                         </div>
                         <div class="community-item">
                             <i class="fas fa-book"></i>
-                            <p>获取专业学习资源和材料</p>
+                            <p>Access professional learning resources and materials</p>
                         </div>
                         <div class="community-item">
                             <i class="fas fa-comments"></i>
-                            <p>参与主题讨论，解答问题</p>
+                            <p>Participate in topic discussions and get answers</p>
                         </div>
                     </div>
-                    <a href="#" class="btn btn-primary">加入社区</a>
+                    <a href="#" class="btn btn-primary">Join Community</a>
                 </div>
                 
                 <div class="community-image">
-                    <!-- 这里留空放社区照片 -->
+                    <!-- Placeholder for community photo -->
                     <div class="img-placeholder" style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
-                        <span>社区图片位置</span>
+                        <span>Community Image Placeholder</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- CTA区域 -->
+    <!-- CTA Section -->
     <section class="cta">
         <div class="container">
-            <h2 class="cta-title">准备好提升你的学习体验了吗？</h2>
-            <p class="cta-text">加入PeerLearn，连接专业导师，提高学习效率，建立终身受益的学习习惯。</p>
-            <a href="#" class="btn btn-primary">立即开始</a>
+            <h2 class="cta-title">Ready to Enhance Your Learning Experience?</h2>
+            <p class="cta-text">Join PeerLearn, connect with expert tutors, improve learning efficiency, and build study habits that benefit you for life.</p>
+            <a href="#" class="btn btn-primary">Get Started Now</a>
             
             <div class="cta-stats">
                 <div class="cta-stat">
                     <div class="stat-number">100+</div>
-                    <div class="stat-label">活跃学生</div>
+                    <div class="stat-label">Active Students</div>
                 </div>
                 <div class="cta-stat">
                     <div class="stat-number">50+</div>
-                    <div class="stat-label">成功学习会话</div>
+                    <div class="stat-label">Successful Learning Sessions</div>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- 页脚 -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -775,7 +775,7 @@
                     <div class="footer-logo">
                         <img src="peerlearn-logo.png" alt="PeerLearn Logo">
                     </div>
-                    <p>连接学生与导师的平台，打造高效学习体验。</p>
+                    <p>A platform connecting students with tutors to create effective learning experiences.</p>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -785,35 +785,35 @@
                 </div>
                 
                 <div class="footer-links">
-                    <h4>快速链接</h4>
+                    <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="#">首页</a></li>
-                        <li><a href="#">找导师</a></li>
-                        <li><a href="#">成为导师</a></li>
-                        <li><a href="#">学习社区</a></li>
-                        <li><a href="#">关于我们</a></li>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Find a Tutor</a></li>
+                        <li><a href="#">Become a Tutor</a></li>
+                        <li><a href="#">Learning Community</a></li>
+                        <li><a href="#">About Us</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-links">
-                    <h4>法律信息</h4>
+                    <h4>Legal Information</h4>
                     <ul>
-                        <li><a href="#">使用条款</a></li>
-                        <li><a href="#">隐私政策</a></li>
-                        <li><a href="#">Cookie政策</a></li>
+                        <li><a href="#">Terms of Use</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-contact">
-                    <h4>联系我们</h4>
+                    <h4>Contact Us</h4>
                     <p><i class="fas fa-envelope"></i> info@peerlearn.com</p>
                     <p><i class="fas fa-phone"></i> +123 456 7890</p>
-                    <p><i class="fas fa-map-marker-alt"></i> 地址信息</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Address Information</p>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 PeerLearn. 保留所有权利。</p>
+                <p>&copy; 2025 PeerLearn. All rights reserved.</p>
             </div>
         </div>
     </footer>
