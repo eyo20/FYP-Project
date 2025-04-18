@@ -45,3 +45,4 @@ if (!isset($_SESSION['id'])) {
 
 </body>
 </html>
+<!-- 这里没有问题但是要link去查看booking session -->
