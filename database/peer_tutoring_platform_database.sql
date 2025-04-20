@@ -1,292 +1,205 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- 主机： 127.0.0.1
--- 生成日期： 2025-03-27 16:12:14
--- 服务器版本： 10.4.32-MariaDB
--- PHP 版本： 8.0.30
+-- Create database for tutoring platform
+CREATE DATABASE tutoring_platform;
+USE tutoring_platform;
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- Users table (base user entity)
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
+-- Admin table
+CREATE TABLE Admin (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    last_login TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_admin_user FOREIGN KEY (admin_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- Students table
+CREATE TABLE Students (
+    students_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    major VARCHAR(100) NULL,
+    year INT NULL,
+    CONSTRAINT fk_students_user FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
 
---
--- 数据库： `peer tutoring platform database`
---
+-- Create tutors table (modified to include fields from both schemas)
+CREATE TABLE tutors (
+    tutors_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(100),
+    major VARCHAR(100),
+    year VARCHAR(50),
+    bio TEXT NULL,
+    qualifications TEXT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    rating DECIMAL(3,2) DEFAULT 0.0,
+    hourly_rate DECIMAL(10,2),
+    image_url VARCHAR(255),
+    CONSTRAINT fk_tutors_user FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
 
--- --------------------------------------------------------
+-- Create subjects table (modified to match new requirements)
+CREATE TABLE subjects (
+    subject_id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_id INT,
+    subject_name VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    FOREIGN KEY (tutor_id) REFERENCES tutors(tutors_id)
+);
 
---
--- 表的结构 `messages`
---
+-- Courses table
+CREATE TABLE Courses (
+    courses_id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_id INT NOT NULL,
+    course_code VARCHAR(20) NOT NULL,
+    course_title VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_courses_subject FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id) ON DELETE CASCADE
+);
 
-CREATE TABLE `messages` (
-  `message_id` int(11) NOT NULL,
-  `sender_id` int(11) NOT NULL,
-  `receiver_id` int(11) NOT NULL,
-  `content` text DEFAULT NULL,
-  `sent_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Tutor_courses junction table
+CREATE TABLE Tutor_courses (
+    subject_id INT NOT NULL,
+    course_id INT NOT NULL,
+    PRIMARY KEY (subject_id, course_id),
+    CONSTRAINT fk_tutor_courses_subject FOREIGN KEY (subject_id) REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    CONSTRAINT fk_tutor_courses_course FOREIGN KEY (course_id) REFERENCES Courses(courses_id) ON DELETE CASCADE
+);
 
--- --------------------------------------------------------
+-- Create time_slots table (new table)
+CREATE TABLE time_slots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_id INT,
+    start_time TIME,
+    end_time TIME,
+    FOREIGN KEY (tutor_id) REFERENCES tutors(tutors_id)
+);
 
---
--- 表的结构 `payments`
---
+-- Availability table
+CREATE TABLE Availability (
+    slot_id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_id INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'open',
+    CONSTRAINT fk_availability_tutor FOREIGN KEY (tutor_id) REFERENCES Tutors(tutors_id) ON DELETE CASCADE,
+    CHECK (status IN ('open', 'booked', 'cancelled'))
+);
 
-CREATE TABLE `payments` (
-  `payment_id` int(11) NOT NULL,
-  `session_id` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `payment_status` enum('pending','completed','failed') DEFAULT 'pending',
-  `transaction_id` varchar(255) DEFAULT NULL,
-  `payment_date` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Create locations table (new table)
+CREATE TABLE locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    location_name VARCHAR(100),
+    location_value VARCHAR(50)
+);
 
--- --------------------------------------------------------
+-- Session table
+CREATE TABLE Session (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_id INT NOT NULL,
+    student_id INT NOT NULL,
+    course_id INT NOT NULL,
+    slot_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    cancellation_deadline DATETIME NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_session_tutor FOREIGN KEY (tutor_id) REFERENCES Tutors(tutors_id) ON DELETE CASCADE,
+    CONSTRAINT fk_session_student FOREIGN KEY (student_id) REFERENCES Students(students_id) ON DELETE CASCADE,
+    CONSTRAINT fk_session_course FOREIGN KEY (course_id) REFERENCES Courses(courses_id) ON DELETE CASCADE,
+    CONSTRAINT fk_session_slot FOREIGN KEY (slot_id) REFERENCES Availability(slot_id) ON DELETE CASCADE,
+    CHECK (status IN ('scheduled', 'completed', 'cancelled'))
+);
 
---
--- 表的结构 `reviews`
---
+-- Messages table
+CREATE TABLE Messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    content TEXT NOT NULL,
+    sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_messages_receiver FOREIGN KEY (receiver_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
 
-CREATE TABLE `reviews` (
-  `review_id` int(11) NOT NULL,
-  `session_id` int(11) NOT NULL,
-  `rating` int(11) DEFAULT NULL CHECK (`rating` between 1 and 5),
-  `comment` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Reviews table
+CREATE TABLE Reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT NULL,
+    is_approved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reviews_session FOREIGN KEY (session_id) REFERENCES Session(session_id) ON DELETE CASCADE,
+    CHECK (rating BETWEEN 1 AND 5)
+);
 
--- --------------------------------------------------------
+-- Payments table
+CREATE TABLE Payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    payment_method VARCHAR(50) NOT NULL,
+    paid_date DATETIME NULL,
+    transaction_id VARCHAR(100) NULL,
+    refund_amount DECIMAL(10,2) DEFAULT 0.0,
+    refund_date DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payments_session FOREIGN KEY (session_id) REFERENCES Session(session_id) ON DELETE CASCADE,
+    CHECK (status IN ('pending', 'completed', 'failed', 'refunded'))
+);
 
---
--- 表的结构 `sessions`
---
+-- Add some indexes for performance
+CREATE INDEX idx_users_role ON Users(role);
+CREATE INDEX idx_subjects_name ON Subjects(subject_name);
+CREATE INDEX idx_courses_code ON Courses(course_code);
+CREATE INDEX idx_availability_status ON Availability(status);
+CREATE INDEX idx_session_status ON Session(status);
+CREATE INDEX idx_payments_status ON Payments(status);
 
-CREATE TABLE `sessions` (
-  `session_id` int(11) NOT NULL,
-  `tutor_id` int(11) NOT NULL,
-  `tutee_id` int(11) NOT NULL,
-  `subject_id` int(11) NOT NULL,
-  `session_date` datetime DEFAULT NULL,
-  `status` enum('booked','completed','cancelled') DEFAULT 'booked',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Insert sample tutor data (in English)
+-- Note: This requires creating a user first since tutor has a user_id foreign key
+INSERT INTO Users (username, password, email, role) VALUES 
+('jameswilson', 'hashedpassword123', 'james.wilson@example.com', 'tutor');
 
--- --------------------------------------------------------
+INSERT INTO tutors (user_id, name, major, year, bio, rating, hourly_rate, image_url) VALUES 
+(LAST_INSERT_ID(), 'James Wilson', 'Computer Science', 'Junior', 'Computer Science major with a focus on algorithms and data structures. Winner of the university programming competition. I excel at explaining complex concepts in simple terms and enjoy helping fellow students succeed!', 4.8, 25.00, '/api/placeholder/80/80');
 
---
--- 表的结构 `subjects`
---
+-- Insert sample subjects
+INSERT INTO subjects (tutor_id, subject_name) VALUES 
+(1, 'Data Structures'),
+(1, 'Java Programming'),
+(1, 'Algorithm Fundamentals'),
+(1, 'Database Principles');
 
-CREATE TABLE `subjects` (
-  `subject_id` int(11) NOT NULL,
-  `subject_name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Insert sample time slots
+INSERT INTO time_slots (tutor_id, start_time, end_time) VALUES
+(1, '09:00:00', '10:00:00'),
+(1, '10:00:00', '11:00:00'),
+(1, '11:00:00', '12:00:00'),
+(1, '13:00:00', '14:00:00'),
+(1, '14:00:00', '15:00:00'),
+(1, '15:00:00', '16:00:00'),
+(1, '16:00:00', '17:00:00'),
+(1, '19:00:00', '20:00:00');
 
--- --------------------------------------------------------
-
---
--- 表的结构 `tutorprofiles`
---
-
-CREATE TABLE `tutorprofiles` (
-  `profile_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `bio` text DEFAULT NULL,
-  `qualifications` text DEFAULT NULL,
-  `availability` varchar(255) DEFAULT NULL,
-  `rating` decimal(3,2) DEFAULT 0.00
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `tutorsubjects`
---
-
-CREATE TABLE `tutorsubjects` (
-  `tutor_id` int(11) NOT NULL,
-  `subject_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `users`
---
-
-CREATE TABLE `users` (
-  `user_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `role` enum('student','tutor','admin') DEFAULT 'student',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- 转储表的索引
---
-
---
--- 表的索引 `messages`
---
-ALTER TABLE `messages`
-  ADD PRIMARY KEY (`message_id`),
-  ADD KEY `sender_id` (`sender_id`),
-  ADD KEY `receiver_id` (`receiver_id`);
-
---
--- 表的索引 `payments`
---
-ALTER TABLE `payments`
-  ADD PRIMARY KEY (`payment_id`),
-  ADD KEY `session_id` (`session_id`);
-
---
--- 表的索引 `reviews`
---
-ALTER TABLE `reviews`
-  ADD PRIMARY KEY (`review_id`),
-  ADD KEY `session_id` (`session_id`);
-
---
--- 表的索引 `sessions`
---
-ALTER TABLE `sessions`
-  ADD PRIMARY KEY (`session_id`),
-  ADD KEY `tutor_id` (`tutor_id`),
-  ADD KEY `tutee_id` (`tutee_id`),
-  ADD KEY `subject_id` (`subject_id`);
-
---
--- 表的索引 `subjects`
---
-ALTER TABLE `subjects`
-  ADD PRIMARY KEY (`subject_id`);
-
---
--- 表的索引 `tutorprofiles`
---
-ALTER TABLE `tutorprofiles`
-  ADD PRIMARY KEY (`profile_id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- 表的索引 `tutorsubjects`
---
-ALTER TABLE `tutorsubjects`
-  ADD PRIMARY KEY (`tutor_id`,`subject_id`),
-  ADD KEY `subject_id` (`subject_id`);
-
---
--- 表的索引 `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- 在导出的表使用AUTO_INCREMENT
---
-
---
--- 使用表AUTO_INCREMENT `messages`
---
-ALTER TABLE `messages`
-  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `payments`
---
-ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `reviews`
---
-ALTER TABLE `reviews`
-  MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `sessions`
---
-ALTER TABLE `sessions`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `subjects`
---
-ALTER TABLE `subjects`
-  MODIFY `subject_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `tutorprofiles`
---
-ALTER TABLE `tutorprofiles`
-  MODIFY `profile_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `users`
---
-ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 限制导出的表
---
-
---
--- 限制表 `messages`
---
-ALTER TABLE `messages`
-  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`user_id`);
-
---
--- 限制表 `payments`
---
-ALTER TABLE `payments`
-  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`session_id`);
-
---
--- 限制表 `reviews`
---
-ALTER TABLE `reviews`
-  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`session_id`);
-
---
--- 限制表 `sessions`
---
-ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`tutor_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `sessions_ibfk_2` FOREIGN KEY (`tutee_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `sessions_ibfk_3` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`subject_id`);
-
---
--- 限制表 `tutorprofiles`
---
-ALTER TABLE `tutorprofiles`
-  ADD CONSTRAINT `tutorprofiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
-
---
--- 限制表 `tutorsubjects`
---
-ALTER TABLE `tutorsubjects`
-  ADD CONSTRAINT `tutorsubjects_ibfk_1` FOREIGN KEY (`tutor_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `tutorsubjects_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`subject_id`);
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Insert sample locations
+INSERT INTO locations (location_name, location_value) VALUES
+('Library', 'library'),
+('Study Room', 'study-room'),
+('Campus Cafe', 'cafe');
