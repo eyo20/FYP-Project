@@ -42,12 +42,12 @@ include("db_connection.php");
 <h2>预约付款确认</h2>
 
 <div class="box">
-    <p><strong>预约编号：</strong> <?php echo $booking_id; ?></p>
-    <p><strong>付款金额：</strong> RM <?php echo number_format($amount, 2); ?></p>
+    <p><strong>预约编号：</strong> </p>
+    <p><strong>付款金额：</strong> RM </p>
 
     <form method="post" action="payment_process.php">
-        <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-        <input type="hidden" name="amount" value="<?php echo $amount; ?>">
+        <input type="hidden" name="booking_id" value="23">
+        <input type="hidden" name="amount" value="45">
         <input type="submit" class="btn" value="确认付款">
     </form>
 </div>
