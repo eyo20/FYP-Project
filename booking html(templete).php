@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "peer tutoring platform database";
+$dbname = "peer_tutoring_platform";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
