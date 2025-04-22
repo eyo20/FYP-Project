@@ -1,6 +1,8 @@
 <?php
 session_start();
-include("db_connect.php");
+// session 是用来储存用户的登录状态
+
+include("db_connection.php");
 
 if (!isset($_SESSION['id'])) {
     header("Location: login.php");
@@ -63,3 +65,10 @@ $amount = $_GET['amount'];
 </body>
 </html>
 <!-- 3,14,15 这边有问题-->
+
+<!-- 
+1.接收到 booking_id 和 amount（从 URL 上，比如 confirm_payment.php?booking_id=5&amount=20）
+
+2.显示确认页面
+
+3.提交表单到 payment_process.php 去完成付款 -->
