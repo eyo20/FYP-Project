@@ -183,7 +183,7 @@
             </div>
             
             <div class="nav-buttons">
-                <a href="home page.html" class="btn btn-primary">LOGOUT</a>
+                <a href="student_main_page.php" class="btn btn-primary">LOGOUT</a>
             </div>
         </div>
     </nav>
