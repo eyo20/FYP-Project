@@ -346,16 +346,16 @@ main .insights small{
     display: block;
 }
 
-/*=============== Recent Orders ================= */
-main .recent-orders {
+/*=============== Recent Activities ================= */
+main .recent-activities {
     margin-top: 2rem;
 }
 
-main .recent-orders h2 {
+main .recent-activities h2 {
     margin-bottom: 0.8rem;
 }
 
-main .recent-orders table {
+main .recent-activities table {
     background:#fff;
     width: 100%;
     border-radius:2rem;
@@ -365,7 +365,7 @@ main .recent-orders table {
     transition: all 300ms ease;
 }
 
-main .recent-orders table:hover  {
+main .recent-activities table:hover  {
     box-shadow: none;
 }
 
@@ -379,7 +379,7 @@ main table tbody tr:last-child td {
     border: none;
 }
 
-main .recent-orders a{
+main .recent-activities a{
     text-align: center;
     display: block;
     margin: 1rem auto;
@@ -395,7 +395,7 @@ main .recent-orders a{
     display: flex;
     justify-content: end;
     gap: 2rem;
-    background: gray;
+    background: #fff;
 }
 
 .right .top button {
@@ -502,6 +502,7 @@ main .recent-orders a{
     background: #7380ec;
     width: 13%;
     display: flex;
+    justify-content: space-between;
 }
 
 .right .sales-analytics .item.course .icon {
@@ -516,6 +517,7 @@ main .recent-orders a{
     background: #7380ec;
     width: 13%;
     display: flex;
+    justify-content: space-between;
 }
 
 .right .sales-analytics .add-product {
