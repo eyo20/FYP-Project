@@ -608,14 +608,18 @@ $conn->close();
             .quick-actions {
                 grid-template-columns: 1fr;
             }
+            .logo img {
+            height: 70px;
+            }
+            
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <div class="logo-icon">P</div>
-            <span>PeerTutor</span>
+            <!-- <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo"> -->
+            <span>PeerLearn</span>
         </div>
         <div class="nav-links">
             <a href="student_dashboard.php">仪表盘</a>
@@ -623,7 +627,8 @@ $conn->close();
             <a href="appointments.php">预约管理</a>
             <a href="review.php">提交评价</a>
             <a href="message.php">消息 <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
-        </div>
+            <a href="home page.html" ">LOGOUT</a>
+            </div>
         <div class="user-menu">
             <?php if($unread_messages > 0): ?>
             <div class="notification-badge"><?php echo $unread_messages; ?></div>
