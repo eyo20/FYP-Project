@@ -373,6 +373,8 @@ main table tbody td{
     height: 2.8rem;
     border-bottom: 1px solid  rgba(132, 139, 200, 0.18);
     color: #677483;
+    text-align: center;
+    padding:1.8rem;
 }
 
 main table tbody tr:last-child td {
