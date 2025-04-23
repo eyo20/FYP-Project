@@ -38,6 +38,7 @@
     text-decoration: none;
     list-style: none;
     box-sizing: border-box;
+    border-radius: 0.4rem;
 }
 
 html {
@@ -49,10 +50,10 @@ body{
     height: 100vh;
     font-family: poppins, sans-serif;
     font-size: 0.88rem;
-    background: var(--color-background);
+    background: #f6f6f9;
     user-select: none;
     overflow-x: hidden;
-    color: var(--color-dark);
+    color: #363949;
 }
 
 .container{
@@ -64,7 +65,7 @@ body{
 }
 
 a{
-    color: var(--color-dark);
+    color: #363949;
 }
 
 img {
@@ -105,27 +106,27 @@ small {
 }
 
 .text-muted {
-    color: var(--color-info-dark);
+    color: #dce1eb;
 }
 
 p{
-    color: var(--color-dark-variant);
+    color:#677483;
 }
 
 b{
-    color: var(--color-dark);
+    color: #363949;
 }
 .primary{
-    color: var(--color-primary);
+    color: #7380ec;
 }
 .danger{
-    color: var(--color-danger);
+    color: #ff7782;
 }
 .success{
-    color: var(--color-success);
+    color: #41f1b6;
 }
 .warning{
-    color: var(--color-warning);
+    color: #ffbb55;
 }
 
 
@@ -139,6 +140,7 @@ aside .top{
     align-items: center;
     justify-content: space-between;
     margin-top: 1.4rem;
+    border-radius: 0.4rem;
 }
 
 aside .logo {
@@ -163,6 +165,7 @@ aside .sidebar {
     height: 86vh;
     position: relative;
     top: 3rem;
+    border-radius: 0.4rem;
 }
 
 aside h3 {
@@ -171,7 +174,7 @@ aside h3 {
 
 aside .sidebar a{
     display: flex;
-    color: var(--color-info-dark);
+    color:  #7d8da1;
     margin-left: 2rem;
     gap: 1rem;
     align-items: center;
@@ -193,8 +196,8 @@ aside .sidebar  a:last-child{
 }
 
 aside .sidebar a.active {
-    background: var(--color-light);
-    color: var(--color-primary);
+    background: rgba(132, 139, 200, 0.18);
+    color: #7380ec;
     margin-left: 0;
 }
 
@@ -202,17 +205,17 @@ aside .sidebar a.active:before{
     content: "";
     width: 6px;
     height: 100%;
-    background: var(--color-primary);
+    background: #7380ec;
 
 }
 
 aside .sidebar a.active span{
-    color: var(--color-primary);
+    color: #7380ec;
     margin-left: calc(1rem -3 px);
 }
 
 aside .sidebar a:hover {
-    color: var(--color-primary);
+    color: #7380ec;
 }
 
 aside .sidebar a:hover span{
@@ -220,11 +223,11 @@ aside .sidebar a:hover span{
 }
 
 aside .sidebar .message-count {
-    background: var(--color-danger);
-    color: var(--color-white);
+    background: #ff7782;
+    color: #fff;
     padding: 2px 10px;
     font-size: 11px;
-    border-radius: var(--border-radius-1);
+    border-radius: 0.4rem;
 }
 
 /* ============================== MAIN ================================= */
@@ -234,15 +237,15 @@ main {
 
 main.date {
     display: inline-block;
-    background: var(--color-light);
-    border-radius: var(--border-radius-1);
+    background: rgba(132, 139, 200, 0.18);
+    border-radius:0.4rem;
     margin-top: 1rem;
     padding: 0.5rem 1.6rem;
 }
 
 main.date input[type='date']{
     background: transparent;
-    color: var(--color-dark);
+    color: #363949;
 }
 
 main .insights{
@@ -252,11 +255,11 @@ main .insights{
 }
 
 main .insights > div {
-    background: var(--color-white);
-    padding: var(--card-padding);
-    border-radius: var(--card-border-radius);
+    background: white;
+    padding: 1.8rem;
+    border-radius: 2rem;
     margin-top: 1rem;
-    box-shadow: var(--box-shadow);
+    box-shadow:  0 2rem 3rem rgba(132, 139, 200, 0.18);
 }
 
 main .insights > div:hover {
@@ -264,19 +267,19 @@ main .insights > div:hover {
 }
 
 main .insights > div span {
-    background: coral;
+    background: cornflowerblue;
     padding: 0.5rem;
     border-radius: 50%;
-    color: var(--color-white);
+    color:#fff;
     font-size: 2rem;
 }
 
 main .insights > div.expenses span{
-    background: var(--color-danger);
+    background: #ff7782;
 }
 
 main .insights > div.income span {
-    background:var(--color-success);
+    background:#41f1b6;
 }
 
 main .insights > div .middle{
@@ -304,7 +307,7 @@ main .insights svg{
 
 main .insights svg  circle {
     fill: none;
-    stroke: var(--color-primary);
+    stroke:#7380ec;
     stroke-width: 14px;
     stroke-linecap: round;
     transform: translate(5px, 5px);
@@ -353,12 +356,12 @@ main .recent-orders h2 {
 }
 
 main .recent-orders table {
-    background: var(--color-white);
+    background:#fff;
     width: 100%;
-    border-radius: var(--card-border-radius);
-    padding: var(--card-padding);
+    border-radius:2rem;
+    padding:1.8rem;
     text-align: center;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
     transition: all 300ms ease;
 }
 
@@ -368,8 +371,8 @@ main .recent-orders table:hover  {
 
 main table tbody td{
     height: 2.8rem;
-    border-bottom: 1px solid var(--color-light);
-    color: var(--color-dark-variant);
+    border-bottom: 1px solid  rgba(132, 139, 200, 0.18);
+    color: #677483;
 }
 
 main table tbody tr:last-child td {
@@ -380,7 +383,7 @@ main .recent-orders a{
     text-align: center;
     display: block;
     margin: 1rem auto;
-    color: var(--color-primary);
+    color: #7380ec;
 }
 
 /* ============================= RIGHT ========================= */
@@ -400,14 +403,14 @@ main .recent-orders a{
 }
 
 .right .theme-toggler {
-    background: var(--color-light);
+    background:rgba(132, 139, 200, 0.18);
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 1.6rem;
     width: 4.2rem;
     cursor: pointer;
-    border-radius: var(--border-radius-1);
+    border-radius: 0.4rem;
 }
 
 .right .theme-toggler span {
@@ -420,9 +423,9 @@ main .recent-orders a{
 }
 
 .right .theme-toggler span.active {
-    background: var(--color-primary);
+    background: #7380ec;
     color: white;
-    border-radius: var(--border-radius-1);
+    border-radius: 0.4rem;
 }
 
 .right .top .profile {
@@ -441,10 +444,10 @@ main .recent-orders a{
 }
 
 .right .recent-updates .updates {
-    background: var(--color-white);
-    padding: var(--card-padding);
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--box-shadow);
+    background: #fff;
+    padding:1.8rem;
+    border-radius: 2rem;
+    box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
     transition: all 300ms ease;
 }
 
@@ -469,14 +472,14 @@ main .recent-orders a{
 }
 
 .right .sales-analytics .items {
-    background: var(--color-white);
+    background: #fff;
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.7rem;
-    padding: 1.4rem var(--card-padding);
-    border-radius: var(--border-radius-1);
-    box-shadow: var(--box-shadow);
+    padding: 1.4rem 1.8rem;
+    border-radius: 0.4rem;
+    box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
     transition: all 300ms ease;
 }
 
@@ -494,24 +497,31 @@ main .recent-orders a{
 
 .right .sales-analytics .item .icon {
     padding: 0.6rem;
-    color: var(--color-white);
+    color: #fff;
     border-radius: 50%;
-    background: var(--color-primary);
+    background: #7380ec;
+    width: 13%;
     display: flex;
 }
 
-.right .sales-analytics .item.offline .icon {
-    background: var(--color-danger);
+.right .sales-analytics .item.course .icon {
+    background: #ff7782;
 }
 
 .right .sales-analytics .item.customers .icon {
-    background: var(--color-success);
+    background:#41f1b6;
+    padding: 0.6rem;
+    color: #fff;
+    border-radius: 50%;
+    background: #7380ec;
+    width: 13%;
+    display: flex;
 }
 
 .right .sales-analytics .add-product {
     background-color: transparent;
-    border: 2px dashed var(--color-primary);
-    color: var(--color-primary);
+    border: 2px dashed #7380ec;
+    color: #7380ec;
     display: flex;
     align-items: center;
     justify-content: center;
