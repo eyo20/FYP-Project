@@ -37,7 +37,7 @@ if (isset($_POST['loginbtn'])) {
 
     if (!$error) {
         // 查询用户及角色信息
-        $sql = "SELECT user_id, email, password, role FROM Users WHERE email = ?";
+        $sql = "SELECT user_id, email, password, role FROM user WHERE email = ?";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);
