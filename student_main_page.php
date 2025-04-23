@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // 获取用户信息
-$user_query = "SELECT username, email, role, created_at FROM users WHERE user_id = ?";
+$user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
