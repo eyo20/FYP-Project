@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `admin` (
   `admin_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL,
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
@@ -250,6 +250,15 @@ INSERT INTO `subject` (`subject_id`, `subject_name`, `description`) VALUES
 (4, 'Database Principles', 'Database design and SQL fundamentals');
 
 -- --------------------------------------------------------
+CREATE TABLE student_cart (
+    cartID INT AUTO_INCREMENT PRIMARY KEY,
+    studentID INT NOT NULL,
+    tutorID INT NOT NULL,
+    hours INT DEFAULT 1,
+    is_deleted TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 
 --
 -- 表的结构 `tutorprofile`
