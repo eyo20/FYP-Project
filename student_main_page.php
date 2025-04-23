@@ -209,19 +209,19 @@ $recommended_tutors_query = "
 // 如果major为空，使用一个通用搜索词
 $major_search = !empty($major) ? "%$major%" : "%";
 
-$stmt = $conn->prepare($recommended_tutors_query);
-if ($stmt === false) {
-    error_log("Prepare failed for recommended tutors query: " . $conn->error);
-} else {
-    $stmt->bind_param("s", $major_search);
-    $stmt->execute();
-    $tutors_result = $stmt->get_result();
+// $stmt = $conn->prepare($recommended_tutors_query);
+// if ($stmt === false) {
+//     error_log("Prepare failed for recommended tutors query: " . $conn->error);
+// } else {
+//     $stmt->bind_param("s", $major_search);
+//     $stmt->execute();
+//     $tutors_result = $stmt->get_result();
     
-    while ($row = $tutors_result->fetch_assoc()) {
-        $recommended_tutors[] = $row;
-    }
-    $stmt->close();
-}
+//     while ($row = $tutors_result->fetch_assoc()) {
+//         $recommended_tutors[] = $row;
+//     }
+//     $stmt->close();
+// }
 
 // 若无推荐导师则使用备选推荐
 if (count($recommended_tutors) == 0) {
@@ -239,16 +239,16 @@ if (count($recommended_tutors) == 0) {
         ORDER BY session_count DESC
         LIMIT 3
     ";
-    $stmt = $conn->prepare($backup_tutors_query);
-    $stmt->bind_param("s", $major_search);
-    $stmt->execute();
-    $backup_result = $stmt->get_result();
+    // $stmt = $conn->prepare($backup_tutors_query);
+    // $stmt->bind_param("s", $major_search);
+    // $stmt->execute();
+    // $backup_result = $stmt->get_result();
 
-    while ($row = $backup_result->fetch_assoc()) {
-        $row['availability'] = "请联系查询具体可用时间";
-        $recommended_tutors[] = $row;
-    }
-    $stmt->close();
+    // while ($row = $backup_result->fetch_assoc()) {
+    //     $row['availability'] = "请联系查询具体可用时间";
+    //     $recommended_tutors[] = $row;
+    // }
+    // $stmt->close();
 }
 
 $conn->close();
