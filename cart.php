@@ -136,7 +136,8 @@ if (isset($_POST['checkout']) && !empty($cartItemsArray)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    
+    <?php include 'header.php'; ?>
     
     <div class="container my-5">
         <h1 class="mb-4">Your Tutoring Cart</h1>
@@ -211,7 +212,9 @@ if (isset($_POST['checkout']) && !empty($cartItemsArray)) {
         </div>
     </div>
     
-    <?php include 'includes/footer.php'; ?>
+    <div class="footer-bottom">
+                <p>&copy; 2025 PeerLearn. All rights reserved.</p>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
