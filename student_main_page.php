@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // 获取用户信息
-$user_query = "SELECT username, email, role, created_at FROM users WHERE user_id = ?";
+$user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -19,68 +19,142 @@ $user_data = $user_result->fetch_assoc();
 $username = $user_data['username'];
 $stmt->close();
 
-// 获取学生信息
-$student_query = "SELECT major, year FROM students WHERE user_id = ?";
-$stmt = $conn->prepare($student_query);
+// 检查用户是否登录
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$username = $email = $role = $created_at = '';
+$major = $year = 'Not set';  // 设置默认值
+
+// 获取用户信息
+$user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
+$stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$student_result = $stmt->get_result();
-$student_data = $student_result->fetch_assoc();
-$major = $student_data['major'];
-$year = $student_data['year'];
+$user_result = $stmt->get_result();
+
+if ($user_result->num_rows > 0) {
+    $user_data = $user_result->fetch_assoc();
+    $username = $user_data['username'];
+    $email = $user_data['email'];
+    $role = $user_data['role'];
+    $created_at = $user_data['created_at'];
+} else {
+    // 用户不存在，重定向到登录页面
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
 $stmt->close();
+
+// 检查studentprofile表是否存在
+$table_check = $conn->query("SHOW TABLES LIKE 'studentprofile'");
+$table_exists = $table_check->num_rows > 0;
+
+// 如果表存在，尝试获取学生资料（如果有）
+if ($table_exists) {
+    $student_query = "SELECT major, year FROM studentprofile WHERE user_id = ?";
+    $stmt = $conn->prepare($student_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $student_result = $stmt->get_result();
+    
+    if ($student_result->num_rows > 0) {
+        $student_data = $student_result->fetch_assoc();
+        $major = $student_data['major'] ?: 'Not set';
+        $year = $student_data['year'] ?: 'Not set';
+    }
+    $stmt->close();
+}
+
+// 初始化变量
+$upcoming_sessions = [];
+$completed_sessions = 0;
+$subjects_count = 0;
 
 // 获取即将到来的辅导课程
 $upcoming_sessions_query = "
-    SELECT s.session_id, s.created_at as session_date, s.status, 
-           c.course_title as subject, 
+    SELECT s.session_id, s.created_at as session_date, s.status,
+           c.course_title as subject,
            u.username as tutor_name,
            sl.start_time
     FROM session s
-    JOIN users u ON s.tutor_id = u.user_id
+    JOIN user u ON s.tutor_id = u.user_id  /* 修改为user表而不是users */
     JOIN courses c ON s.course_id = c.courses_id
     JOIN time_slots sl ON s.slot_id = sl.slot_id
     WHERE s.student_id = ? AND s.status = 'scheduled' 
     ORDER BY s.created_at, sl.start_time
-    LIMIT 5
-";
-$stmt = $conn->prepare($upcoming_sessions_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$upcoming_sessions_result = $stmt->get_result();
-$upcoming_sessions = [];
-while ($row = $upcoming_sessions_result->fetch_assoc()) {
-    $upcoming_sessions[] = $row;
+    LIMIT 5";
+
+try {
+    $stmt = $conn->prepare($upcoming_sessions_query);
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $upcoming_sessions_result = $stmt->get_result();
+        
+        while ($row = $upcoming_sessions_result->fetch_assoc()) {
+            $upcoming_sessions[] = $row;
+        }
+        $stmt->close();
+    } else {
+        error_log("Failed to prepare upcoming sessions query: " . $conn->error);
+    }
+} catch (Exception $e) {
+    error_log("Error in upcoming sessions query: " . $e->getMessage());
 }
-$stmt->close();
 
 // 获取已完成课程数量
 $completed_sessions_query = "
     SELECT COUNT(*) as completed_count
     FROM session
-    WHERE student_id = ? AND status = 'completed'
-";
-$stmt = $conn->prepare($completed_sessions_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$completed_result = $stmt->get_result();
-$completed_data = $completed_result->fetch_assoc();
-$completed_sessions = $completed_data['completed_count'];
-$stmt->close();
+    WHERE student_id = ? AND status = 'completed'";
+
+try {
+    $stmt = $conn->prepare($completed_sessions_query);
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $completed_result = $stmt->get_result();
+        $completed_data = $completed_result->fetch_assoc();
+        $completed_sessions = $completed_data['completed_count'];
+        $stmt->close();
+    } else {
+        error_log("Failed to prepare completed sessions query: " . $conn->error);
+    }
+} catch (Exception $e) {
+    error_log("Error in completed sessions query: " . $e->getMessage());
+}
 
 // 获取所学科目数量
 $subjects_query = "
     SELECT COUNT(DISTINCT course_id) as subjects_count
     FROM session
-    WHERE student_id = ?
-";
-$stmt = $conn->prepare($subjects_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$subjects_result = $stmt->get_result();
-$subjects_data = $subjects_result->fetch_assoc();
-$subjects_count = $subjects_data['subjects_count'];
-$stmt->close();
+    WHERE student_id = ?";
+
+try {
+    $stmt = $conn->prepare($subjects_query);
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $subjects_result = $stmt->get_result();
+        $subjects_data = $subjects_result->fetch_assoc();
+        $subjects_count = $subjects_data['subjects_count'];
+        $stmt->close();
+    } else {
+        error_log("Failed to prepare subjects count query: " . $conn->error);
+    }
+} catch (Exception $e) {
+    error_log("Error in subjects count query: " . $e->getMessage());
+}
+
+// 初始化变量
+$goals_completion = 0;
+$unread_messages = 0;
+$recommended_tutors = [];
 
 // 计算完成率
 $goals_query = "
@@ -90,48 +164,64 @@ $goals_query = "
             ELSE ROUND((SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) / COUNT(*)) * 100)
         END as completion_rate
     FROM session
-    WHERE student_id = ? AND (status = 'completed' OR status = 'cancelled')
-";
+    WHERE student_id = ? AND (status = 'completed' OR status = 'cancelled')";
+
 $stmt = $conn->prepare($goals_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$goals_result = $stmt->get_result();
-$goals_data = $goals_result->fetch_assoc();
-$goals_completion = $goals_data['completion_rate'];
-$stmt->close();
+if ($stmt === false) {
+    error_log("Prepare failed for goals query: " . $conn->error);
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $goals_result = $stmt->get_result();
+    $goals_data = $goals_result->fetch_assoc();
+    $goals_completion = $goals_data['completion_rate'];
+    $stmt->close();
+}
 
 // 获取未读消息数量
 $unread_messages_query = "
     SELECT COUNT(*) as unread_count
-    FROM messages
-    WHERE receiver_id = ? AND is_read = 0
-";
+    FROM message
+    WHERE receiver_id = ? AND is_read = 0";
+
 $stmt = $conn->prepare($unread_messages_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$messages_result = $stmt->get_result();
-$messages_data = $messages_result->fetch_assoc();
-$unread_messages = $messages_data['unread_count'];
-$stmt->close();
+if ($stmt === false) {
+    error_log("Prepare failed for unread messages query: " . $conn->error);
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $messages_result = $stmt->get_result();
+    $messages_data = $messages_result->fetch_assoc();
+    $unread_messages = $messages_data['unread_count'];
+    $stmt->close();
+}
 
 // 获取推荐导师
+// 注意：这里有一个字段名称问题 - tutor表中的字段名可能不一致
+// 原查询使用了t.subject和t.subjects两个不同的字段名
 $recommended_tutors_query = "
-    SELECT t.tutor_id, u.username, t.subjects, t.availability
-    FROM tutors t
-    JOIN users u ON t.user_id = u.user_id
-    WHERE t.subjects LIKE ?
-    LIMIT 3
-";
-$major_search = "%$major%";
+    SELECT t.tutor_id, u.username, t.expertise as subject, t.availability
+    FROM tutor t
+    JOIN user u ON t.user_id = u.user_id
+    WHERE t.expertise LIKE ?
+    LIMIT 3";
+
+// 如果major为空，使用一个通用搜索词
+$major_search = !empty($major) ? "%$major%" : "%";
+
 $stmt = $conn->prepare($recommended_tutors_query);
-$stmt->bind_param("s", $major_search);
-$stmt->execute();
-$tutors_result = $stmt->get_result();
-$recommended_tutors = [];
-while ($row = $tutors_result->fetch_assoc()) {
-    $recommended_tutors[] = $row;
+if ($stmt === false) {
+    error_log("Prepare failed for recommended tutors query: " . $conn->error);
+} else {
+    $stmt->bind_param("s", $major_search);
+    $stmt->execute();
+    $tutors_result = $stmt->get_result();
+    
+    while ($row = $tutors_result->fetch_assoc()) {
+        $recommended_tutors[] = $row;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 // 若无推荐导师则使用备选推荐
 if (count($recommended_tutors) == 0) {
@@ -518,11 +608,11 @@ $conn->close();
             <span>PeerTutor</span>
         </div>
         <div class="nav-links">
-            <a href="dashboard.php">仪表盘</a>
+            <a href="student_dashboard.php">仪表盘</a>
             <a href="find_tutors.php">寻找导师</a>
             <a href="appointments.php">预约管理</a>
-            <a href="reviews.php">提交评价</a>
-            <a href="messages.php">消息 <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
+            <a href="review.php">提交评价</a>
+            <a href="message.php">消息 <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
         </div>
         <div class="user-menu">
             <?php if($unread_messages > 0): ?>

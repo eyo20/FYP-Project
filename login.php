@@ -44,7 +44,7 @@ if (isset($_POST['loginbtn'])) {
                     mysqli_stmt_fetch($stmt);
 
                     // 验证密码（支持哈希或原文）
-                    if (password_verify($password, $db_password) || $password === $db_password) {
+                    if (password_verify($password, $db_password)) {
                         // 登录成功，设置会话
                         $_SESSION['loggedin'] = true;
                         $_SESSION['user_id'] = $id;

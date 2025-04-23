@@ -1,21 +1,19 @@
 <?php
-// 显示所有错误（开发调试时使用）
+// Display all errors (use in development environment, remove in production)
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// 启动会话
-session_start();
-
-// 引入数据库连接
+// Include database connection
 require_once "db_connection.php";
 
-// 初始化变量
-$errors = [];
+// Initialize variables
 $username = $email = $role = '';
 $firstName = $lastName = '';
+$errors = [];
 
+// If form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -23,72 +21,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $_POST['role'] ?? '';
     $firstName = trim($_POST['first_name'] ?? '');
     $lastName = trim($_POST['last_name'] ?? '');
-
-    // 服务器端验证
-    if (empty($username)) $errors['username'] = 'Username is required.';
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Valid email is required.';
-    if (empty($password) || strlen($password) < 8) $errors['password'] = 'Password must be at least 8 characters.';
-    if ($password !== $confirmPassword) $errors['confirm_password'] = 'Passwords do not match.';
-    if (empty($role)) $errors['role'] = 'Please select a role.';
-    if (empty($firstName)) $errors['first_name'] = 'First name is required.';
-    if (empty($lastName)) $errors['last_name'] = 'Last name is required.';
-
-    if (empty($errors)) {
-        // 检查邮箱是否已存在
-        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE email = ?");
-        if (!$stmt) {
-            $errors['general'] = 'Database error: ' . mysqli_error($conn);
+    
+    // Validate if data is empty
+    if (empty($username) || empty($email) || empty($password) || empty($role) || empty($firstName) || empty($lastName)) {
+        $errors['general'] = "All fields are required!";
+    } else {
+        // Hash password
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Check if username already exists
+        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE username = ?");
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+        
+        if (mysqli_stmt_num_rows($stmt) > 0) {
+            $errors['username'] = "Username already exists!";
         } else {
-            mysqli_stmt_bind_param($stmt, "s", $email);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_store_result($stmt);
+            // Insert new user
+            mysqli_stmt_close($stmt);
+            $stmt = mysqli_prepare($conn, "INSERT INTO user (username, email, password, role, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)");
             
-            if (mysqli_stmt_num_rows($stmt) > 0) {
-                $errors['email'] = 'Email is already registered.';
+            if (!$stmt) {
+                $errors['general'] = "Database error: " . mysqli_error($conn);
             } else {
-                // 插入新用户
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                mysqli_stmt_close($stmt);
+                mysqli_stmt_bind_param($stmt, "ssssss", $username, $email, $hashedPassword, $role, $firstName, $lastName);
                 
-                $stmt = mysqli_prepare($conn, "INSERT INTO user (username, email, password, role, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)");
-                if (!$stmt) {
-                    $errors['general'] = 'Database error: ' . mysqli_error($conn);
+                if (mysqli_stmt_execute($stmt)) {
+                    // Registration successful, redirect to login page
+                    header("Location: login.php?registered=true");
+                    exit;
                 } else {
-                    mysqli_stmt_bind_param($stmt, "ssssss", $username, $email, $hashedPassword, $role, $firstName, $lastName);
-                    
-                    if (mysqli_stmt_execute($stmt)) {
-                        $userId = mysqli_insert_id($conn);
-                        mysqli_stmt_close($stmt);
-                        
-                        // 根据角色创建配置文件
-                        if ($role === 'student') {
-                            $stmt = mysqli_prepare($conn, "INSERT INTO studentProfile (user_id) VALUES (?)");
-                            if ($stmt) {
-                                mysqli_stmt_bind_param($stmt, "i", $userId);
-                                mysqli_stmt_execute($stmt);
-                                mysqli_stmt_close($stmt);
-                            }
-                        } else if ($role === 'tutor') {
-                            $stmt = mysqli_prepare($conn, "INSERT INTO tutorProfile (user_id, hourly_rate) VALUES (?, 0)");
-                            if ($stmt) {
-                                mysqli_stmt_bind_param($stmt, "i", $userId);
-                                mysqli_stmt_execute($stmt);
-                                mysqli_stmt_close($stmt);
-                            }
-                        }
-
-                        // 注册成功后重定向到登录页面
-                        echo '<script>window.location.href = "login.php?registered=true";</script>';
-                        exit;
-                    } else {
-                        $errors['general'] = 'Registration failed. Please try again. Error: ' . mysqli_error($conn);
-                    }
+                    $errors['general'] = "Registration failed: " . mysqli_stmt_error($stmt);
                 }
             }
         }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -356,7 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="php-error" style="text-align: center; margin-bottom: 15px;"><?= htmlspecialchars($errors['general']) ?></div>
             <?php endif; ?>
             
-            <form id="registration-form" method="POST" action="registration.php" novalidate>
+            <form id="registration-form" method="POST" action="register.php" novalidate>
                 <div class="input-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" placeholder="Enter your username" value="<?= htmlspecialchars($username) ?>" required>
@@ -423,7 +392,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </svg>
                             <span>Student</span>
                         </div>
-                        <div class="role-option <?= $role === 'tutor' ? 'selected' : '' ?>" onclick="selectRole('tutor')" id="role-tutor">
+<div class="role-option <?= $role === 'tutor' ? 'selected' : '' ?>" onclick="selectRole('tutor')" id="role-tutor">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 3L22 8L12 13L2 8L12 3Z" stroke="#2B3990" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M22 8V16" stroke="#2B3990" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
