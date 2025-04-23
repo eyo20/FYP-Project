@@ -349,6 +349,7 @@ main .insights small{
 /*=============== Recent Activities ================= */
 main .recent-activities {
     margin-top: 2rem;
+    
 }
 
 main .recent-activities h2 {
@@ -375,6 +376,9 @@ main table tbody td{
     color: #677483;
     text-align: center;
     padding:1.8rem;
+    background: white;
+    border-radius: 1.4rem;
+
 }
 
 main table tbody tr:last-child td {
