@@ -326,8 +326,8 @@ main .insights .expenses svg circle {
 }
 
 main .insights .income svg circle {
-    stroke-dashoffset: -20;
-    stroke-dasharray: 80;
+    stroke-dashoffset: 35;
+    stroke-dasharray: 110;
 }
 
 main .insights .progress .number {
