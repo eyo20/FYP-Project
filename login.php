@@ -1,9 +1,4 @@
 <?php
-// 显示所有错误（开发调试时使用）
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // 启动会话
 session_start();
 
@@ -37,7 +32,7 @@ if (isset($_POST['loginbtn'])) {
 
     if (!$error) {
         // 查询用户及角色信息
-        $sql = "SELECT user_id, email, password, role FROM Users WHERE email = ?";
+        $sql = "SELECT user_id, email, password, role FROM user WHERE email = ?";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);

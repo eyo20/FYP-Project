@@ -1,12 +1,6 @@
 <?php
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "peer tutoring platform database";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+require_once "db_connection.php";
 
 // Check connection
 if ($conn->connect_error) {
