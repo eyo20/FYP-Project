@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// 获取用户信息
+// Fetch user info
 $user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
@@ -19,7 +19,7 @@ $user_data = $user_result->fetch_assoc();
 $username = $user_data['username'];
 $stmt->close();
 
-// 检查用户是否登录
+// Verify session again (redundant check preserved)
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -27,9 +27,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $username = $email = $role = $created_at = '';
-$major = $year = 'Not set';  // 设置默认值
+$major = $year = 'Not set';  // default values
 
-// 获取用户信息
+// Fetch user details
 $user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
@@ -38,54 +38,57 @@ $user_result = $stmt->get_result();
 
 if ($user_result->num_rows > 0) {
     $user_data = $user_result->fetch_assoc();
-    $username = $user_data['username'];
-    $email = $user_data['email'];
-    $role = $user_data['role'];
+    $username   = $user_data['username'];
+    $email      = $user_data['email'];
+    $role       = $user_data['role'];
     $created_at = $user_data['created_at'];
 } else {
-    // 用户不存在，重定向到登录页面
+    // User not found, redirect to login
     session_destroy();
     header("Location: login.php");
     exit();
 }
 $stmt->close();
 
-// 检查studentprofile表是否存在
-$table_check = $conn->query("SHOW TABLES LIKE 'studentprofile'");
-$table_exists = $table_check->num_rows > 0;
+// Check if studentprofile table exists
+$table_check   = $conn->query("SHOW TABLES LIKE 'studentprofile'");
+$table_exists  = $table_check->num_rows > 0;
 
-// 如果表存在，尝试获取学生资料（如果有）
+// If table exists, fetch student profile if any
 if ($table_exists) {
-    $student_query = "SELECT major, year FROM studentprofile WHERE user_id = ?";
-    $stmt = $conn->prepare($student_query);
+    $student_query  = "SELECT major, year FROM studentprofile WHERE user_id = ?";
+    $stmt           = $conn->prepare($student_query);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $student_result = $stmt->get_result();
     
     if ($student_result->num_rows > 0) {
         $student_data = $student_result->fetch_assoc();
-        $major = $student_data['major'] ?: 'Not set';
-        $year = $student_data['year'] ?: 'Not set';
+        $major        = $student_data['major'] ?: 'Not set';
+        $year         = $student_data['year'] ?: 'Not set';
     }
     $stmt->close();
 }
 
-// 初始化变量
-$upcoming_sessions = [];
-$completed_sessions = 0;
-$subjects_count = 0;
+// Initialize variables
+$upcoming_sessions   = [];
+$completed_sessions  = 0;
+$subjects_count      = 0;
 
-// 获取即将到来的辅导课程
+// Fetch upcoming tutoring sessions
 $upcoming_sessions_query = "
-    SELECT s.session_id, s.created_at as session_date, s.status,
-           c.course_title as subject,
-           u.username as tutor_name,
+    SELECT s.session_id,
+           s.created_at AS session_date,
+           s.status,
+           c.course_title AS subject,
+           u.username AS tutor_name,
            sl.start_time
     FROM session s
-    JOIN user u ON s.tutor_id = u.user_id  /* 修改为user表而不是users */
-    JOIN courses c ON s.course_id = c.courses_id
+    JOIN user u       ON s.tutor_id = u.user_id
+    JOIN courses c    ON s.course_id = c.courses_id
     JOIN time_slots sl ON s.slot_id = sl.slot_id
-    WHERE s.student_id = ? AND s.status = 'scheduled' 
+    WHERE s.student_id = ? 
+      AND s.status = 'scheduled'
     ORDER BY s.created_at, sl.start_time
     LIMIT 5";
 
@@ -107,11 +110,12 @@ try {
     error_log("Error in upcoming sessions query: " . $e->getMessage());
 }
 
-// 获取已完成课程数量
+// Fetch count of completed sessions
 $completed_sessions_query = "
-    SELECT COUNT(*) as completed_count
+    SELECT COUNT(*) AS completed_count
     FROM session
-    WHERE student_id = ? AND status = 'completed'";
+    WHERE student_id = ? 
+      AND status = 'completed'";
 
 try {
     $stmt = $conn->prepare($completed_sessions_query);
@@ -119,7 +123,7 @@ try {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $completed_result = $stmt->get_result();
-        $completed_data = $completed_result->fetch_assoc();
+        $completed_data   = $completed_result->fetch_assoc();
         $completed_sessions = $completed_data['completed_count'];
         $stmt->close();
     } else {
@@ -129,9 +133,9 @@ try {
     error_log("Error in completed sessions query: " . $e->getMessage());
 }
 
-// 获取所学科目数量
+// Fetch count of distinct subjects learned
 $subjects_query = "
-    SELECT COUNT(DISTINCT course_id) as subjects_count
+    SELECT COUNT(DISTINCT course_id) AS subjects_count
     FROM session
     WHERE student_id = ?";
 
@@ -141,8 +145,8 @@ try {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $subjects_result = $stmt->get_result();
-        $subjects_data = $subjects_result->fetch_assoc();
-        $subjects_count = $subjects_data['subjects_count'];
+        $subjects_data   = $subjects_result->fetch_assoc();
+        $subjects_count  = $subjects_data['subjects_count'];
         $stmt->close();
     } else {
         error_log("Failed to prepare subjects count query: " . $conn->error);
@@ -151,20 +155,21 @@ try {
     error_log("Error in subjects count query: " . $e->getMessage());
 }
 
-// 初始化变量
-$goals_completion = 0;
-$unread_messages = 0;
+// Initialize variables
+$goals_completion   = 0;
+$unread_messages    = 0;
 $recommended_tutors = [];
 
-// 计算完成率
+// Calculate completion rate
 $goals_query = "
     SELECT 
         CASE 
             WHEN COUNT(*) = 0 THEN 0
             ELSE ROUND((SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) / COUNT(*)) * 100)
-        END as completion_rate
+        END AS completion_rate
     FROM session
-    WHERE student_id = ? AND (status = 'completed' OR status = 'cancelled')";
+    WHERE student_id = ? 
+      AND status IN ('completed', 'cancelled')";
 
 $stmt = $conn->prepare($goals_query);
 if ($stmt === false) {
@@ -173,16 +178,17 @@ if ($stmt === false) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $goals_result = $stmt->get_result();
-    $goals_data = $goals_result->fetch_assoc();
+    $goals_data   = $goals_result->fetch_assoc();
     $goals_completion = $goals_data['completion_rate'];
     $stmt->close();
 }
 
-// 获取未读消息数量
+// Fetch unread message count
 $unread_messages_query = "
-    SELECT COUNT(*) as unread_count
+    SELECT COUNT(*) AS unread_count
     FROM message
-    WHERE receiver_id = ? AND is_read = 0";
+    WHERE receiver_id = ? 
+      AND is_read = 0";
 
 $stmt = $conn->prepare($unread_messages_query);
 if ($stmt === false) {
@@ -191,22 +197,20 @@ if ($stmt === false) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $messages_result = $stmt->get_result();
-    $messages_data = $messages_result->fetch_assoc();
+    $messages_data   = $messages_result->fetch_assoc();
     $unread_messages = $messages_data['unread_count'];
     $stmt->close();
 }
 
-// 获取推荐导师
-// 注意：这里有一个字段名称问题 - tutor表中的字段名可能不一致
-// 原查询使用了t.subject和t.subjects两个不同的字段名
+// Fetch recommended tutors (expertise match)
 $recommended_tutors_query = "
-    SELECT t.tutor_id, u.username, t.expertise as subject, t.availability
+    SELECT t.tutor_id, u.username, t.expertise AS subject, t.availability
     FROM tutor t
     JOIN user u ON t.user_id = u.user_id
     WHERE t.expertise LIKE ?
     LIMIT 3";
 
-// 如果major为空，使用一个通用搜索词
+// If no major, use wildcard
 $major_search = !empty($major) ? "%$major%" : "%";
 
 $stmt = $conn->prepare($recommended_tutors_query);
@@ -223,16 +227,16 @@ if ($stmt === false) {
     $stmt->close();
 }
 
-// 若无推荐导师则使用备选推荐
+// If no direct matches, fetch backup recommendations
 if (count($recommended_tutors) == 0) {
     $backup_tutors_query = "
         SELECT 
             s.tutor_id,
             u.username,
-            COUNT(s.session_id) as session_count,
-            GROUP_CONCAT(DISTINCT c.course_title) as subjects
+            COUNT(s.session_id) AS session_count,
+            GROUP_CONCAT(DISTINCT c.course_title) AS subjects
         FROM session s
-        JOIN user u ON s.tutor_id = u.user_id  /* 修改为user表而不是users */
+        JOIN user u ON s.tutor_id = u.user_id
         JOIN courses c ON s.course_id = c.courses_id
         WHERE c.course_title LIKE ?
         GROUP BY s.tutor_id
@@ -240,7 +244,6 @@ if (count($recommended_tutors) == 0) {
         LIMIT 3
     ";
     
-    // 如果major为空，使用一个通用搜索词
     $major_search = !empty($major) ? "%$major%" : "%";
     
     $stmt = $conn->prepare($backup_tutors_query);
@@ -252,14 +255,12 @@ if (count($recommended_tutors) == 0) {
         $backup_result = $stmt->get_result();
         
         while ($row = $backup_result->fetch_assoc()) {
-            $row['availability'] = "请联系查询具体可用时间";  // 中文提示，可能需要改为英文
+            $row['availability'] = "Please contact for availability";
             $recommended_tutors[] = $row;
         }
         $stmt->close();
     }
 }
-
-
 
 $conn->close();
 ?>
@@ -615,6 +616,7 @@ $conn->close();
         }
     </style>
 </head>
+```html
 <body>
     <nav class="navbar">
         <div class="logo">
@@ -622,13 +624,13 @@ $conn->close();
             <span>PeerLearn</span>
         </div>
         <div class="nav-links">
-            <a href="student_dashboard.php">仪表盘</a>
-            <a href="find_tutors.php">寻找导师</a>
-            <a href="appointments.php">预约管理</a>
-            <a href="review.php">提交评价</a>
-            <a href="message.php">消息 <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
-            <a href="home page.html" ">LOGOUT</a>
-            </div>
+            <a href="student_dashboard.php">Dashboard</a>
+            <a href="find_tutors.php">Find Tutors</a>
+            <a href="appointments.php">Manage Appointments</a>
+            <a href="review.php">Submit Review</a>
+            <a href="message.php">Messages <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
+            <a href="home page.html">LOGOUT</a>
+        </div>
         <div class="user-menu">
             <?php if($unread_messages > 0): ?>
             <div class="notification-badge"><?php echo $unread_messages; ?></div>
@@ -639,12 +641,12 @@ $conn->close();
     
     <main>
         <section class="welcome-section">
-            <h1 class="welcome-title">欢迎回来，<?php echo htmlspecialchars($username); ?>！</h1>
-            <p>您是 <?php echo htmlspecialchars($major); ?> 专业 <?php echo htmlspecialchars($year); ?> 年级的学生。
+            <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($username); ?>!</h1>
+            <p>You are a <?php echo htmlspecialchars($major); ?> major in Year <?php echo htmlspecialchars($year); ?>.
                <?php if(count($upcoming_sessions) > 0): ?>
-               您有 <?php echo count($upcoming_sessions); ?> 个待进行的辅导课程。继续努力！
+               You have <?php echo count($upcoming_sessions); ?> upcoming tutoring sessions. Keep it up!
                <?php else: ?>
-               您目前没有安排辅导课程。是否要找一个导师开始学习呢？
+               You currently have no scheduled sessions. Would you like to find a tutor to get started?
                <?php endif; ?>
             </p>
             
@@ -652,66 +654,66 @@ $conn->close();
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
                     <div class="stat-value"><?php echo $completed_sessions; ?></div>
-                    <div class="stat-label">已完成课程</div>
+                    <div class="stat-label">Completed Sessions</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">📝</div>
                     <div class="stat-value"><?php echo $subjects_count; ?></div>
-                    <div class="stat-label">学习科目</div>
+                    <div class="stat-label">Subjects Learned</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">🎯</div>
                     <div class="stat-value"><?php echo $goals_completion; ?>%</div>
-                    <div class="stat-label">目标达成率</div>
+                    <div class="stat-label">Goal Completion Rate</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">💬</div>
                     <div class="stat-value"><?php echo $unread_messages; ?></div>
-                    <div class="stat-label">未读消息</div>
+                    <div class="stat-label">Unread Messages</div>
                 </div>
             </div>
         </section>
         
-        <h2 class="section-title">快捷操作</h2>
+        <h2 class="section-title">Quick Actions</h2>
         <div class="quick-actions">
             <div class="action-card" onclick="window.location.href='find_tutors.php'">
                 <div class="action-header">
                     <div class="action-icon">🔍</div>
-                    <div class="action-title">寻找导师</div>
+                    <div class="action-title">Find Tutors</div>
                 </div>
-                <p class="action-description">根据科目、可用性和评价筛选合适的导师。</p>
-                <a href="find_tutors.php" class="btn">立即搜索</a>
+                <p class="action-description">Filter tutors by subject, availability, and reviews.</p>
+                <a href="find_tutors.php" class="btn">Search Now</a>
             </div>
             
             <div class="action-card" onclick="window.location.href='appointments.php'">
                 <div class="action-header">
                     <div class="action-icon">📅</div>
-                    <div class="action-title">预约课程</div>
+                    <div class="action-title">Book Session</div>
                 </div>
-                <p class="action-description">与您喜欢的导师安排新的辅导课程。</p>
-                <a href="appointments.php" class="btn">立即预约</a>
+                <p class="action-description">Schedule a new tutoring session with your preferred tutor.</p>
+                <a href="appointments.php" class="btn">Book Now</a>
             </div>
             
             <div class="action-card" onclick="window.location.href='reviews.php'">
                 <div class="action-header">
                     <div class="action-icon">⭐</div>
-                    <div class="action-title">提交评价</div>
+                    <div class="action-title">Submit Review</div>
                 </div>
-                <p class="action-description">分享您对最近辅导体验的反馈。</p>
-                <a href="reviews.php" class="btn">写评价</a>
+                <p class="action-description">Share feedback on your recent tutoring experience.</p>
+                <a href="reviews.php" class="btn">Write Review</a>
             </div>
             
             <div class="action-card" onclick="window.location.href='messages.php'">
                 <div class="action-header">
                     <div class="action-icon">💬</div>
-                    <div class="action-title">消息</div>
+                    <div class="action-title">Messages</div>
                 </div>
-                <p class="action-description">查看您的消息并与导师沟通。</p>
-                <a href="messages.php" class="btn">查看消息 <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
+                <p class="action-description">View your messages and communicate with tutors.</p>
+                <a href="messages.php" class="btn">View Messages <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
             </div>
         </div>
         
-        <h2 class="section-title">即将到来的课程</h2>
+        <h2 class="section-title">Upcoming Sessions</h2>
         <div class="upcoming-sessions">
             <div class="session-list">
                 <?php if(count($upcoming_sessions) > 0): ?>
@@ -722,11 +724,11 @@ $conn->close();
                             $tomorrow = new DateTime('tomorrow');
                             
                             if($session_date->format('Y-m-d') == $today->format('Y-m-d')) {
-                                $date_display = "今天";
+                                $date_display = "Today";
                             } elseif($session_date->format('Y-m-d') == $tomorrow->format('Y-m-d')) {
-                                $date_display = "明天";
+                                $date_display = "Tomorrow";
                             } else {
-                                $date_display = $session_date->format('m月d日');
+                                $date_display = $session_date->format('M d');
                             }
                         ?>
                         <div class="session-item">
@@ -736,27 +738,27 @@ $conn->close();
                             </div>
                             <div class="session-info">
                                 <div class="session-subject"><?php echo htmlspecialchars($session['subject']); ?></div>
-                                <div class="session-tutor">与 <?php echo htmlspecialchars($session['tutor_name']); ?> 一起</div>
+                                <div class="session-tutor">with <?php echo htmlspecialchars($session['tutor_name']); ?></div>
                             </div>
                             <div class="session-actions">
-                                <?php if($date_display == "今天"): ?>
-                                <button onclick="joinSession(<?php echo $session['session_id']; ?>)">加入</button>
+                                <?php if($date_display == "Today"): ?>
+                                <button onclick="joinSession(<?php echo $session['session_id']; ?>)">Join</button>
                                 <?php endif; ?>
-                                <button onclick="rescheduleSession(<?php echo $session['session_id']; ?>)">重新安排</button>
-                                <button onclick="cancelSession(<?php echo $session['session_id']; ?>)">取消</button>
+                                <button onclick="rescheduleSession(<?php echo $session['session_id']; ?>)">Reschedule</button>
+                                <button onclick="cancelSession(<?php echo $session['session_id']; ?>)">Cancel</button>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="empty-state">
-                        <p>您目前没有安排的课程。</p>
-                        <a href="find_tutors.php" class="btn">寻找导师</a>
+                        <p>You have no scheduled sessions.</p>
+                        <a href="find_tutors.php" class="btn">Find Tutors</a>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
         
-        <h2 class="section-title">推荐导师</h2>
+        <h2 class="section-title">Recommended Tutors</h2>
         <div class="quick-actions">
             <?php if(count($recommended_tutors) > 0): ?>
                 <?php foreach($recommended_tutors as $tutor): ?>
@@ -765,50 +767,43 @@ $conn->close();
                             <div class="action-icon" style="background-color: var(--primary);">👨‍🏫</div>
                             <div class="action-title"><?php echo htmlspecialchars($tutor['username']); ?></div>
                         </div>
-                        <p class="action-description"><?php echo htmlspecialchars($tutor['subjects']); ?></p>
+                        <p class="action-description"><?php echo htmlspecialchars($tutor['subjects'] ?? $tutor['subject']); ?></p>
                         <?php if(isset($tutor['availability'])): ?>
-                        <p class="action-description">可用时间: <?php echo htmlspecialchars($tutor['availability']); ?></p>
+                        <p class="action-description">Availability: <?php echo htmlspecialchars($tutor['availability']); ?></p>
                         <?php endif; ?>
-                        <a href="tutor_profile.php?id=<?php echo $tutor['tutor_id']; ?>" class="btn">查看资料</a>
+                        <a href="tutor_profile.php?id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="action-card">
-                    <p class="empty-state">暂时没有适合您专业的推荐导师。</p>
-                    <a href="find_tutors.php" class="btn">浏览所有导师</a>
+                    <p class="empty-state">No recommended tutors for your major at this time.</p>
+                    <a href="find_tutors.php" class="btn">Browse All Tutors</a>
                 </div>
             <?php endif; ?>
         </div>
     </main>
     
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> PeerTutor平台. 保留所有权利.</p>
+        <p>&copy; <?php echo date('Y'); ?> PeerTutor Platform. All rights reserved.</p>
     </footer>
     
     <script>
         function joinSession(sessionId) {
-            // 实现加入课程的功能
-            alert("准备加入课程 #" + sessionId);
-            // 这里可以重定向到视频会议页面或其他相关页面
-            // window.location.href = "join_session.php?id=" + sessionId;
+            alert("Joining session #" + sessionId);
         }
         
         function rescheduleSession(sessionId) {
-            // 实现重新安排课程的功能
-            alert("重新安排课程 #" + sessionId);
-            // window.location.href = "reschedule.php?id=" + sessionId;
+            alert("Rescheduling session #" + sessionId);
         }
         
         function cancelSession(sessionId) {
-            // 实现取消课程的功能
-            if(confirm("确定要取消此课程吗？")) {
-                // 使用AJAX发送请求到服务器取消课程
+            if (confirm("Are you sure you want to cancel this session?")) {
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "cancel_session.php", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 xhr.onreadystatechange = function() {
                     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                        alert("课程已取消");
+                        alert("Session canceled");
                         location.reload();
                     }
                 }

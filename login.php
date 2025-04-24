@@ -1,11 +1,11 @@
 <?php
-// 启动会话
+// Start session
 session_start();
 
-// 引入数据库连接
+// Include database connection
 require_once "db_connection.php";
 
-// 初始化错误提示
+// Initialize error messages
 $email_error    = '';
 $password_error = '';
 $login_error    = '';
@@ -15,7 +15,7 @@ if (isset($_POST['loginbtn'])) {
     $password = $_POST['user_password'];
     $error    = false;
 
-    // 验证邮箱
+    // Validate email
     if (empty($email)) {
         $email_error = 'Email is required';
         $error = true;
@@ -24,14 +24,14 @@ if (isset($_POST['loginbtn'])) {
         $error = true;
     }
 
-    // 验证密码
+    // Validate password
     if (empty($password)) {
         $password_error = 'Password is required';
         $error = true;
     }
 
     if (!$error) {
-        // 查询用户及角色信息
+        // Fetch user and role information
         $sql = "SELECT user_id, email, password, role FROM user WHERE email = ?";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -43,15 +43,15 @@ if (isset($_POST['loginbtn'])) {
                     mysqli_stmt_bind_result($stmt, $id, $db_email, $db_password, $role);
                     mysqli_stmt_fetch($stmt);
 
-                    // 验证密码（支持哈希或原文）
+                    // Verify password (supports hashed or plain)
                     if (password_verify($password, $db_password)) {
-                        // 登录成功，设置会话
+                        // Login successful, set session variables
                         $_SESSION['loggedin'] = true;
                         $_SESSION['user_id'] = $id;
                         $_SESSION['email']    = $db_email;
                         $_SESSION['role']     = $role;
 
-                        // 根据 role 重定向
+                        // Redirect based on role
                         if ($role === 'student') {
                             header('Location: student_main_page.php');
                             exit;
@@ -75,7 +75,7 @@ if (isset($_POST['loginbtn'])) {
     }
 }
 
-// 关闭数据库连接
+// Close database connection
 mysqli_close($conn);
 ?>
 
@@ -105,14 +105,14 @@ mysqli_close($conn);
             border: 1px solid #ddd;
             border-radius: 10px;
             width: 400px;
-            padding: 0px;
+            padding: 0;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             background-color: white;
         }
         
         #login-title {
             background-color: #2B3990;
-            border-radius: 8px 8px 0px 0px;
+            border-radius: 8px 8px 0 0;
             height: 70px;
             display: flex;
             align-items: center;
@@ -180,7 +180,7 @@ mysqli_close($conn);
             background-color: #C4D600;
             width: 100%;
             padding: 12px;
-            border: 0px;
+            border: none;
             border-radius: 5px;
             color: #2B3990;
             font-weight: bold;
@@ -258,7 +258,7 @@ mysqli_close($conn);
             </form>
             
             <p><a href="forgot_password.php">Forgot your password?</a></p>
-            <p><a href="register.php">New to PeerLearn? Create account</a></p>
+            <p><a href="register.php">New to PeerLearn? Create an account</a></p>
         </div>
     </div>
 </body>
