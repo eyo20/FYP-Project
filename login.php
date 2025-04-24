@@ -58,6 +58,10 @@ if (isset($_POST['loginbtn'])) {
                         } elseif ($role === 'tutor') {
                             header('Location: tutor_main_page.php');
                             exit;
+                        }    
+                          elseif ($role === 'admin') {
+                            header('Location: admin.html');
+                            exit;
                         } else {
                             $login_error = 'User role not recognized';
                         }

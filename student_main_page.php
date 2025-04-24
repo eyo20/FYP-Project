@@ -85,7 +85,7 @@ $upcoming_sessions_query = "
            sl.start_time
     FROM session s
     JOIN user u       ON s.tutor_id = u.user_id
-    JOIN courses c    ON s.course_id = c.courses_id
+    JOIN course c    ON s.course_id = c.courses_id
     JOIN time_slots sl ON s.slot_id = sl.slot_id
     WHERE s.student_id = ? 
       AND s.status = 'scheduled'
@@ -266,11 +266,11 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>同伴辅导平台 - 学生仪表盘</title>
+    <title>Peer Tutoring Platform - Student Profile</title>
     <style>
         :root {
             --primary: #2B3990;
@@ -616,7 +616,6 @@ $conn->close();
         }
     </style>
 </head>
-```html
 <body>
     <nav class="navbar">
         <div class="logo">
@@ -624,7 +623,7 @@ $conn->close();
             <span>PeerLearn</span>
         </div>
         <div class="nav-links">
-            <a href="student_dashboard.php">Dashboard</a>
+            <a href="student_profile.php">profile</a>
             <a href="find_tutors.php">Find Tutors</a>
             <a href="appointments.php">Manage Appointments</a>
             <a href="review.php">Submit Review</a>

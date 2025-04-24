@@ -223,6 +223,11 @@ $conn->close();
         .nav-links a:hover {
             background-color: rgba(255,255,255,0.1);
         }
+
+        .nav-links a.active {
+            background-color: var(--accent);
+            color: white;
+        }
         
         .user-menu {
             display: flex;
@@ -241,6 +246,13 @@ $conn->close();
             color: white;
             font-weight: bold;
             cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .notification-badge {
@@ -666,7 +678,7 @@ $conn->close();
             <span>PeerLearn</span>
         </div>
         <div class="nav-links">
-            <a href="tutor_main_page.php">Schedule Management</a>
+            <a href="tutor_main_page.php" class="active">Schedule Management</a>
             <a href="tutor_profile.php">Profile</a>
             <a href="tutor_requests.php">Appointment Requests<?php if($pending_requests > 0): ?><span class="notification-badge"><?php echo $pending_requests; ?></span><?php endif; ?></a>
             <a href="tutor_students.php">My Students</a>
