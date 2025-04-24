@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge">
+    <meta name="viewport" content="width-device-width, initial-scale=1.0 ">
+    <title>Peer Tutoring Website</title>
+
+    <!--Material Cdn-->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
+
+    <!--Style Sheet-->
+    <link rel="stylesheet" href="coursestyle.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="image/logo.png">
+                    <h2>PEER<span class="danger">LEARN</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp">close</span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="#"></a>
+                        <a href="#"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
+                            <a href="#"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
+                                <a href="course.html"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                                    <a href="#"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
+                                    <a href="#"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
+                                    <a href="#"><span class="material-symbols-sharp">payments</span><h3>Payment</h3></a>
+                                    <a href="#"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
+                                    <a href="#"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
+                                    <a href="home page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+            </div>
+        </aside>
+
+    <div class="available_courses">
+        <h2>Available Courses</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>COURSES</th>
+                    <th>SUBJECT</th>
+                    <th>COURSES CODE</th>
+                    <th>REQUIREMENT</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Business </td>
+                    <td>Accounting</td>
+                    <td>TAC 2413</td>
+                    <td class="danger">Master Degree in Business  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Business </td>
+                    <td>Finane and Banking</td>
+                    <td>TFB 2113</td>
+                    <td class="danger">Master Degree in Business  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Business</td>
+                    <td>Digital Business </td>
+                    <td>TDB 4163</td>
+                    <td class="danger">Master Degree in Business  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Information Technology</td>
+                    <td>Computer Security </td>
+                    <td>TCS 1427</td>
+                    <td class="danger">Master Degree in Information Technology  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Information Technology</td>
+                    <td>Business Impact Analysis</td>
+                    <td>TBA 2527</td>
+                    <td class="danger">Master Degree in Information Technology  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Information Technology</td>
+                    <td>Artificial intelligence </td>
+                    <td>TAI 5261</td>
+                    <td class="danger">Master Degree in Artificial intelligence  </td>
+                    <td class="primary">Details</td>
+                </tr>
+                <tr>
+                    <td>Engineering</td>
+                    <td>Mechanical Engineering </td>
+                    <td>TME 5361</td>
+                    <td class="danger">Master Degree in Engineering </td>
+                    <td class="primary">Details</td>
+                </tr>
+            </tbody>
+        </table>
+        <a href="#">Show All</a>
+    </div>
+</main>
+<div class="recent-updates">
+    <h2>Recent Updates</h2>
+    <div class="updates">
+        <div class="update">
+            <span class="material-symbols-sharp">school</span>
+                <h3>Add Course</h3>
+            </div>
+            <div class="message">
+                <p>Admin can add course here!</p>
+                <form action="course_record.php" method="GET!">
+                    <div>
+                    <label for="cname">Course Name:</label>
+                    <input type="text" id="cname" name="cname" placeholder="Enter Course Name">
+                    </div>
+
+                    <br>
+
+                    <div>
+                        <label for="sub">Subject:</label>
+                        <input type="text" id="sub" name="sub" placeholder="Enter Subject">
+                        </div>
+    
+                    <br>
+    
+                    <div>
+                    <label for="ctype">Course Type:</label>
+                    <input type="text" id="ctype" name="ctype" placeholder="Enter Course Type">
+                    </div>
+
+                    <br>
+
+                    <div>
+                    <label for="ccode">Course Code:</label>
+                    <input type="text" id="ccode" name="ccode" placeholder="Enter Course Code">
+                    </div>
+                    <br>
+                    <div>
+                        <input type="reset">
+                    </div>
+
+                    <br>
+                    <div>
+                        <input type="submit">
+                    </div>
+                    </div>
+
+                </form>
+                <div class="item add-course">
+                    <div>
+                        <span class="material-symbols-sharp">add</span>
+                        <h3>ADD COURSE</h3>
+            </div>
+        </div>
+            </div>
+
+    
+
+    </div>
+</body>
