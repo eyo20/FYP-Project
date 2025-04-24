@@ -202,18 +202,18 @@ aside .sidebar .message-count {
 /* ============================== courses ================================= */
 
 
-.available_courses {
+.current_students {
     margin-top: 2rem;
     background: #fff;
 }
 
-.available_courses h2 {
+.current_students h2 {
     margin-bottom: 0.8rem;
     word-spacing: 0.5rem;
     padding: 1rem;
 }
 
-.available_courses table {
+.current_students table {
     background:#fff;
     width: 100%;
     border-radius:2rem;
@@ -223,7 +223,7 @@ aside .sidebar .message-count {
     transition: all 300ms ease;
 }
 
-.available_courses table:hover  {
+.current_students table:hover  {
     box-shadow: none;
 }
 
@@ -242,7 +242,7 @@ table tbody tr:last-child td {
     border: none;
 }
 
-.available_courses a{
+.current_students a{
     text-align: center;
     display: block;
     margin: 1rem auto;

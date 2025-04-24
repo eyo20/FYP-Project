@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
 
     <!--Style Sheet-->
-    <link rel="stylesheet" href="coursestyle.css">
+    <link rel="stylesheet" href="studentstyle.css">
 </head>
 
 <body>
@@ -42,66 +42,74 @@
             </div>
         </aside>
 
-    <div class="available_courses">
-        <h2>Available Courses</h2>
+    <div class="current_students">
+        <h2>STUDENTS</h2>
         <table>
             <thead>
                 <tr>
+                    <th>STUDENTS</th>
                     <th>COURSES</th>
                     <th>SUBJECT</th>
-                    <th>COURSES CODE</th>
-                    <th>REQUIREMENT</th>
+                    <th>COURSE CODE</th>
+                    <th>STATUS</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
+                    <td>Tan Xin Yi</td>
                     <td>Business </td>
                     <td>Accounting</td>
                     <td>TAC 2413</td>
-                    <td class="danger">Master Degree in Business  </td>
+                    <td class="danger">OFFLINE</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>Jake Cornell</td>
                     <td>Business </td>
                     <td>Finane and Banking</td>
                     <td>TFB 2113</td>
-                    <td class="danger">Master Degree in Business  </td>
+                    <td class="success">ONLINE</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>Alan Eass</td>
                     <td>Business</td>
                     <td>Digital Business </td>
                     <td>TDB 4163</td>
-                    <td class="danger">Master Degree in Business  </td>
+                    <td class="success">ONLINE</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>Carson Massy</td>
                     <td>Information Technology</td>
                     <td>Computer Security </td>
                     <td>TCS 1427</td>
-                    <td class="danger">Master Degree in Information Technology  </td>
+                    <td class="warning">IN CLASS</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>David Chong</td>
                     <td>Information Technology</td>
                     <td>Business Impact Analysis</td>
                     <td>TBA 2527</td>
-                    <td class="danger">Master Degree in Information Technology  </td>
+                    <td class="warning">IN CLASS</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>Venus Thash</td>
                     <td>Information Technology</td>
                     <td>Artificial intelligence </td>
                     <td>TAI 5261</td>
-                    <td class="danger">Master Degree in Artificial intelligence  </td>
+                    <td class="warning">OFFLINE</td>
                     <td class="primary">Details</td>
                 </tr>
                 <tr>
+                    <td>Jimmy Hogward</td>
                     <td>Engineering</td>
                     <td>Mechanical Engineering </td>
                     <td>TME 5361</td>
-                    <td class="danger">Master Degree in Engineering </td>
+                    <td class="success">ONLINE</td>
                     <td class="primary">Details</td>
                 </tr>
             </tbody>
@@ -138,15 +146,15 @@
     <h2>Recent Updates</h2>
     <div class="updates">
         <div class="update">
-            <span class="material-symbols-sharp">school</span>
-                <h3>Add Course</h3>
+            <span class="material-symbols-sharp">person</span>
+                <h3>Add Students</h3>
             </div>
             <div class="message">
-                <p>Admin can add course here!</p>
+                <p>Admin can add Students here!</p>
                 <form action="course_record.php" method="GET!">
                     <div>
-                    <label for="cname">Course Name:</label>
-                    <input type="text" id="cname" name="cname" placeholder="Enter Course Name">
+                    <label for="tname">Students Name:</label>
+                    <input type="text" id="sname" name="sname" placeholder="Enter Student Name">
                     </div>
 
                     <br>
