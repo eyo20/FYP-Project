@@ -25,18 +25,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate if data is empty
     if (empty($username) || empty($email) || empty($password) || empty($role) || empty($firstName) || empty($lastName)) {
         $errors['general'] = "All fields are required!";
-    } else {
+    } 
+    // Validate MMU email
+    elseif (!preg_match('/@.*\.mmu\.edu\.my$/', $email)) {
+        $errors['email'] = "Not an MMU email address";
+    }
+    // Verify password complexity
+    elseif (strlen($password) < 8) {
+        $errors['password'] = "Password must be at least 8 characters long";
+    }
+    elseif (!preg_match('/[A-Z]/', $password)) {
+        $errors['password'] = "Password must contain at least one uppercase letter";
+    }
+    elseif (!preg_match('/[0-9]/', $password)) {
+        $errors['password'] = "Password must contain at least one number";
+    }
+    elseif (!preg_match('/[^A-Za-z0-9]/', $password)) {
+        $errors['password'] = "Password must contain at least one special character";
+    }
+    // Verify Password Confirmation
+    elseif ($password !== $confirmPassword) {
+        $errors['confirm_password'] = "Passwords do not match";
+    }
+    else {
         // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
-        // Check if username already exists
-        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, "s", $username);
+        // Check if email already exists (changed from username to email)
+        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE email = ?");
+        mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
         
         if (mysqli_stmt_num_rows($stmt) > 0) {
-            $errors['username'] = "Username already exists!";
+            $errors['email'] = "Email already exists!";
         } else {
             // Insert new user
             mysqli_stmt_close($stmt);
@@ -59,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peer Tutoring Platform - Registration</title>
     <style>
+        /* Your existing CSS styles remain unchanged */
         :root {
             --primary-color: #2B3990;
             --secondary-color: #00AEEF;
@@ -357,21 +379,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <div class="input-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email address" value="<?= htmlspecialchars($email) ?>" required>
-                    <div class="error-message" id="email-error">Please enter a valid email address</div>
+                    <input type="email" id="email" name="email" placeholder="Enter your MMU email address" value="<?= htmlspecialchars($email) ?>" required>
+                    <div class="error-message" id="email-error">Please enter a valid MMU email address</div>
                     <?php if (!empty($errors['email'])): ?>
                         <div class="php-error"><?= htmlspecialchars($errors['email']) ?></div>
                     <?php endif; ?>
                 </div>
                 
                 <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Create a password (minimum 8 characters)" required>
-                    <div class="error-message" id="password-error">Password must be at least 8 characters long</div>
-                    <?php if (!empty($errors['password'])): ?>
-                        <div class="php-error"><?= htmlspecialchars($errors['password']) ?></div>
-                    <?php endif; ?>
+                     <label for="password">Password</label>
+                     <input type="password" id="password" name="password" placeholder="8+ chars with A-Z, 0-9 & symbol" required>
+                     <div class="error-message" id="password-error">Password must be at least 8 characters long</div>
+                     <?php if (!empty($errors['password'])): ?>
+                         <div class="php-error"><?= htmlspecialchars($errors['password']) ?></div>
+                     <?php endif; ?>
                 </div>
+
                 
                 <div class="input-group">
                     <label for="confirm-password">Confirm Password</label>
@@ -392,7 +415,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </svg>
                             <span>Student</span>
                         </div>
-<div class="role-option <?= $role === 'tutor' ? 'selected' : '' ?>" onclick="selectRole('tutor')" id="role-tutor">
+                        <div class="role-option <?= $role === 'tutor' ? 'selected' : '' ?>" onclick="selectRole('tutor')" id="role-tutor">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 3L22 8L12 13L2 8L12 3Z" stroke="#2B3990" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M22 8V16" stroke="#2B3990" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -489,12 +512,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const email = document.getElementById('email');
             const errorElement = document.getElementById('email-error');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const mmuEmailRegex = /@.*\.mmu\.edu\.my$/;
             
             if (!email.value.trim()) {
                 showError(email, errorElement, 'Email is required');
                 return false;
             } else if (!emailRegex.test(email.value)) {
                 showError(email, errorElement, 'Please enter a valid email address');
+                return false;
+            } else if (!mmuEmailRegex.test(email.value)) {
+                showError(email, errorElement, 'Not an MMU email address');
                 return false;
             } else {
                 hideError(email, errorElement);
@@ -505,23 +532,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function validatePassword() {
             const password = document.getElementById('password');
             const errorElement = document.getElementById('password-error');
-            
+    
             if (!password.value) {
                 showError(password, errorElement, 'Password is required');
                 return false;
             } else if (password.value.length < 8) {
                 showError(password, errorElement, 'Password must be at least 8 characters long');
                 return false;
+            } else if (!/[A-Z]/.test(password.value)) {
+                showError(password, errorElement, 'Password must contain at least one uppercase letter');
+                return false;
+            } else if (!/[0-9]/.test(password.value)) {
+                showError(password, errorElement, 'Password must contain at least one number');
+                return false;
+            } else if (!/[^A-Za-z0-9]/.test(password.value)) {
+                showError(password, errorElement, 'Password must contain at least one special character');
+                return false;
             } else {
-                hideError(password, errorElement);
-                return true;
-            }
-            
-            // Also validate confirm password if it has a value
-            if (document.getElementById('confirm-password').value) {
-                validateConfirmPassword();
-            }
+               hideError(password, errorElement);
+               return true;
+        }   
+
+        // If the confirm password field has a value, validate it as well
+        if (document.getElementById('confirm-password').value) {
+            validateConfirmPassword();
         }
+    }
         
         function validateConfirmPassword() {
             const password = document.getElementById('password');

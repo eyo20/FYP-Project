@@ -10,6 +10,9 @@ $email_error    = '';
 $password_error = '';
 $login_error    = '';
 
+//Check if password reset is successful
+$password_reset_success = isset($_GET['password_reset']) && $_GET['password_reset'] === 'true';
+
 if (isset($_POST['loginbtn'])) {
     $email    = trim($_POST['user_email']);
     $password = $_POST['user_password'];
@@ -68,9 +71,7 @@ if (isset($_POST['loginbtn'])) {
                     } else {
                         $login_error = 'Invalid email or password';
                     }
-                } else {
-                    $login_error = 'Invalid email or password';
-                }
+                } 
             } else {
                 $login_error = 'Oops! Something went wrong. Please try again later.';
             }
@@ -223,6 +224,27 @@ mysqli_close($conn);
             margin-bottom: 20px;
             text-align: center;
         }
+
+        .registration-success {
+           background-color: #d4edda;
+         border: 1px solid #c3e6cb;
+         color: #155724;
+         padding: 10px;
+         border-radius: 5px;
+         margin-bottom: 20px;
+         text-align: center;
+        }
+        
+        .reset-password-success-message {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -235,9 +257,25 @@ mysqli_close($conn);
         </div>
         
         <div id="login-form">
+           <?php 
+             // 检查是否有注册成功的消息
+             $registrationSuccess = isset($_GET['registered']) && $_GET['registered'] === 'true';
+             if($registrationSuccess): 
+           ?>
+            <div class="registration-success">
+            Registration successful! You can now log in with your email and password.
+            </div>
+            <?php endif; ?>
+
+            <?php if($password_reset_success): ?>
+                <div class="reset-password-success-message">
+                   Your password has been reset successfully. You can now log in with your new password.
+                </div>
+            <?php endif; ?>
+    
             <?php if(!empty($login_error)): ?>
                 <div class="login-error">
-                    <?php echo $login_error; ?>
+                   <?php echo $login_error; ?>
                 </div>
             <?php endif; ?>
             
