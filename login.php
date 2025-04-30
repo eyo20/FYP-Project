@@ -53,6 +53,13 @@ if (isset($_POST['loginbtn'])) {
                         $_SESSION['user_id'] = $id;
                         $_SESSION['email']    = $db_email;
                         $_SESSION['role']     = $role;
+                    
+                        // Update last login time
+                        $update_login_time = "UPDATE user SET last_login = NOW() WHERE user_id = ?";
+                        $login_stmt = $conn->prepare($update_login_time);
+                        $login_stmt->bind_param("i", $user["user_id"]);
+                        $login_stmt->execute();
+                        $login_stmt->close();
 
                         // Redirect based on role
                         if ($role === 'student') {
