@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-
 // Fetch user info
 $user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
