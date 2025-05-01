@@ -2,6 +2,16 @@
 session_start();
 require_once "db_connection.php";
 
+// Enable error display
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Checking Database Connections
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -68,7 +78,7 @@ $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
 // Handling form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST')
     if (isset($_POST['update_profile'])) {
         // Update basic information
         $first_name = $_POST['first_name'] ?? '';
@@ -78,59 +88,179 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = $_POST['year'] ?? '';
         $school = $_POST['school'] ?? '';
         
+        // Verify Malaysia Phone Number
+        $phone_valid = false;
+        if (!empty($phone)) {
+            // Remove all non-numeric characters
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+            
+            // Check phone number format
+            if (substr($phone, 0, 3) === '011') {
+                // 011The number at the beginning must be 11 digits
+                $phone_valid = (strlen($phone) === 11);
+            } else if (substr($phone, 0, 2) === '01') {
+                // Other numbers starting with 01x must be 10 digits.
+                $phone_valid = (strlen($phone) === 10);
+            }
+            
+            if (!$phone_valid) {
+                $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
+                error_log($error_message);
+            }
+        } else {
+            // If the phone number is empty, it is considered valid (optional field)
+            $phone_valid = true;
+        }
+        
+        // Continue only if the phone number is valid
+        if ($phone_valid) {
+            // Update user basic information
+            $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
+            $stmt = $conn->prepare($update_user);
+            if (!$stmt) {
+                $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
+                $user_updated = $stmt->execute();
+                if (!$user_updated) {
+                    $error_message = "Database Error: Failed to update user information - " . $stmt->error;
+                    error_log($error_message);
+                }
+                $stmt->close();
+            }
+
         // Update user basic information
         $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
         $stmt = $conn->prepare($update_user);
-        $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-        $user_updated = $stmt->execute();
-        $stmt->close();
-        
-        // Check if the student data exists
-        $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
-        $stmt = $conn->prepare($check_profile);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $profile_result = $stmt->get_result();
-        $profile_exists = ($profile_result->num_rows > 0);
-        $stmt->close();
-        
-        $profile_updated = false;
-        
-        if ($profile_exists) {
-            // Update student information
-            $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_profile);
-            $stmt->bind_param("sssi", $major, $year, $school, $user_id);
-            $profile_updated = $stmt->execute();
-            $stmt->close();
+        if (!$stmt) {
+            $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
+            error_log($error_message);
         } else {
-            // Create a student profile
-            $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
-            $stmt = $conn->prepare($create_profile);
-            
-            if (!$stmt) {
-                echo "<!-- Failed to prepare to create profile query: " . $conn->error . " -->";
-            } else {
-                $stmt->bind_param("isss", $user_id, $major, $year, $school);
-                $profile_updated = $stmt->execute();
-                
-                if (!$profile_updated) {
-                    echo "<!-- Failed to execute create profile query: " . $stmt->error . " -->";
-                }
-                
-                $stmt->close();
+            $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
+            $user_updated = $stmt->execute();
+            if (!$user_updated) {
+                $error_message = "Database Error: Failed to update user information - " . $stmt->error;
+                error_log($error_message);
             }
+            $stmt->close();
         }
         
-        if ($user_updated && $profile_updated) {
-            $success_message = "Profile updated successfully！";
+        // Check if the user ID exists in the user table
+        $check_user = "SELECT user_id FROM user WHERE user_id = ?";
+        $user_stmt = $conn->prepare($check_user);
+        if (!$user_stmt) {
+            $error_message = "Database Error: Failed to prepare user check statement - " . $conn->error;
+            error_log($error_message);
         } else {
-            $error_message = "An error occurred while updating your profile. Please try again.！";
-            if (!$user_updated) {
-                $error_message .= " (User information update failed)";
+            $user_stmt->bind_param("i", $user_id);
+            $user_stmt->execute();
+            $user_result = $user_stmt->get_result();
+            
+            if ($user_result->num_rows == 0) {
+                $error_message = "Error: User ID does not exist in user table";
+                error_log($error_message);
             }
-            if (!$profile_updated) {
-                $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
+            $user_stmt->close();
+        }
+        
+        // Continue only if there are no errors
+        if (!isset($error_message)) {
+            // Check if the student data exists
+            $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
+            $stmt = $conn->prepare($check_profile);
+            if (!$stmt) {
+                $error_message = "Database Error: Failed to prepare profile check statement - " . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $profile_result = $stmt->get_result();
+                $profile_exists = ($profile_result->num_rows > 0);
+                $stmt->close();
+                
+                $profile_updated = false;
+                
+                if ($profile_exists) {
+                    // Update student information
+                    $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
+                    $stmt = $conn->prepare($update_profile);
+                    if (!$stmt) {
+                        $error_message = "Database Error: Failed to prepare profile update statement - " . $conn->error;
+                        error_log($error_message);
+                    } else {
+                        $stmt->bind_param("sssi", $major, $year, $school, $user_id);
+                        $profile_updated = $stmt->execute();
+                        if (!$profile_updated) {
+                            $error_message = "Database Error: Failed to update student profile - " . $stmt->error;
+                            error_log($error_message);
+                        }
+                        $stmt->close();
+                    }
+                } else {
+                    // Checklist Structure
+                    $table_check = "DESCRIBE studentprofile";
+                    $table_result = $conn->query($table_check);
+                    if (!$table_result) {
+                        $error_message = "Database Error: Failed to check table structure - " . $conn->error;
+                        error_log($error_message);
+                    } else {
+                        $table_info = "Table structure: ";
+                        while ($row = $table_result->fetch_assoc()) {
+                            $table_info .= $row['Field'] . " (" . $row['Type'] . "), ";
+                        }
+                        error_log($table_info);
+                    }
+                    
+                    // Create a student profile
+                    $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
+                    $stmt = $conn->prepare($create_profile);
+                    
+                    if (!$stmt) {
+                        $error_message = "Database Error: Failed to prepare profile create statement - " . $conn->error;
+                        error_log($error_message);
+                    } else {
+                        // The value to be inserted into the record
+                        $debug_info = "Attempting to insert: user_id=$user_id, major='$major', year='$year', school='$school'";
+                        error_log($debug_info);
+                        
+                        $stmt->bind_param("isss", $user_id, $major, $year, $school);
+                        $profile_updated = $stmt->execute();
+                        
+                        if (!$profile_updated) {
+                            $error_message = "Database Error: Failed to create student profile - " . $stmt->error;
+                            error_log($error_message);
+                            
+                            // Try using a simple SQL statement
+                            $simple_sql = "INSERT INTO studentprofile (user_id, major, year, school) VALUES ($user_id, '$major', '$year', '$school')";
+                            error_log("Trying simple SQL: " . $simple_sql);
+                            
+                            if ($conn->query($simple_sql)) {
+                                $profile_updated = true;
+                                error_log("Simple SQL succeeded");
+                            } else {
+                                $error_message = "Database Error (simple SQL): " . $conn->error;
+                                error_log($error_message);
+                            }
+                        }
+                        
+                        $stmt->close();
+                    }
+                }
+                
+                if (isset($user_updated) && $user_updated && isset($profile_updated) && $profile_updated) {
+                    $success_message = "Profile updated successfully！";
+                } else {
+                    if (!isset($error_message)) {
+                        $error_message = "An error occurred while updating your profile. Please try again.！";
+                        if (isset($user_updated) && !$user_updated) {
+                            $error_message .= " (User information update failed)";
+                        }
+                        if (isset($profile_updated) && !$profile_updated) {
+                            $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
+                        }
+                    }
+                }
             }
         }
     }
@@ -152,18 +282,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
         
         if (!password_verify($current_password, $user['password'])) {
-               $password_error = "The current password is incorrect";
-            } elseif (strlen($new_password) < 8) {
-               $password_error = "The new password must be at least 8 characters";
-            } elseif (!preg_match('/[A-Z]/', $new_password)) {
-               $password_error = "The new password must contain at least one uppercase letter";
-            } elseif (!preg_match('/[0-9]/', $new_password)) {
-               $password_error = "The new password must contain at least one number";
-            } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-               $password_error = "The new password must contain at least one special character";
-            } elseif ($new_password !== $confirm_password) {
-               $password_error = "The new passwords entered twice do not match";
-            } else {
+            $password_error = "The current password is incorrect";
+        } elseif (strlen($new_password) < 8) {
+            $password_error = "The new password must be at least 8 characters";
+        } elseif (!preg_match('/[A-Z]/', $new_password)) {
+            $password_error = "The new password must contain at least one uppercase letter";
+        } elseif (!preg_match('/[0-9]/', $new_password)) {
+            $password_error = "The new password must contain at least one number";
+        } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
+            $password_error = "The new password must contain at least one special character";
+        } elseif ($new_password !== $confirm_password) {
+            $password_error = "The new passwords entered twice do not match";
+        } else {
             // Update password
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $update_password = "UPDATE user SET password = ? WHERE user_id = ?";
@@ -223,6 +353,7 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -711,12 +842,11 @@ $conn->close();
                         </div>
                         <div class="form-group">
                             <label for="year">Level</label>
-                            <select class="form-control" id="year" name="year">
+                            <select class="form-control" id="year" name="year" class="form-control">
                             <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select Level --</option>
                             <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
                             <option value="Diploma" <?php echo $year == 'Diploma' ? 'selected' : ''; ?>>Diploma</option>
                             <option value="Degree" <?php echo $year == 'Degree' ? 'selected' : ''; ?>>Degree</option>
-                            
                             <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
                             <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
                             </select>
@@ -764,7 +894,7 @@ $conn->close();
     </main>
 
     <footer>
-        <p>&copy; 2023 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
+        <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
     </footer>
 
     <script>
@@ -784,7 +914,7 @@ $conn->close();
                     
                     if (previewElement) {
                         // If it is already an image, update src
-p                          reviewElement.src = e.target.result;
+                          previewElement.src = e.target.result;
                     } else if (placeholderElement) {
                        // If it is a placeholder, replace it with an image element
                         const img = document.createElement('img');

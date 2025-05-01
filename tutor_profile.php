@@ -847,11 +847,11 @@ $conn->close();
                              </select>
                         </div>
                         <div class="form-group">
-                            <label for="bio">Bio</label>
+                            <label for="bio">About me</label>
                             <textarea class="form-control" id="bio" name="bio" placeholder="Introduce yourself, including your teaching style, experience, etc."><?php echo htmlspecialchars($bio); ?></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="qualifications">Qualifications</label>
+                            <label for="qualifications">Qualifications/Certificate</label>
                             <textarea class="form-control" id="qualifications" name="qualifications" placeholder="List your academic achievements, certifications, or relevant experience"><?php echo htmlspecialchars($qualifications); ?></textarea>
                         </div>
                         <button type="submit" class="btn">Save Profile</button>
@@ -864,7 +864,7 @@ $conn->close();
                     <form action="" method="post" class="add-subject-form">
                         <input type="hidden" name="add_subject" value="1">
                         <select name="subject_id" class="form-control" required>
-                            <option value="">-- Select Subject --</option>
+                            <option value="">-- Select Discipline --</option>
                             <?php foreach($all_subjects as $subject): ?>
                             <option value="<?php echo $subject['subject_id']; ?>"><?php echo htmlspecialchars($subject['subject_name']); ?></option>
                             <?php endforeach; ?>
