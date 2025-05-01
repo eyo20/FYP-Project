@@ -452,8 +452,7 @@
         .footer-links a:hover {
             color: var(--accent-color);
         }
-
-
+        
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
@@ -481,8 +480,6 @@
         .social-links a:hover {
             background-color: var(--accent-color);
         }
-        
-        
         
         /* Responsive Design */
         @media (max-width: 992px) {
@@ -574,6 +571,7 @@
             }
             
             .cta-stat {
+                margin:
                 margin: 15px 0;
             }
         }
@@ -613,212 +611,4 @@
             </div>
         </div>
     </nav>
-    
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Enhance Learning Through Peer Power</h1>
-                <p class="hero-subtitle">Connect with knowledgeable student tutors, get personalized learning experiences, and search for available tutors based on your academic needs.</p>
-                <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">Start Learning</a>
-                </div>
-            </div>
-            
-            <div class="hero-image">
-                <img src="image/hero area.png" alt="Student Learning Group">
-            </div>
-        </div>
-        
-        <!-- Decorative Geometric Shapes -->
-        <div class="shape shape-circle"></div>
-        <div class="shape shape-triangle"></div>
-    </section>
-    
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Our Core Values</h2>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="feature-title">Peer Learning</h3>
-                    <p class="feature-desc">Learn from peers, gain better understanding, build learning partnerships, and spark motivation.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Improved Grades</h3>
-                    <p class="feature-desc">80% of students report improved academic performance through peer guidance to overcome learning challenges.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h3 class="feature-title">Personalized Experience</h3>
-                    <p class="feature-desc">Match with the most suitable tutors based on your needs, customize learning plans, and accommodate your learning style.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3 class="feature-title">Learning Community</h3>
-                    <p class="feature-desc">Join discussions, participate in group learning activities, share resources, and expand your learning network.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Process Section -->
-    <section class="process">
-        <div class="container">
-            <h2 class="section-title">A Few Simple Steps to Effective Learning</h2>
-            
-            <div class="process-steps">
-                <div class="process-line"></div>
-                
-                <div class="process-step">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Create Account</h3>
-                    <p class="step-desc">Create your profile and set your learning preferences.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Browse & Filter Tutors</h3>
-                    <p class="step-desc">Choose suitable tutors based on subject, ratings, and expertise.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Schedule Learning Time</h3>
-                    <p class="step-desc">Select a convenient time and describe your learning needs.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">4</div>
-                    <h3 class="step-title">Join Learning Session</h3>
-                    <p class="step-desc">Discuss online and enjoy personalized coaching.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">5</div>
-                    <h3 class="step-title">Provide Feedback</h3>
-                    <p class="step-desc">Rate your experience to help other students choose.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Community Section -->
-    <section class="community">
-        <div class="container">
-            <div class="community-content">
-                <div class="community-text">
-                    <h2 class="community-title">Join Our Learning Community</h2>
-                    <div class="community-list">
-                        <div class="community-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <p>Attend monthly learning events and lectures</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-book"></i>
-                            <p>Access professional learning resources and materials</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-comments"></i>
-                            <p>Participate in topic discussions and get answers</p>
-                        </div>
-                    </div>
-                    <a href="#" class="btn btn-primary">Join Community</a>
-                </div>
-                
-                <div class="community-image">
-                    <!-- Placeholder for community photo -->
-                    <div class="img-placeholder" style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
-                        <span>Community Image Placeholder</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="container">
-            <h2 class="cta-title">Ready to Enhance Your Learning Experience?</h2>
-            <p class="cta-text">Join PeerLearn, connect with expert tutors, improve learning efficiency, and build study habits that benefit you for life.</p>
-            <a href="#" class="btn btn-primary">Get Started Now</a>
-            
-            <div class="cta-stats">
-                <div class="cta-stat">
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Active Students</div>
-                </div>
-                <div class="cta-stat">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">Successful Learning Sessions</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <div class="footer-logo">
-                        <img src="peerlearn-logo.png" alt="PeerLearn Logo">
-                    </div>
-                    <p>A platform connecting students with tutors to create effective learning experiences.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                
-                <div class="footer-links">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">Find a Tutor</a></li>
-                        <li><a href="#">Become a Tutor</a></li>
-                        <li><a href="#">Learning Community</a></li>
-                        <li><a href="#">About Us</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-links">
-                    <h4>Legal Information</h4>
-                    <ul>
-                        <li><a href="#">Terms of Use</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-contact">
-                    <h4>Contact Us</h4>
-                    <p><i class="fas fa-envelope"></i> info@peerlearn.com</p>
-                    <p><i class="fas fa-phone"></i> +123 456 7890</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Address Information</p>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 PeerLearn. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
 </body>
-</html>
