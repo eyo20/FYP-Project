@@ -9,11 +9,11 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// 获取用户信息
+// Get user information
 $user_query = "SELECT username, email, role, first_name, last_name, phone, profile_image, last_login FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 if (!$stmt) {
-    die("准备查询失败: " . $conn->error);
+    die("Prepare query failed: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -21,7 +21,7 @@ $user_result = $stmt->get_result();
 $user_data = $user_result->fetch_assoc();
 
 if (!$user_data || $user_data['role'] != 'student') {
-    // 如果用户不是学生，重定向到登录页面
+    // If the user is not a student, redirect to the login page
     header("Location: login.php");
     exit();
 }
@@ -35,11 +35,11 @@ $profile_image = $user_data['profile_image'];
 $last_login = $user_data['last_login'] ?? 'Never';
 $stmt->close();
 
-// 获取学生资料
+// Get student information
 $student_query = "SELECT major, year, school FROM studentprofile WHERE user_id = ?";
 $stmt = $conn->prepare($student_query);
 if (!$stmt) {
-    die("准备查询失败: " . $conn->error);
+    die("Prepare query failed: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -50,14 +50,14 @@ if ($student_result->num_rows > 0) {
     $year = $student_data['year'] ?: '';
     $school = $student_data['school'] ?: '';
 } else {
-    // 如果没有学生资料，设置默认值
+    // If there is no student information, set a default value
     $major = '';
     $year = '';
     $school = '';
 }
 $stmt->close();
 
-// 获取未读消息数量
+// Get the number of unread messages
 $unread_messages_query = "SELECT COUNT(*) as unread_count FROM message WHERE receiver_id = ? AND is_read = 0";
 $stmt = $conn->prepare($unread_messages_query);
 $stmt->bind_param("i", $user_id);
@@ -67,10 +67,10 @@ $messages_data = $messages_result->fetch_assoc();
 $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
-// 处理表单提交
+// Handling form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
-        // 更新基本信息
+        // Update basic information
         $first_name = $_POST['first_name'] ?? '';
         $last_name = $_POST['last_name'] ?? '';
         $phone = $_POST['phone'] ?? '';
@@ -78,14 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = $_POST['year'] ?? '';
         $school = $_POST['school'] ?? '';
         
-        // 更新用户基本信息
+        // Update user basic information
         $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
         $stmt = $conn->prepare($update_user);
         $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
         $user_updated = $stmt->execute();
         $stmt->close();
         
-        // 检查学生资料是否存在
+        // Check if the student data exists
         $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
         $stmt = $conn->prepare($check_profile);
         $stmt->bind_param("i", $user_id);
@@ -97,25 +97,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $profile_updated = false;
         
         if ($profile_exists) {
-            // 更新学生资料
+            // Update student information
             $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_profile);
             $stmt->bind_param("sssi", $major, $year, $school, $user_id);
             $profile_updated = $stmt->execute();
             $stmt->close();
         } else {
-            // 创建学生资料
+            // Create a student profile
             $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($create_profile);
             
             if (!$stmt) {
-                echo "<!-- 准备创建资料查询失败: " . $conn->error . " -->";
+                echo "<!-- Failed to prepare to create profile query: " . $conn->error . " -->";
             } else {
                 $stmt->bind_param("isss", $user_id, $major, $year, $school);
                 $profile_updated = $stmt->execute();
                 
                 if (!$profile_updated) {
-                    echo "<!-- 执行创建资料查询失败: " . $stmt->error . " -->";
+                    echo "<!-- Failed to execute create profile query: " . $stmt->error . " -->";
                 }
                 
                 $stmt->close();
@@ -123,26 +123,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if ($user_updated && $profile_updated) {
-            $success_message = "个人资料已成功更新！";
+            $success_message = "Profile updated successfully！";
         } else {
-            $error_message = "更新个人资料时出错，请重试！";
+            $error_message = "An error occurred while updating your profile. Please try again.！";
             if (!$user_updated) {
-                $error_message .= " (用户信息更新失败)";
+                $error_message .= " (User information update failed)";
             }
             if (!$profile_updated) {
-                $error_message .= " (学生资料" . ($profile_exists ? "更新" : "创建") . "失败)";
+                $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
             }
         }
     }
     
-    // 处理密码修改
+    // Handling password changes
     if (isset($_POST['change_password'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
         $password_error = '';
         
-        // 验证当前密码
+        // Verify current password
         $password_query = "SELECT password FROM user WHERE user_id = ?";
         $stmt = $conn->prepare($password_query);
         $stmt->bind_param("i", $user_id);
@@ -152,28 +152,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
         
         if (!password_verify($current_password, $user['password'])) {
-            $password_error = "当前密码不正确";
-        } elseif (strlen($new_password) < 8) {
-            $password_error = "新密码必须至少8个字符";
-        } elseif (!preg_match('/[A-Z]/', $new_password)) {
-            $password_error = "新密码必须包含至少一个大写字母";
-        } elseif (!preg_match('/[0-9]/', $new_password)) {
-            $password_error = "新密码必须包含至少一个数字";
-        } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-            $password_error = "新密码必须包含至少一个特殊字符";
-        } elseif ($new_password !== $confirm_password) {
-            $password_error = "两次输入的新密码不匹配";
-        } else {
-            // 更新密码
+               $password_error = "The current password is incorrect";
+            } elseif (strlen($new_password) < 8) {
+               $password_error = "The new password must be at least 8 characters";
+            } elseif (!preg_match('/[A-Z]/', $new_password)) {
+               $password_error = "The new password must contain at least one uppercase letter";
+            } elseif (!preg_match('/[0-9]/', $new_password)) {
+               $password_error = "The new password must contain at least one number";
+            } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
+               $password_error = "The new password must contain at least one special character";
+            } elseif ($new_password !== $confirm_password) {
+               $password_error = "The new passwords entered twice do not match";
+            } else {
+            // Update password
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $update_password = "UPDATE user SET password = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_password);
             $stmt->bind_param("si", $hashed_password, $user_id);
             
             if ($stmt->execute()) {
-                $success_message = "密码已成功更新！";
+                $success_message = "Password updated successfully！";
             } else {
-                $error_message = "更新密码失败，请重试。";
+                $error_message = "Failed to update password, please try again。";
             }
             $stmt->close();
         }
@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 处理头像上传
+// Processing avatar uploads
 if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
     $max_size = 5 * 1024 * 1024; // 5MB
@@ -192,7 +192,7 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
     if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
         $upload_dir = 'uploads/profile_images/';
         
-        // 创建上传目录（如果不存在）
+        // Create the upload directory if it does not exist）
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
@@ -201,7 +201,7 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
         $target_file = $upload_dir . $filename;
         
         if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
-            // 更新数据库中的头像路径
+            // Update the avatar path in the database
             $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_image);
             $stmt->bind_param("si", $target_file, $user_id);
@@ -209,26 +209,26 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
             
             if ($image_updated) {
                 $profile_image = $target_file;
-                $success_message = "头像已成功更新！";
+                $success_message = "Avatar updated successfully！";
             } else {
-                $error_message = "更新头像信息时出错，请重试！";
+                $error_message = "An error occurred while updating the avatar information. Please try again.！";
             }
         } else {
-            $error_message = "上传头像时出错，请重试！";
+            $error_message = "An error occurred while uploading your avatar. Please try again.！";
         }
     } else {
-        $error_message = "请上传有效的图片文件（JPG, PNG, GIF），大小不超过5MB！";
+        $error_message = "Please upload a valid image file (JPG, PNG, GIF), no larger than 5MB！";
     }
 }
 
 $conn->close();
 ?>
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>同伴辅导平台 - 学生个人资料</title>
+    <title>Peer Tutoring Platform - Student Profile</title>
     <style>
         :root {
             --primary: #2B3990;
@@ -773,7 +773,7 @@ $conn->close();
             document.querySelector('.nav-links').classList.toggle('show');
         });
         
-        // 头像上传预览和自动提交
+        // Avatar upload preview and automatic submission
         document.getElementById('profile_image_upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -783,10 +783,10 @@ $conn->close();
                     const placeholderElement = document.getElementById('profile-image-placeholder');
                     
                     if (previewElement) {
-                        // 如果已经是图片，更新src
-                        previewElement.src = e.target.result;
+                        // If it is already an image, update src
+p                          reviewElement.src = e.target.result;
                     } else if (placeholderElement) {
-                        // 如果是占位符，替换为图片元素
+                       // If it is a placeholder, replace it with an image element
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.alt = "Profile";
@@ -795,99 +795,99 @@ $conn->close();
                         placeholderElement.parentNode.replaceChild(img, placeholderElement);
                     }
                     
-                    // 自动提交表单
+                    // Automatically submit forms
                     document.getElementById('image-upload-form').submit();
                 }
                 reader.readAsDataURL(file);
             }
         });
         
-        // 个人资料表单验证
+        // Profile form validation
         document.getElementById('profile-form').addEventListener('submit', function(e) {
             const firstName = document.getElementById('first_name').value.trim();
             const lastName = document.getElementById('last_name').value.trim();
             const phone = document.getElementById('phone').value.trim();
             
             if (!firstName) {
-                alert('请输入您的名字');
+                alert('Please enter your name');
                 e.preventDefault();
                 return;
             }
             
             if (!lastName) {
-                alert('请输入您的姓氏');
+                alert('Please enter your last name');
                 e.preventDefault();
                 return;
             }
             
             if (phone && !/^\d{10,15}$/.test(phone)) {
-                alert('请输入有效的电话号码');
+                alert('Please enter a valid phone number');
                 e.preventDefault();
                 return;
             }
         });
         
-        // 密码表单验证
+        // Password form validation
         document.getElementById('password-form').addEventListener('submit', function(e) {
             const currentPassword = document.getElementById('current_password').value;
             const newPassword = document.getElementById('new_password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             
             if (!currentPassword) {
-                alert('请输入当前密码');
+                alert('Please enter your current password');
                 e.preventDefault();
                 return;
             }
             
             if (newPassword.length < 8) {
-                alert('新密码必须至少8个字符');
+                alert('New password must be at least 8 characters');
                 e.preventDefault();
                 return;
             }
             
             if (!/[A-Z]/.test(newPassword)) {
-                alert('新密码必须包含至少一个大写字母');
+                alert('New password must contain at least one uppercase letter');
                 e.preventDefault();
                 return;
             }
             
             if (!/[0-9]/.test(newPassword)) {
-                alert('新密码必须包含至少一个数字');
+                alert('New password must contain at least one number');
                 e.preventDefault();
                 return;
             }
             
             if (!/[^A-Za-z0-9]/.test(newPassword)) {
-                alert('新密码必须包含至少一个特殊字符');
+                alert('New password must contain at least one special character');
                 e.preventDefault();
                 return;
             }
             
             if (newPassword !== confirmPassword) {
-                alert('两次输入的新密码不匹配');
+                alert('The new passwords you entered twice do not match');
                 e.preventDefault();
                 return;
             }
         });
         
-        // 保存个人资料确认
+        // Save personal information confirmation
         document.getElementById('save-profile-btn').addEventListener('click', function(e) {
-            if (!confirm('确定要保存个人资料更改吗？')) {
+            if (!confirm('Are you sure you want to save your profile changes？')) {
                 e.preventDefault();
             }
         });
         
-        // 修改密码确认
+        // Change password confirmation
         document.getElementById('change-password-btn').addEventListener('click', function(e) {
-            if (!confirm('确定要更改密码吗？')) {
+            if (!confirm('Are you sure you want to change your password？')) {
                 e.preventDefault();
             }
         });
         
-        // 删除账户确认
+        // Deletion Account Confirmation
         document.getElementById('delete-account-btn').addEventListener('click', function() {
-            if (confirm('您确定要删除您的账户吗？此操作无法撤销，所有数据将被永久删除。')) {
-                if (prompt('请输入"DELETE"以确认') === 'DELETE') {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone and all data will be permanently deleted.')) {
+                if (prompt('Please enter "DELETE" to confirm') === 'DELETE') {
                     window.location.href = 'delete_account.php';
                 }
             }
