@@ -212,19 +212,19 @@ $recommended_tutors_query = "
 // If no major, use wildcard
 $major_search = !empty($major) ? "%$major%" : "%";
 
-$stmt = $conn->prepare($recommended_tutors_query);
-if ($stmt === false) {
-    error_log("Prepare failed for recommended tutors query: " . $conn->error);
-} else {
-    $stmt->bind_param("s", $major_search);
-    $stmt->execute();
-    $tutors_result = $stmt->get_result();
+// $stmt = $conn->prepare($recommended_tutors_query);
+// if ($stmt === false) {
+//     error_log("Prepare failed for recommended tutors query: " . $conn->error);
+// } else {
+//     $stmt->bind_param("s", $major_search);
+//     $stmt->execute();
+//     $tutors_result = $stmt->get_result();
     
-    while ($row = $tutors_result->fetch_assoc()) {
-        $recommended_tutors[] = $row;
-    }
-    $stmt->close();
-}
+//     while ($row = $tutors_result->fetch_assoc()) {
+//         $recommended_tutors[] = $row;
+//     }
+//     $stmt->close();
+// }
 
 // If no direct matches, fetch backup recommendations
 if (count($recommended_tutors) == 0) {
@@ -245,20 +245,20 @@ if (count($recommended_tutors) == 0) {
     
     $major_search = !empty($major) ? "%$major%" : "%";
     
-    $stmt = $conn->prepare($backup_tutors_query);
-    if ($stmt === false) {
-        error_log("Prepare failed for backup tutors query: " . $conn->error);
-    } else {
-        $stmt->bind_param("s", $major_search);
-        $stmt->execute();
-        $backup_result = $stmt->get_result();
+    // $stmt = $conn->prepare($backup_tutors_query);
+    // if ($stmt === false) {
+    //     error_log("Prepare failed for backup tutors query: " . $conn->error);
+    // } else {
+    //     $stmt->bind_param("s", $major_search);
+    //     $stmt->execute();
+    //     $backup_result = $stmt->get_result();
         
-        while ($row = $backup_result->fetch_assoc()) {
-            $row['availability'] = "Please contact for availability";
-            $recommended_tutors[] = $row;
-        }
-        $stmt->close();
-    }
+    //     while ($row = $backup_result->fetch_assoc()) {
+    //         $row['availability'] = "Please contact for availability";
+    //         $recommended_tutors[] = $row;
+    //     }
+    //     $stmt->close();
+    // }
 }
 
 $conn->close();
@@ -622,7 +622,7 @@ $conn->close();
             <span>PeerLearn</span>
         </div>
         <div class="nav-links">
-            <a href="student_profile.php">profile</a>
+            <a href="student_profile.php">Profile</a>
             <a href="find_tutors.php">Find Tutors</a>
             <a href="appointments.php">Manage Appointments</a>
             <a href="review.php">Submit Review</a>
