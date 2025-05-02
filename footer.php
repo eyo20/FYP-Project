@@ -119,7 +119,7 @@
         <div class="footer-content">
             <div class="footer-about">
                 <div class="footer-logo">
-                    <img src="peerlearn-logo.png" alt="PeerLearn Logo">
+                    <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </div>
                 <p>A platform connecting students with tutors to create effective learning experiences.</p>
                 <div class="social-links">

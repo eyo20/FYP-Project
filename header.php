@@ -161,7 +161,7 @@
         <div class="container">
             <div class="logo">
                 <a href="index.php">
-                    <img src="fyp_peerlearn_logo.png" alt="PeerLearn Logo">
+                    <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </a>
             </div>
             

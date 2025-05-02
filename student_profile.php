@@ -78,7 +78,7 @@ $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
 // Handling form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST')
+if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (isset($_POST['update_profile'])) {
         // Update basic information
         $first_name = $_POST['first_name'] ?? '';
@@ -130,21 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 $stmt->close();
             }
 
-        // Update user basic information
-        $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
-        $stmt = $conn->prepare($update_user);
-        if (!$stmt) {
-            $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
-            error_log($error_message);
-        } else {
-            $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-            $user_updated = $stmt->execute();
-            if (!$user_updated) {
-                $error_message = "Database Error: Failed to update user information - " . $stmt->error;
-                error_log($error_message);
-            }
-            $stmt->close();
-        }
         
         // Check if the user ID exists in the user table
         $check_user = "SELECT user_id FROM user WHERE user_id = ?";
@@ -264,6 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             }
         }
     }
+}
     
     // Handling password changes
     if (isset($_POST['change_password'])) {

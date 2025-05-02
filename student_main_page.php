@@ -627,7 +627,7 @@ $conn->close();
             <a href="appointments.php">Manage Appointments</a>
             <a href="review.php">Submit Review</a>
             <a href="message.php">Messages <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
-            <a href="home page.html">LOGOUT</a>
+            <a href="home_page.html">LOGOUT</a>
         </div>
         <div class="user-menu">
             <?php if($unread_messages > 0): ?>

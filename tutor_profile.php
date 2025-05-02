@@ -3,6 +3,11 @@
 session_start();
 require_once 'db_connection.php';
 
+if ($conn->connect_error) {
+    $error_message = "Database connection lost: " . $conn->connect_error;
+    error_log($error_message);
+}
+
 // 检查用户是否登录
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'tutor') {
     header('Location: login.php');
@@ -61,11 +66,12 @@ while ($subject = $all_subjects_result->fetch_assoc()) {
 }
 
 // 获取导师教授的学科和课程
-$tutor_subjects_query = "SELECT ts.*, s.subject_name, c.course_name, c.course_code
-                         FROM tutorsubject ts
-                         JOIN subject s ON ts.subject_id = s.subject_id
-                         LEFT JOIN course c ON ts.course_id = c.course_id
-                         WHERE ts.tutor_id = ?";
+$tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
+                        FROM tutorsubject ts
+                        JOIN subject s ON ts.subject_id = s.subject_id
+                        LEFT JOIN programme p ON ts.programme_id = p.programme_id
+                        LEFT JOIN course c ON ts.course_id = c.course_id
+                        WHERE ts.tutor_id = ?";
 $stmt = $conn->prepare($tutor_subjects_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -87,20 +93,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bio = trim($_POST['bio']);
         $qualifications = trim($_POST['qualifications']);
         
-        // 验证电话号码格式（马来西亚格式）
-        if (!empty($phone) && !preg_match('/^01[0-9]-\d{7,8}$/', $phone)) {
-            $error_message = "Please enter a valid Malaysian phone number format (01x-xxxxxxx)！";
-        } else {
-            // 更新用户资料
-            $update_user_query = "UPDATE user SET 
-                                first_name = ?, 
-                                last_name = ?, 
-                                phone = ? 
-                                WHERE user_id = ?";
-            
-            $stmt = $conn->prepare($update_user_query);
-            $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-            $user_updated = $stmt->execute();
+ // Validate Malaysian phone number
+$phone_valid = false;
+if (!empty($phone)) {
+    // Remove all non-numeric characters
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+    
+    // Check phone number format
+    if (substr($phone, 0, 3) === '011') {
+        // Numbers starting with 011 must be 11 digits
+        $phone_valid = (strlen($phone) === 11);
+    } else if (substr($phone, 0, 2) === '01') {
+        // Other numbers starting with 01x must be 10 digits
+        $phone_valid = (strlen($phone) === 10);
+    }
+    
+    if (!$phone_valid) {
+        $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
+        error_log($error_message);
+    }
+} else {
+    // If the phone number is empty, it is considered valid (optional field)
+    $phone_valid = true;
+}
+
+// Continue only if the phone number is valid
+if ($phone_valid) {
+    // Update user basic information
+    $update_user_query = "UPDATE user SET 
+                         first_name = ?, 
+                         last_name = ?, 
+                         phone = ? 
+                         WHERE user_id = ?";
+    
+    $stmt = $conn->prepare($update_user_query);
+    if (!$stmt) {
+        $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
+        error_log($error_message);
+    } else {
+        $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
+        $user_updated = $stmt->execute();
+        if (!$user_updated) {
+            $error_message = "Database Error: Failed to update user information - " . $stmt->error;
+            error_log($error_message);
+        }
+        $stmt->close();
+    }
             
             // 更新导师资料
             $update_tutor_query = "UPDATE tutorprofile SET 
@@ -122,33 +160,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // 处理添加学科和课程
+    // 处理添加学科、程序和课程
 if (isset($_POST['add_subject'])) {
     $subject_id = $_POST['subject_id'];
+    $programme_id = $_POST['programme_id'];
     $course_id = $_POST['course_id'];
     $hourly_rate = $_POST['hourly_rate'];
     
-    if (empty($subject_id) || empty($course_id) || empty($hourly_rate)) {
-        $error_message = "Please select a subject, course and enter an hourly rate!";
+    if (empty($subject_id) || empty($programme_id) || empty($course_id) || empty($hourly_rate)) {
+        $error_message = "Please select a subject, programme, course and enter an hourly rate!";
     } else {
-        // 检查是否已经添加过该学科和课程组合
-        $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND course_id = ?";
+        // 检查是否已经添加过该组合
+        $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND programme_id = ? AND course_id = ?";
         $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("iii", $user_id, $subject_id, $course_id);
+        $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
         $stmt->execute();
         $result = $stmt->get_result();
         
         if ($result->num_rows > 0) {
-            $error_message = "You have already added this subject and course combination!";
+            $error_message = "You have already added this subject, programme and course combination!";
         } else {
-            // 添加新学科和课程
-            $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, course_id, hourly_rate) VALUES (?, ?, ?, ?)";
+            // 添加新组合
+            $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, programme_id, course_id, hourly_rate) VALUES (?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insert_query);
-            $stmt->bind_param("iiid", $user_id, $subject_id, $course_id, $hourly_rate);
+            $stmt->bind_param("iiiid", $user_id, $subject_id, $programme_id, $course_id, $hourly_rate);
             $inserted = $stmt->execute();
             
             if ($inserted) {
-                $success_message = "Subject and course added successfully!";
+                $success_message = "Subject, programme and course added successfully!";
                 
                 // 重新获取导师学科和课程列表
                 $stmt = $conn->prepare($tutor_subjects_query);
@@ -160,7 +199,7 @@ if (isset($_POST['add_subject'])) {
                     $tutor_subjects[] = $subject;
                 }
             } else {
-                $error_message = "An error occurred while adding the subject and course. Please try again!";
+                $error_message = "An error occurred while adding the subject, programme and course. Please try again!";
             }
         }
     }
@@ -169,20 +208,42 @@ if (isset($_POST['add_subject'])) {
 // 处理删除学科和课程
 if (isset($_POST['remove_subject'])) {
     $subject_id = $_POST['subject_id'];
+    $programme_id = isset($_POST['programme_id']) ? $_POST['programme_id'] : null;
+    $course_id = isset($_POST['course_id']) ? $_POST['course_id'] : null;
+    
+    // 调试信息
+    error_log("Removing: subject_id=$subject_id, programme_id=$programme_id, course_id=$course_id");
     
     if (empty($subject_id)) {
         $error_message = "Invalid record ID!";
     } else {
         // 删除学科和课程
         $delete_query = "DELETE FROM tutorsubject WHERE tutor_id = ? AND subject_id = ?";
-        $stmt = $conn->prepare($delete_query);
-        $stmt->bind_param("ii", $user_id, $subject_id);
+        
+        // 如果提供了 programme_id 和 course_id，则包含在查询中
+        if (!empty($programme_id) && !empty($course_id)) {
+            $delete_query .= " AND programme_id = ? AND course_id = ?";
+            $stmt = $conn->prepare($delete_query);
+            $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
+        } else {
+            $stmt = $conn->prepare($delete_query);
+            $stmt->bind_param("ii", $user_id, $subject_id);
+        }
+        
+        // 执行删除
         $deleted = $stmt->execute();
         
         if ($deleted) {
-            $success_message = "Subject and course removed successfully!";
+            $success_message = "Course record removed successfully!";
             
             // 重新获取导师学科和课程列表
+            $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
+                        FROM tutorsubject ts
+                        JOIN subject s ON ts.subject_id = s.subject_id
+                        LEFT JOIN programme p ON ts.programme_id = p.programme_id
+                        LEFT JOIN course c ON ts.course_id = c.course_id
+                        WHERE ts.tutor_id = ?";
+            
             $stmt = $conn->prepare($tutor_subjects_query);
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
@@ -192,10 +253,11 @@ if (isset($_POST['remove_subject'])) {
                 $tutor_subjects[] = $subject;
             }
         } else {
-            $error_message = "An error occurred while removing the subject and course. Please try again!";
+            $error_message = "An error occurred while removing the subject and course. Error: " . $conn->error;
         }
     }
 }
+
 }
 
 // 处理头像上传
@@ -234,6 +296,56 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
         $error_message = "Please upload a valid image file (JPG, PNG, GIF), no larger than 5MB！";
     }
 }
+
+// 处理密码更改
+if (isset($_POST['change_password'])) {
+    $current_password = $_POST['current_password'];
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+    
+    // 验证表单输入
+    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+        $error_message = "All password fields are required!";
+    } elseif ($new_password !== $confirm_password) {
+        $error_message = "New password and confirm password do not match!";
+    } elseif (strlen($new_password) < 8) {
+        $error_message = "New password must be at least 8 characters long!";
+    } else {
+        // 获取用户当前的密码哈希
+        $password_query = "SELECT password FROM user WHERE user_id = ?";
+        $stmt = $conn->prepare($password_query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 1) {
+            $user_data = $result->fetch_assoc();
+            $current_password_hash = $user_data['password'];
+            
+            // 验证当前密码
+            if (password_verify($current_password, $current_password_hash)) {
+                // 当前密码正确，更新为新密码
+                $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+                
+                $update_query = "UPDATE user SET password = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param("si", $new_password_hash, $user_id);
+                $updated = $stmt->execute();
+                
+                if ($updated) {
+                    $success_message = "Password updated successfully!";
+                } else {
+                    $error_message = "Failed to update password. Please try again!";
+                }
+            } else {
+                $error_message = "Current password is incorrect!";
+            }
+        } else {
+            $error_message = "User not found!";
+        }
+    }
+}
+
 
 $conn->close();
 ?>
@@ -747,15 +859,15 @@ $conn->close();
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($phone); ?>" placeholder="e.g. 01x-xxxxxxx">
-                            <small class="form-text text-muted">Malaysian format: 01x-xxxxxxx</small>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($phone); ?>">
+                            <small class="form-text text-muted">Malaysian format: 011-xxxxxxxx (11 digits) or 01x-xxxxxxx (10 digits)</small>
                         </div>
                         <div class="form-group">
                             <label for="major">Major</label>
                             <input type="text" class="form-control" id="major" name="major" value="<?php echo htmlspecialchars($major); ?>">
                         </div>
                         <div class="form-group">
-                             <label for="year">Year</label>
+                             <label for="year">Level</label>
                              <select class="form-control" id="year" name="year">
                              <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select level --</option>
                              <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
@@ -777,20 +889,27 @@ $conn->close();
                     </form>
                 </div>
                 <div class="profile-section">
-                    <h3 class="section-title">Subjects & Courses Taught</h3>
+                    <h3 class="section-title">Courses Taught</h3>
                     <form action="" method="post" class="add-subject-form">
                         <input type="hidden" name="add_subject" value="1">
-                        <select name="subject_id" id="subject_select" class="form-control" required onchange="updateCourseOptions()">
-                        <option value="">-- Select Subject --</option>
-                        <?php foreach($all_subjects as $subject): ?>
-                        <option value="<?php echo $subject['subject_id']; ?>"><?php echo htmlspecialchars($subject['subject_name']); ?></option>
-                        <?php endforeach; ?>
+                        <select name="subject_id" id="subject_select" class="form-control" required onchange="updateProgrammeOptions()">
+                            <option value="">-- Select Faculty --</option>
+                            <?php foreach($all_subjects as $subject): ?>
+                            <option value="<?php echo $subject['subject_id']; ?>"><?php echo htmlspecialchars($subject['subject_name']); ?></option>
+                            <?php endforeach; ?>
                         </select>
+                        
+                        <select name="programme_id" id="programme_select" class="form-control" required onchange="updateCourseOptions()">
+                            <option value="">-- Select Programme --</option>
+                            <!-- Program options will be populated dynamically via JavaScript -->
+                        </select>
+                    
                         <select name="course_id" id="course_select" class="form-control" required>
                             <option value="">-- Select Course --</option>
-                            <!-- 课程选项将通过JavaScript动态填充 -->
+                            <!-- The course options will be populated dynamically via JavaScript -->
                         </select>
-                        <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (¥)" min="1" step="1" required>
+                        
+                        <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="1" required>
                         <button type="submit" class="btn btn-secondary">Add Subject & Course</button>
                     </form>
                     
@@ -799,18 +918,21 @@ $conn->close();
                     <?php else: ?>
                     <div class="subject-list">
                         <?php foreach($tutor_subjects as $subject): ?>
-                        <div class="subject-item">
+                            <div class="subject-item">
                             <div class="subject-info">
                                 <div class="subject-name"><?php echo htmlspecialchars($subject['subject_name']); ?></div>
+                                <div class="programme-name"><?php echo htmlspecialchars($subject['programme_name']); ?></div>
                                 <?php if(!empty($subject['course_name'])): ?>
                                 <div class="course-name"><?php echo htmlspecialchars($subject['course_name']); ?> (<?php echo htmlspecialchars($subject['course_code']); ?>)</div>
                                 <?php endif; ?>
                             </div>
-                            <div class="subject-rate">¥<?php echo htmlspecialchars($subject['hourly_rate']); ?>/hour</div>
+                            <div class="subject-rate">RM<?php echo htmlspecialchars($subject['hourly_rate']); ?>/hour</div>
                             <div class="subject-actions">
                                 <form action="" method="post" style="display: inline;">
                                     <input type="hidden" name="remove_subject" value="1">
-                                   <input type="hidden" name="subject_id" value="<?php echo $subject['subject_id']; ?>">
+                                    <input type="hidden" name="subject_id" value="<?php echo $subject['subject_id']; ?>">
+                                    <input type="hidden" name="programme_id" value="<?php echo $subject['programme_id']; ?>">
+                                    <input type="hidden" name="course_id" value="<?php echo $subject['course_id']; ?>">
                                     <button type="submit" onclick="return confirm('Are you sure you want to remove this subject?')">
                                         <i>🗑️</i>
                                     </button>
@@ -821,12 +943,32 @@ $conn->close();
                     </div>
                     <?php endif; ?>
                 </div>
+                <div class="profile-section">
+                        <h3 class="section-title">Change Password</h3>
+                        <form action="" method="post">
+                        <input type="hidden" name="change_password" value="1">
+                        <div class="form-group">
+                            <label for="current_password">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required minlength="8">
+                            <small class="form-text text-muted">Password must be at least 8 characters long</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="8">
+                        </div>
+                        <button type="submit" class="btn">Change Password</button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2023 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
+        <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
     </footer>
 
     <script>
@@ -845,6 +987,54 @@ $conn->close();
           if (subjectId) {
                // 使用AJAX获取该学科下的课程
                fetch('get_courses.php?subject_id=' + subjectId)
+                    .then(response => response.json())
+                    .then(courses => {
+                        courses.forEach(course => {
+                            const option = document.createElement('option');
+                            option.value = course.course_id;
+                            option.textContent = `${course.course_name} (${course.course_code})`;
+                            courseSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching courses:', error));
+            }
+        }
+
+        function updateProgrammeOptions() {
+            const subjectId = document.getElementById('subject_select').value;
+            const programmeSelect = document.getElementById('programme_select');
+            const courseSelect = document.getElementById('course_select');
+            
+            // 清空当前选项
+            programmeSelect.innerHTML = '<option value="">-- Select Programme --</option>';
+            courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+            
+            if (subjectId) {
+                // 使用AJAX获取该学科下的程序
+                fetch('get_programmes.php?subject_id=' + subjectId)
+                    .then(response => response.json())
+                    .then(programmes => {
+                        programmes.forEach(programme => {
+                            const option = document.createElement('option');
+                            option.value = programme.programme_id;
+                            option.textContent = programme.programme_name;
+                            programmeSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching programmes:', error));
+            }
+        }
+
+        function updateCourseOptions() {
+            const programmeId = document.getElementById('programme_select').value;
+            const courseSelect = document.getElementById('course_select');
+            
+            // 清空当前选项
+            courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+            
+            if (programmeId) {
+                // 使用AJAX获取该程序下的课程
+                fetch('get_courses.php?programme_id=' + programmeId)
                     .then(response => response.json())
                     .then(courses => {
                         courses.forEach(course => {
