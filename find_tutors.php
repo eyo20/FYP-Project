@@ -143,7 +143,7 @@ if (!$tutorResult) {
         
         <!-- Filter Section -->
         <div class="filter-section">
-            <form method="GET" action="find_tutor.php" class="row">
+            <form method="GET" action="find_tutors.php" class="row">
                 <div class="col-md-3 mb-3">
                     <label for="search_name">Tutor Name</label>
                     <input type="text" class="form-control" id="search_name" name="search_name" 
@@ -261,7 +261,7 @@ if (!$tutorResult) {
                                         
                                         <div class="mt-3">
                                             <a href="tutor_profile.php?id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
-                                            <a href="book_session.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
+                                            <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
                                             <a href="add_to_cart.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-success btn-sm">
                                                 <i class="fas fa-shopping-cart"></i> Add to Cart
                                             </a>
