@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-05-01 14:54:51
+-- 生成日期： 2025-05-04 11:23:40
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.0.30
 
@@ -70,22 +70,23 @@ CREATE TABLE `course` (
   `subject_id` int(11) NOT NULL,
   `course_code` varchar(20) NOT NULL,
   `course_name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `programme_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- 转存表中的数据 `course`
 --
 
-INSERT INTO `course` (`course_id`, `subject_id`, `course_code`, `course_name`, `description`) VALUES
-(1, 1, 'BMM2010', 'Marketing Management ', 'Focus on product promotion, market analysis, consumer behavior and brand strategy'),
-(2, 1, 'BBA3859', 'Business Administration', 'Learn all aspects of business operations, including management, marketing, finance, human resources, and more'),
-(3, 2, 'LCL5978', 'Constitutional Law', 'Study the country\'s basic legal system and the protection of citizens\' rights'),
-(4, 2, 'LCL4869', 'Corporate Law', 'Study the legal framework for corporate organization, operations and governance'),
-(5, 3, 'ECE3957', 'Civil Engineering', 'Study the design and construction of infrastructure such as buildings, bridges, roads, etc.'),
-(6, 3, 'TME348', 'Mechanical Engineering', 'Study the design, manufacture and maintenance of mechanical systems'),
-(7, 4, 'TSE', 'Software Engineering', 'Focus on the design, development and maintenance of software systems'),
-(8, 4, 'TCS3457', 'Computer Science', 'Study the theoretical foundations and practical applications of computer systems');
+INSERT INTO `course` (`course_id`, `subject_id`, `course_code`, `course_name`, `description`, `programme_id`) VALUES
+(1, 1, 'BMM2010', 'Marketing Management ', 'Focus on product promotion, market analysis, consumer behavior and brand strategy', NULL),
+(2, 1, 'BBA3859', 'Business Administration', 'Learn all aspects of business operations, including management, marketing, finance, human resources, and more', NULL),
+(3, 2, 'LCL5978', 'Constitutional Law', 'Study the country\'s basic legal system and the protection of citizens\' rights', NULL),
+(4, 2, 'LCL4869', 'Corporate Law', 'Study the legal framework for corporate organization, operations and governance', NULL),
+(5, 3, 'ECE3957', 'Civil Engineering', 'Study the design and construction of infrastructure such as buildings, bridges, roads, etc.', NULL),
+(6, 3, 'TME348', 'Mechanical Engineering', 'Study the design, manufacture and maintenance of mechanical systems', NULL),
+(7, 4, 'TSE', 'Software Engineering', 'Focus on the design, development and maintenance of software systems', 1),
+(8, 4, 'TCS3457', 'Computer Science', 'Study the theoretical foundations and practical applications of computer systems', 1);
 
 -- --------------------------------------------------------
 
@@ -183,6 +184,26 @@ CREATE TABLE `payment` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `programme`
+--
+
+CREATE TABLE `programme` (
+  `programme_id` int(11) NOT NULL,
+  `programme_name` varchar(100) NOT NULL,
+  `programme_code` varchar(20) DEFAULT NULL,
+  `subject_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 转存表中的数据 `programme`
+--
+
+INSERT INTO `programme` (`programme_id`, `programme_name`, `programme_code`, `subject_id`) VALUES
+(1, 'diploma in IT', 'DIT', 4);
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `review`
 --
 
@@ -238,6 +259,7 @@ CREATE TABLE `studentprofile` (
 --
 
 INSERT INTO `studentprofile` (`user_id`, `major`, `year`, `school`) VALUES
+(12, 'Computer Science', 'Master', ''),
 (23, 'Computer Science', 'Foundation', '');
 
 -- --------------------------------------------------------
@@ -308,17 +330,13 @@ INSERT INTO `tutorprofile` (`user_id`, `major`, `year`, `bio`, `qualifications`,
 --
 
 CREATE TABLE `tutorsubject` (
+  `id` int(11) NOT NULL,
   `tutor_id` int(11) NOT NULL,
   `subject_id` int(11) NOT NULL,
-  `hourly_rate` decimal(10,2) NOT NULL DEFAULT 0.00
+  `course_id` int(11) DEFAULT NULL,
+  `hourly_rate` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `programme_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- 转存表中的数据 `tutorsubject`
---
-
-INSERT INTO `tutorsubject` (`tutor_id`, `subject_id`, `hourly_rate`) VALUES
-(16, 3, 20.00);
 
 -- --------------------------------------------------------
 
@@ -346,15 +364,15 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `role`, `first_name`, `last_name`, `phone`, `profile_image`, `is_active`, `created_at`, `last_login`) VALUES
-(12, 'david', '$2y$10$UOLIV9n8GVuRyn4fShLouu76Tg5Tb0dHnYwxJwuHZCoU3Y189TBgu', 'davidchong1121@gmail.com', 'student', 'david', 'chong', '0127770231', 'uploads/profile_images/681216950ba2a_OIP.jpg', 1, '2025-04-22 22:11:05', NULL),
+(12, 'david', '$2y$10$UOLIV9n8GVuRyn4fShLouu76Tg5Tb0dHnYwxJwuHZCoU3Y189TBgu', 'davidchong1121@gmail.com', 'student', 'davidd', 'chongg', '0127770231', 'uploads/profile_images/6814809581a48_xukun.png', 1, '2025-04-22 22:11:05', NULL),
 (15, 'enyong', '$2y$10$5rNBEN5/5eDAzLx4IoExNOfk365fgb.TTiBhChzjA/hDZm.4zBLG6', 'enyong123@gmail.com', 'student', 'enyong', 'ong', NULL, NULL, 1, '2025-04-22 22:21:31', NULL),
-(16, 'mingwen', '$2y$10$TaBn1BcCd0pi0gqAus1BKeyLQeBTWzrbb2BVrUMV0p3WmD/3FuRFq', 'mingwen123@gmail.com', 'tutor', 'mingweng', 'koh', 'abcd', 'uploads/profile_images/6809e5c4739bb_OIP.jpg 1.jpg', 1, '2025-04-23 17:15:45', NULL),
+(16, 'mingwen', '$2y$10$9BtLg9AS1waXzlUC7YArjeiRhxLax9jZFSa5pLbcv5oKgLAzlXb/i', 'mingwen123@gmail.com', 'tutor', 'mingweng', 'koh', '0123456789', 'uploads/profile_images/6809e5c4739bb_OIP.jpg 1.jpg', 1, '2025-04-23 17:15:45', NULL),
 (17, 'admin', '$2y$10$ZD1r0AWEtPwMnxPDwN2kvOLrSMtdxtVf3wqOPBuY6UIqY1Toj57OW', 'admin123@gmail.com', 'admin', '', '', NULL, NULL, 1, '2025-04-24 06:46:09', NULL),
 (18, 'new', '$2y$10$GHqTNyYHQk5mZ.010TO6QO9QTcxSoW8XIYoB8Ayq2urX1OExGzUC.', 'davidchong11@gmail.com', 'student', 'david', 'chong', 'abcd', NULL, 1, '2025-04-24 08:35:12', NULL),
 (19, 'jieixnbeauty', '$2y$10$r7iJmcKR/MKf7Uq8eZIVtumFi0VnpTfnpxIX/krA22686RQuBpoYC', 'jiexin123@gmail.com', 'tutor', 'jiexin', 'chong', '1', 'uploads/profile_images/680bc925a94d7_screenshot-1717507504216.png', 1, '2025-04-25 17:32:35', NULL),
 (20, 'dchong', '$2y$10$h22VvIUY5xnhHVyWDb.dTuUZ5Eaqp2U0horWVgxwzQv5MW8n26Vfy', '1231201533@student.mmu.edu.my', 'student', '1', '1', NULL, NULL, 1, '2025-04-29 15:11:19', NULL),
 (21, 'ongenyong', '$2y$10$2Dw4zGT.H4YjaUxr.mTV3uJGhpfNYUDTwxUSPFIanESJZgXR0dn2O', '1231203070@student.mmu.edu.my', 'tutor', 'en', 'yong', NULL, NULL, 1, '2025-04-29 16:18:42', NULL),
-(23, 'ongenyong1', '$2y$10$vFxjsI6GsmhU2F5DwQ4mJuSsAmeTfmwtD3v1k3Ast7OjTq5y2OrY6', 'fufufefe123@student.mmu.edu.my', 'student', 'en', 'yong', '03253426456', NULL, 1, '2025-05-01 10:30:35', NULL);
+(23, 'ongenyong1', '$2y$10$Zeb9SrE7iE2ctUC5ezjJsOb7hfzoxatE47JpC3SHZ21wxkoBV2l/C', 'fufufefe123@student.mmu.edu.my', 'student', 'dogvid', 'c', '0172823489', NULL, 1, '2025-05-01 10:30:35', NULL);
 
 --
 -- 转储表的索引
@@ -384,7 +402,8 @@ ALTER TABLE `course`
   ADD UNIQUE KEY `uq_course_code` (`course_code`),
   ADD KEY `fk_course_subject` (`subject_id`),
   ADD KEY `idx_course_code` (`course_code`),
-  ADD KEY `idx_course_name` (`course_name`);
+  ADD KEY `idx_course_name` (`course_name`),
+  ADD KEY `programme_id` (`programme_id`);
 
 --
 -- 表的索引 `location`
@@ -420,6 +439,13 @@ ALTER TABLE `payment`
   ADD PRIMARY KEY (`payment_id`),
   ADD KEY `fk_payment_session` (`session_id`),
   ADD KEY `idx_payment_status` (`status`);
+
+--
+-- 表的索引 `programme`
+--
+ALTER TABLE `programme`
+  ADD PRIMARY KEY (`programme_id`),
+  ADD KEY `subject_id` (`subject_id`);
 
 --
 -- 表的索引 `review`
@@ -475,8 +501,11 @@ ALTER TABLE `tutorprofile`
 -- 表的索引 `tutorsubject`
 --
 ALTER TABLE `tutorsubject`
-  ADD PRIMARY KEY (`tutor_id`,`subject_id`),
-  ADD KEY `fk_tutor_subject_subject` (`subject_id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_combination` (`tutor_id`,`subject_id`,`programme_id`,`course_id`),
+  ADD KEY `fk_tutor_subject_subject` (`subject_id`),
+  ADD KEY `fk_course` (`course_id`),
+  ADD KEY `fk_programme` (`programme_id`);
 
 --
 -- 表的索引 `user`
@@ -541,6 +570,12 @@ ALTER TABLE `payment`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- 使用表AUTO_INCREMENT `programme`
+--
+ALTER TABLE `programme`
+  MODIFY `programme_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- 使用表AUTO_INCREMENT `review`
 --
 ALTER TABLE `review`
@@ -565,6 +600,12 @@ ALTER TABLE `subject`
   MODIFY `subject_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- 使用表AUTO_INCREMENT `tutorsubject`
+--
+ALTER TABLE `tutorsubject`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- 使用表AUTO_INCREMENT `user`
 --
 ALTER TABLE `user`
@@ -584,6 +625,7 @@ ALTER TABLE `availability`
 -- 限制表 `course`
 --
 ALTER TABLE `course`
+  ADD CONSTRAINT `course_ibfk_1` FOREIGN KEY (`programme_id`) REFERENCES `programme` (`programme_id`),
   ADD CONSTRAINT `fk_course_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`) ON DELETE CASCADE;
 
 --
@@ -604,6 +646,12 @@ ALTER TABLE `notification`
 --
 ALTER TABLE `payment`
   ADD CONSTRAINT `fk_payment_session` FOREIGN KEY (`session_id`) REFERENCES `session` (`session_id`) ON DELETE CASCADE;
+
+--
+-- 限制表 `programme`
+--
+ALTER TABLE `programme`
+  ADD CONSTRAINT `programme_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`);
 
 --
 -- 限制表 `review`
@@ -641,8 +689,10 @@ ALTER TABLE `tutorprofile`
 -- 限制表 `tutorsubject`
 --
 ALTER TABLE `tutorsubject`
-  ADD CONSTRAINT `fk_tutor_subject_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_tutor_subject_tutor` FOREIGN KEY (`tutor_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_course_new` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`),
+  ADD CONSTRAINT `fk_programme_new` FOREIGN KEY (`programme_id`) REFERENCES `programme` (`programme_id`),
+  ADD CONSTRAINT `fk_tutor_subject_subject_new` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_tutor_subject_tutor_new` FOREIGN KEY (`tutor_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
