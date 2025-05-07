@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeerLearn - Peer Tutoring Platform</title>
+    <title>About Us - PeerLearn</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -129,251 +129,178 @@
         .nav-buttons .btn {
             margin-left: 15px;
         }
-        
-        /* Hero Section */
-        .hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 80px 0;
+
+        /* About Us Page Styles */
+        .about-hero {
             background-color: var(--light-color);
-            overflow: hidden;
-            position: relative;
+            padding: 80px 0 60px;
+            text-align: center;
         }
-        
-        .hero-content {
-            flex: 0 0 50%;
-            z-index: 2;
-        }
-        
-        .hero-title {
+
+        .about-hero-title {
             font-size: 2.5rem;
             color: var(--primary-color);
             margin-bottom: 20px;
-            line-height: 1.2;
         }
-        
-        .hero-subtitle {
+
+        .about-hero-subtitle {
             font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
             color: var(--dark-color);
-            margin-bottom: 30px;
         }
-        
-        .hero-buttons {
-            margin-top: 25px;
+
+        .about-section {
+            padding: 70px 0;
         }
-        
-        .hero-image {
-            flex: 0 0 45%;
-            position: relative;
-            z-index: 1;
+
+        .about-section:nth-child(even) {
+            background-color: var(--light-color);
         }
-        
-        .hero-image img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
-        
-        /* Geometric Decorations */
-        .shape {
-            position: absolute;
-            z-index: 0;
-        }
-        
-        .shape-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: var(--secondary-color);
-            opacity: 0.5;
-            top: 20%;
-            right: 10%;
-        }
-        
-        .shape-triangle {
-            width: 0;
-            height: 0;
-            border-left: 50px solid transparent;
-            border-right: 50px solid transparent;
-            border-bottom: 100px solid var(--accent-color);
-            opacity: 0.3;
-            bottom: 10%;
-            left: 5%;
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 80px 0;
-            background-color: var(--white);
-        }
-        
+
         .section-title {
             text-align: center;
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 50px;
         }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature-card {
-            text-align: center;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 20px;
+
+        .mission-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: var(--light-color);
-            border-radius: 50%;
-        }
-        
-        .feature-icon i {
-            font-size: 30px;
-            color: var(--primary-color);
-        }
-        
-        .feature-title {
-            font-size: 1.25rem;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-        
-        .feature-desc {
-            color: var(--dark-color);
-        }
-        
-        /* Process Section */
-        .process {
-            padding: 80px 0;
-            background-color: var(--light-color);
-        }
-        
-        .process-steps {
-            display: flex;
             justify-content: space-between;
-            position: relative;
-            margin-top: 50px;
+            gap: 50px;
         }
-        
-        .process-step {
-            flex: 0 0 18%;
-            text-align: center;
-            position: relative;
-            z-index: 2;
+
+        .mission-content {
+            flex: 0 0 55%;
         }
-        
-        .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-        
-        .step-title {
-            font-size: 1.1rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .step-desc {
-            font-size: 0.9rem;
-            color: var(--dark-color);
-        }
-        
-        .process-line {
-            position: absolute;
-            top: 25px;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background-color: var(--secondary-color);
-            z-index: 1;
-        }
-        
-        /* Community Section */
-        .community {
-            padding: 80px 0;
-            background-color: var(--white);
-        }
-        
-        .community-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .community-text {
-            flex: 0 0 45%;
-        }
-        
-        .community-title {
-            font-size: 2rem;
+
+        .mission-title {
+            font-size: 1.75rem;
             color: var(--primary-color);
             margin-bottom: 20px;
         }
-        
-        .community-list {
-            margin-bottom: 30px;
+
+        .mission-text {
+            margin-bottom: 20px;
+            color: var(--dark-color);
         }
-        
-        .community-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
+
+        .mission-image {
+            flex: 0 0 40%;
         }
-        
-        .community-item i {
-            color: var(--accent-color);
-            margin-right: 10px;
-            font-size: 1.25rem;
-        }
-        
-        .community-image {
-            flex: 0 0 45%;
-        }
-        
-        .community-image img {
+
+        .mission-image img {
             width: 100%;
             border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
-        /* CTA Section */
-        .cta {
+
+        .offerings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .offering-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .offering-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .offering-title {
+            color: var(--secondary-color);
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+        }
+
+        .offering-text {
+            color: var(--dark-color);
+        }
+
+        .goals-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .goal-item {
+            display: flex;
+            margin-bottom: 40px;
+            align-items: flex-start;
+        }
+
+        .goal-number {
+            background-color: var(--primary-color);
+            color: var(--white);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .goal-content {
+            flex: 1;
+        }
+
+        .goal-title {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .goal-text {
+            color: var(--dark-color);
+        }
+
+        .users-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .user-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .user-title {
+            color: var(--secondary-color);
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+        }
+
+        .user-text {
+            color: var(--dark-color);
+        }
+
+        .cta-section {
+            text-align: center;
             padding: 80px 0;
             background-color: var(--primary-color);
-            text-align: center;
             color: var(--white);
         }
-        
+
         .cta-title {
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
-        
+
         .cta-text {
             font-size: 1.1rem;
             margin-bottom: 30px;
@@ -381,27 +308,25 @@
             margin-left: auto;
             margin-right: auto;
         }
-        
-        .cta-stats {
+
+        .cta-buttons {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
+            gap: 20px;
+            flex-wrap: wrap;
         }
-        
-        .cta-stat {
-            margin: 0 30px;
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--white);
+            color: var(--white);
         }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent-color);
+
+        .btn-outline:hover {
+            background-color: var(--white);
+            color: var(--primary-color);
         }
-        
-        .stat-label {
-            font-size: 0.9rem;
-        }
-        
+
         /* Footer */
         .footer {
             padding: 60px 0 30px;
@@ -453,7 +378,6 @@
             color: var(--accent-color);
         }
 
-
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
@@ -482,47 +406,19 @@
             background-color: var(--accent-color);
         }
         
-        
-        
         /* Responsive Design */
         @media (max-width: 992px) {
-            .hero {
+            .mission-container {
                 flex-direction: column;
-                text-align: center;
-                padding: 40px 0;
             }
             
-            .hero-content, .hero-image {
+            .mission-content, .mission-image {
                 flex: 0 0 100%;
             }
             
-            .hero-content {
-                margin-bottom: 40px;
-            }
-            
-            .process-steps {
-                flex-wrap: wrap;
-            }
-            
-            .process-step {
-                flex: 0 0 45%;
+            .mission-image {
+                order: -1;
                 margin-bottom: 30px;
-            }
-            
-            .process-line {
-                display: none;
-            }
-            
-            .community-content {
-                flex-direction: column;
-            }
-            
-            .community-text, .community-image {
-                flex: 0 0 100%;
-            }
-            
-            .community-text {
-                margin-bottom: 40px;
             }
         }
         
@@ -549,7 +445,7 @@
                 margin: 5px 10px;
             }
             
-            .hero-title {
+            .about-hero-title {
                 font-size: 2rem;
             }
             
@@ -557,24 +453,8 @@
                 font-size: 1.75rem;
             }
             
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .process-step {
-                flex: 0 0 100%;
-            }
-            
             .cta-title {
                 font-size: 2rem;
-            }
-            
-            .cta-stats {
-                flex-direction: column;
-            }
-            
-            .cta-stat {
-                margin: 15px 0;
             }
         }
     </style>
@@ -586,7 +466,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <a href="#">
+                <a href="home_page.html">
                     <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </a>
             </div>
@@ -603,7 +483,7 @@
                         <a href="#" class="nav-link">LEARNING COMMUNITY</a>
                     </li>
                     <li class="nav-item">
-                        <a href="about_us.html" class="nav-link">ABOUT US</a>
+                        <a href="#" class="nav-link">ABOUT US</a>
                     </li>
                 </ul>
             </div>
@@ -614,158 +494,149 @@
         </div>
     </nav>
     
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- About Hero Section -->
+    <section class="about-hero">
         <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Enhance Learning Through Peer Power</h1>
-                <p class="hero-subtitle">Connect with knowledgeable student tutors, get personalized learning experiences, and search for available tutors based on your academic needs.</p>
-                <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">Start Learning</a>
-                </div>
-            </div>
-            
-            <div class="hero-image">
-                <img src="image/hero area.png" alt="Student Learning Group">
-            </div>
+            <h1 class="about-hero-title">About PeerLearn</h1>
+            <p class="about-hero-subtitle">
+                A platform connecting MMU students with peer tutors to create effective learning experiences and build a collaborative academic community.
+            </p>
         </div>
-        
-        <!-- Decorative Geometric Shapes -->
-        <div class="shape shape-circle"></div>
-        <div class="shape shape-triangle"></div>
     </section>
     
-    <!-- Features Section -->
-    <section class="features">
+    <!-- Mission Section -->
+    <section class="about-section">
         <div class="container">
-            <h2 class="section-title">Our Core Values</h2>
+            <h2 class="section-title">Our Mission</h2>
             
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="feature-title">Peer Learning</h3>
-                    <p class="feature-desc">Learn from peers, gain better understanding, build learning partnerships, and spark motivation.</p>
+            <div class="mission-container">
+                <div class="mission-content">
+                    <h3 class="mission-title">Who We Are</h3>
+                    <p class="mission-text">
+                        At TutorMatch MMU, we're dedicated to creating a vibrant peer-to-peer learning ecosystem within the Multimedia University community. Our mission is to connect students seeking academic support with knowledgeable peers who excel in specific subjects, fostering collaborative learning and academic excellence.
+                    </p>
+                    <p class="mission-text">
+                        TutorMatch MMU is a student-centered platform designed specifically for MMU students. We believe that some of the best learning happens when students teach and learn from each other. Our platform harnesses the diverse knowledge and skills within our student body to create meaningful educational connections.
+                    </p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
+                <div class="mission-image">
+                    <!-- Placeholder for mission image -->
+                    <div style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
+                        <span>Mission Image Placeholder</span>
                     </div>
-                    <h3 class="feature-title">Improved Grades</h3>
-                    <p class="feature-desc">80% of students report improved academic performance through peer guidance to overcome learning challenges.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h3 class="feature-title">Personalized Experience</h3>
-                    <p class="feature-desc">Match with the most suitable tutors based on your needs, customize learning plans, and accommodate your learning style.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3 class="feature-title">Learning Community</h3>
-                    <p class="feature-desc">Join discussions, participate in group learning activities, share resources, and expand your learning network.</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- Process Section -->
-    <section class="process">
+    <!-- What We Offer Section -->
+    <section class="about-section">
         <div class="container">
-            <h2 class="section-title">A Few Simple Steps to Effective Learning</h2>
+            <h2 class="section-title">What We Offer</h2>
             
-            <div class="process-steps">
-                <div class="process-line"></div>
-                
-                <div class="process-step">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Create Account</h3>
-                    <p class="step-desc">Create your profile and set your learning preferences.</p>
+            <div class="offerings-grid">
+                <div class="offering-card">
+                    <h3 class="offering-title">Peer-to-Peer Learning</h3>
+                    <p class="offering-text">Connect with fellow students who excel in subjects you find challenging</p>
                 </div>
                 
-                <div class="process-step">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Browse & Filter Tutors</h3>
-                    <p class="step-desc">Choose suitable tutors based on subject, ratings, and expertise.</p>
+                <div class="offering-card">
+                    <h3 class="offering-title">Flexible Scheduling</h3>
+                    <p class="offering-text">Book sessions that fit your busy academic schedule</p>
                 </div>
                 
-                <div class="process-step">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Schedule Learning Time</h3>
-                    <p class="step-desc">Select a convenient time and describe your learning needs.</p>
+                <div class="offering-card">
+                    <h3 class="offering-title">Subject Variety</h3>
+                    <p class="offering-text">Find tutors across a wide range of MMU courses and programs</p>
                 </div>
                 
-                <div class="process-step">
-                    <div class="step-number">4</div>
-                    <h3 class="step-title">Join Learning Session</h3>
-                    <p class="step-desc">Discuss online and enjoy personalized coaching.</p>
+                <div class="offering-card">
+                    <h3 class="offering-title">Verified Tutors</h3>
+                    <p class="offering-text">All tutors are MMU students with verified academic credentials</p>
                 </div>
                 
-                <div class="process-step">
-                    <div class="step-number">5</div>
-                    <h3 class="step-title">Provide Feedback</h3>
-                    <p class="step-desc">Rate your experience to help other students choose.</p>
+                <div class="offering-card">
+                    <h3 class="offering-title">Community Platform</h3>
+                    <p class="offering-text">Engage in forums, group discussions, and collaborative study events</p>
+                </div>
+                
+                <div class="offering-card">
+                    <h3 class="offering-title">Secure Payments</h3>
+                    <p class="offering-text">Handle transactions safely through our protected payment system</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- Community Section -->
-    <section class="community">
+    <!-- Our Goals Section -->
+    <section class="about-section">
         <div class="container">
-            <div class="community-content">
-                <div class="community-text">
-                    <h2 class="community-title">Join Our Learning Community</h2>
-                    <div class="community-list">
-                        <div class="community-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <p>Attend monthly learning events and lectures</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-book"></i>
-                            <p>Access professional learning resources and materials</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-comments"></i>
-                            <p>Participate in topic discussions and get answers</p>
-                        </div>
+            <h2 class="section-title">Our Goals</h2>
+            
+            <div class="goals-container">
+                <div class="goal-item">
+                    <div class="goal-number">1</div>
+                    <div class="goal-content">
+                        <h3 class="goal-title">Facilitate Peer Learning</h3>
+                        <p class="goal-text">We're building a community of 100+ students and facilitating 50+ peer-to-peer learning sessions in our first three months.</p>
                     </div>
-                    <a href="#" class="btn btn-primary">Join Community</a>
                 </div>
                 
-                <div class="community-image">
-                    <!-- Placeholder for community photo -->
-                    <div class="img-placeholder" style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
-                        <span>Community Image Placeholder</span>
+                <div class="goal-item">
+                    <div class="goal-number">2</div>
+                    <div class="goal-content">
+                        <h3 class="goal-title">Improve Academic Performance</h3>
+                        <p class="goal-text">Our tutoring sessions are designed to boost understanding and confidence, with 80% of regular participants reporting improved academic performance.</p>
                     </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">3</div>
+                    <div class="goal-content">
+                        <h3 class="goal-title">Enhance Learning Experience</h3>
+                        <p class="goal-text">Our user-friendly platform makes it easy to find the right tutor, book sessions, and provide feedback, maintaining a 90% user satisfaction rate.</p>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div class="goal-number">4</div>
+                    <div class="goal-content">
+                        <h3 class="goal-title">Build A Community</h3>
+                        <p class="goal-text">Beyond individual sessions, we're creating spaces for weekly discussions, resource sharing, and monthly peer-led study events.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Target Users Section -->
+    <section class="about-section">
+        <div class="container">
+            <h2 class="section-title">Who Can Benefit</h2>
+            
+            <div class="users-container">
+                <div class="user-card">
+                    <h3 class="user-title">Students Seeking Help</h3>
+                    <p class="user-text">Undergraduate and postgraduate MMU students looking for academic assistance in challenging subjects. Our platform helps you find the perfect peer tutor to address your specific learning needs.</p>
+                </div>
+                
+                <div class="user-card">
+                    <h3 class="user-title">Student Tutors</h3>
+                    <p class="user-text">High-achieving students who want to reinforce their knowledge, gain teaching experience, and earn extra income by helping peers. Share your expertise and build valuable skills for your future career.</p>
                 </div>
             </div>
         </div>
     </section>
     
     <!-- CTA Section -->
-    <section class="cta">
+    <section class="cta-section">
         <div class="container">
-            <h2 class="cta-title">Ready to Enhance Your Learning Experience?</h2>
-            <p class="cta-text">Join PeerLearn, connect with expert tutors, improve learning efficiency, and build study habits that benefit you for life.</p>
-            <a href="#" class="btn btn-primary">Get Started Now</a>
+            <h2 class="cta-title">Join Our Community</h2>
+            <p class="cta-text">Whether you're looking to boost your grades or share your academic strengths, TutorMatch MMU provides the platform to connect, learn, and grow together. Join us in creating a stronger, more collaborative learning environment at MMU!</p>
             
-            <div class="cta-stats">
-                <div class="cta-stat">
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Active Students</div>
-                </div>
-                <div class="cta-stat">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">Successful Learning Sessions</div>
-                </div>
+            <div class="cta-buttons">
+                <a href="register.php" class="btn btn-primary">Register Now</a>
             </div>
         </div>
     </section>
