@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeerLearn - Peer Tutoring Platform</title>
+    <title>For Students - PeerLearn</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -96,8 +96,8 @@
         
         .navbar > .container {
             display: flex;
-            justify-content: space-between;/* Left-right distribution */
-            align-items: center;/* Vertical center alignment */
+            justify-content: space-between;
+            align-items: center;
             flex-grow: 1;
         }
         
@@ -119,6 +119,11 @@
         
         .nav-link:hover {
             color: var(--primary-color);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 700;
         }
         
         .nav-buttons {
@@ -202,8 +207,8 @@
             left: 5%;
         }
         
-        /* Features Section */
-        .features {
+        /* How It Works Section */
+        .how-it-works {
             padding: 80px 0;
             background-color: var(--white);
         }
@@ -215,150 +220,158 @@
             margin-bottom: 50px;
         }
         
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .steps-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 40px;
         }
         
-        .feature-card {
-            text-align: center;
+        .step {
+            flex: 0 0 30%;
+            margin-bottom: 40px;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background-color: var(--white);
             transition: transform 0.3s ease;
+            position: relative;
         }
         
-        .feature-card:hover {
+        .step:hover {
             transform: translateY(-10px);
         }
         
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 20px;
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--light-color);
-            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
         
-        .feature-icon i {
-            font-size: 30px;
-            color: var(--primary-color);
-        }
-        
-        .feature-title {
-            font-size: 1.25rem;
+        .step-title {
+            font-size: 1.3rem;
             color: var(--primary-color);
             margin-bottom: 15px;
+            margin-top: 10px;
         }
         
-        .feature-desc {
+        .step-description {
             color: var(--dark-color);
+            font-size: 1rem;
         }
         
-        /* Process Section */
-        .process {
+        /* Benefits Section */
+        .benefits {
             padding: 80px 0;
             background-color: var(--light-color);
         }
         
-        .process-steps {
+        .benefits-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .benefit {
             display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin-top: 50px;
+            align-items: flex-start;
+            padding: 20px;
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
-        .process-step {
-            flex: 0 0 18%;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .step-number {
-            width: 50px;
-            height: 50px;
+        .benefit-icon {
+            flex: 0 0 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
             border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 1.25rem;
-            font-weight: bold;
+            margin-right: 20px;
         }
         
-        .step-title {
-            font-size: 1.1rem;
+        .benefit-icon i {
+            font-size: 24px;
+            color: var(--white);
+        }
+        
+        .benefit-content {
+            flex: 1;
+        }
+        
+        .benefit-title {
+            font-size: 1.2rem;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
         
-        .step-desc {
-            font-size: 0.9rem;
+        .benefit-description {
             color: var(--dark-color);
+            font-size: 0.95rem;
         }
         
-        .process-line {
-            position: absolute;
-            top: 25px;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background-color: var(--secondary-color);
-            z-index: 1;
-        }
-        
-        /* Community Section */
-        .community {
+        /* FAQ Section */
+        .faq {
             padding: 80px 0;
             background-color: var(--white);
         }
         
-        .community-content {
+        .faq-container {
+            max-width: 800px;
+            margin: 40px auto 0;
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .faq-question {
+            padding: 20px;
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .community-text {
-            flex: 0 0 45%;
+        .faq-question:hover {
+            background-color: #eaeaea;
         }
         
-        .community-title {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 20px;
+        .faq-answer {
+            padding: 20px;
+            background-color: var(--white);
+            display: none;
         }
         
-        .community-list {
-            margin-bottom: 30px;
+        .faq-answer.active {
+            display: block;
         }
         
-        .community-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
+        .faq-question i {
+            transition: transform 0.3s ease;
         }
         
-        .community-item i {
-            color: var(--accent-color);
-            margin-right: 10px;
-            font-size: 1.25rem;
-        }
-        
-        .community-image {
-            flex: 0 0 45%;
-        }
-        
-        .community-image img {
-            width: 100%;
-            border-radius: 10px;
+        .faq-question.active i {
+            transform: rotate(180deg);
         }
         
         /* CTA Section */
@@ -380,26 +393,6 @@
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
-        }
-        
-        .cta-stats {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-        }
-        
-        .cta-stat {
-            margin: 0 30px;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent-color);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
         }
         
         /* Footer */
@@ -452,8 +445,7 @@
         .footer-links a:hover {
             color: var(--accent-color);
         }
-
-
+        
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
@@ -482,8 +474,6 @@
             background-color: var(--accent-color);
         }
         
-        
-        
         /* Responsive Design */
         @media (max-width: 992px) {
             .hero {
@@ -500,29 +490,8 @@
                 margin-bottom: 40px;
             }
             
-            .process-steps {
-                flex-wrap: wrap;
-            }
-            
-            .process-step {
+            .step {
                 flex: 0 0 45%;
-                margin-bottom: 30px;
-            }
-            
-            .process-line {
-                display: none;
-            }
-            
-            .community-content {
-                flex-direction: column;
-            }
-            
-            .community-text, .community-image {
-                flex: 0 0 100%;
-            }
-            
-            .community-text {
-                margin-bottom: 40px;
             }
         }
         
@@ -557,24 +526,12 @@
                 font-size: 1.75rem;
             }
             
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .process-step {
+            .step {
                 flex: 0 0 100%;
             }
             
             .cta-title {
                 font-size: 2rem;
-            }
-            
-            .cta-stats {
-                flex-direction: column;
-            }
-            
-            .cta-stat {
-                margin: 15px 0;
             }
         }
     </style>
@@ -586,7 +543,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <a href="#">
+                <a href="home_page.html">
                     <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </a>
             </div>
@@ -594,7 +551,7 @@
             <div class="nav-container">
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="for_students.html" class="nav-link">FOR STUDENTS</a>
+                        <a href="for_students.html" class="nav-link active">FOR STUDENTS</a>
                     </li>
                     <li class="nav-item">
                         <a href="for_tutors.html" class="nav-link">FOR TUTORS</a>
@@ -618,15 +575,16 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Enhance Learning Through Peer Power</h1>
-                <p class="hero-subtitle">Connect with knowledgeable student tutors, get personalized learning experiences, and search for available tutors based on your academic needs.</p>
+                <h1 class="hero-title">Find Your Perfect Tutor</h1>
+                <p class="hero-subtitle">Connect with knowledgeable peers who understand your academic challenges and can help you excel in your studies. Get personalized learning support tailored to your needs.</p>
                 <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">Start Learning</a>
+                    <a href="login.php" class="btn btn-primary">Find a Tutor Now</a>
+                    <a href="#how-it-works" class="btn btn-secondary">Learn How It Works</a>
                 </div>
             </div>
             
             <div class="hero-image">
-                <img src="image/hero area.png" alt="Student Learning Group">
+                <img src="image/student_learning.jpg" alt="Student Learning">
             </div>
         </div>
         
@@ -635,115 +593,168 @@
         <div class="shape shape-triangle"></div>
     </section>
     
-    <!-- Features Section -->
-    <section class="features">
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
         <div class="container">
-            <h2 class="section-title">Our Core Values</h2>
+            <h2 class="section-title">How PeerLearn Works for Students</h2>
             
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="feature-title">Peer Learning</h3>
-                    <p class="feature-desc">Learn from peers, gain better understanding, build learning partnerships, and spark motivation.</p>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Create Your Profile</h3>
+                    <p class="step-description">Sign up and create your student profile. Add your academic details, subjects you need help with, and your learning preferences.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Improved Grades</h3>
-                    <p class="feature-desc">80% of students report improved academic performance through peer guidance to overcome learning challenges.</p>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Search for Tutors</h3>
+                    <p class="step-description">Browse through our database of qualified peer tutors. Filter by subject, expertise level, availability, and ratings to find your perfect match.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h3 class="feature-title">Personalized Experience</h3>
-                    <p class="feature-desc">Match with the most suitable tutors based on your needs, customize learning plans, and accommodate your learning style.</p>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Book a Session</h3>
+                    <p class="step-description">Select a convenient time slot from your tutor's availability calendar and specify what you'd like to focus on during the session.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Make Secure Payment</h3>
+                    <p class="step-description">Pay for your session through our secure payment system. Your payment is held until the session is completed successfully.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3 class="step-title">Attend Your Session</h3>
+                    <p class="step-description">Connect with your tutor through our messaging system to discuss your learning needs and get personalized guidance.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <h3 class="step-title">Rate and Review</h3>
+                    <p class="step-description">After your session, provide feedback and rate your tutor to help other students make informed decisions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Benefits Section -->
+    <section class="benefits">
+        <div class="container">
+            <h2 class="section-title">Benefits for Students</h2>
+            
+            <div class="benefits-container">
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Peer-to-Peer Learning</h3>
+                        <p class="benefit-description">Learn from fellow students who have recently mastered the same material and understand the challenges you're facing.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Find the Perfect Match</h3>
+                        <p class="benefit-description">Our advanced search filters help you find tutors who match your learning style, academic needs, and schedule.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Affordable Rates</h3>
+                        <p class="benefit-description">Peer tutoring is more affordable than professional tutoring services, making academic support accessible to all students.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Flexible Scheduling</h3>
+                        <p class="benefit-description">Book sessions at times that work for you, including evenings and weekends, to fit around your busy academic schedule.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Verified Quality</h3>
+                        <p class="benefit-description">All tutors are verified students with proven academic excellence in their subjects. Review ratings help you choose the best.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit">
+                    <div class="benefit-icon">
                         <i class="fas fa-comments"></i>
                     </div>
-                    <h3 class="feature-title">Learning Community</h3>
-                    <p class="feature-desc">Join discussions, participate in group learning activities, share resources, and expand your learning network.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Process Section -->
-    <section class="process">
-        <div class="container">
-            <h2 class="section-title">A Few Simple Steps to Effective Learning</h2>
-            
-            <div class="process-steps">
-                <div class="process-line"></div>
-                
-                <div class="process-step">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Create Account</h3>
-                    <p class="step-desc">Create your profile and set your learning preferences.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Browse & Filter Tutors</h3>
-                    <p class="step-desc">Choose suitable tutors based on subject, ratings, and expertise.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Schedule Learning Time</h3>
-                    <p class="step-desc">Select a convenient time and describe your learning needs.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">4</div>
-                    <h3 class="step-title">Join Learning Session</h3>
-                    <p class="step-desc">Discuss online and enjoy personalized coaching.</p>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-number">5</div>
-                    <h3 class="step-title">Provide Feedback</h3>
-                    <p class="step-desc">Rate your experience to help other students choose.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Community Section -->
-    <section class="community">
-        <div class="container">
-            <div class="community-content">
-                <div class="community-text">
-                    <h2 class="community-title">Join Our Learning Community</h2>
-                    <div class="community-list">
-                        <div class="community-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <p>Attend monthly learning events and lectures</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-book"></i>
-                            <p>Access professional learning resources and materials</p>
-                        </div>
-                        <div class="community-item">
-                            <i class="fas fa-comments"></i>
-                            <p>Participate in topic discussions and get answers</p>
-                        </div>
+                    <div class="benefit-content">
+                        <h3 class="benefit-title">Community Support</h3>
+                        <p class="benefit-description">Join our learning community to access study resources, participate in group discussions, and connect with other students.</p>
                     </div>
-                    <a href="#" class="btn btn-primary">Join Community</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How do I choose the right tutor? <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        You can browse tutor profiles, which include their academic background, subjects they teach, ratings from other students, and their teaching approach. Use our filters to narrow down tutors by subject, availability, and rating to find someone who matches your needs.
+                    </div>
                 </div>
                 
-                <div class="community-image">
-                    <!-- Placeholder for community photo -->
-                    <div class="img-placeholder" style="width:100%; height:300px; background-color:#f0f0f0; border-radius:10px; display:flex; justify-content:center; align-items:center;">
-                        <span>Community Image Placeholder</span>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How much does tutoring cost? <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Tutoring rates are set by individual tutors and vary based on subject complexity and tutor experience. Most peer tutors charge between $15-30 per hour, which is significantly more affordable than professional tutoring services.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Can I cancel a booked session? <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Yes, you can cancel a session, but please note that cancellations must be made at least 24 hours before the scheduled time to receive a full refund. This policy ensures tutors have enough time to adjust their schedules.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How do I communicate with my tutor? <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        After booking a session, you'll have access to our messaging system where you can communicate with your tutor, share materials, and discuss your learning needs before and after the session.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What if I'm not satisfied with my tutoring session? <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        If you're not satisfied with your session, please contact our support team within 24 hours. We take quality seriously and will work with you to resolve any issues, which may include a partial or full refund depending on the circumstances.
                     </div>
                 </div>
             </div>
@@ -753,20 +764,9 @@
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
-            <h2 class="cta-title">Ready to Enhance Your Learning Experience?</h2>
-            <p class="cta-text">Join PeerLearn, connect with expert tutors, improve learning efficiency, and build study habits that benefit you for life.</p>
-            <a href="#" class="btn btn-primary">Get Started Now</a>
-            
-            <div class="cta-stats">
-                <div class="cta-stat">
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Active Students</div>
-                </div>
-                <div class="cta-stat">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">Successful Learning Sessions</div>
-                </div>
-            </div>
+            <h2 class="cta-title">Ready to Boost Your Academic Performance?</h2>
+            <p class="cta-text">Join thousands of students who have improved their grades and confidence through peer tutoring. Find your perfect tutor today and take the first step toward academic success.</p>
+            <a href="login.php" class="btn btn-primary">Get Started Now</a>
         </div>
     </section>
     
@@ -790,11 +790,11 @@
                 <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">Find a Tutor</a></li>
-                        <li><a href="#">Become a Tutor</a></li>
-                        <li><a href="#">Learning Community</a></li>
-                        <li><a href="#">About Us</a></li>
+                        <li><a href="home_page.html">Home</a></li>
+                        <li><a href="for_students.html">For Students</a></li>
+                        <li><a href="for_tutors.html">For Tutors</a></li>
+                        <li><a href="learn_community.html">Learning Community</a></li>
+                        <li><a href="about_us.html">About Us</a></li>
                     </ul>
                 </div>
                 
@@ -820,5 +820,27 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const isActive = question.classList.contains('active');
+                
+                // Close all other answers
+                document.querySelectorAll('.faq-question').forEach(q => {
+                    q.classList.remove('active');
+                    q.nextElementSibling.style.display = 'none';
+                });
+                
+                // Toggle current answer
+                if (!isActive) {
+                    question.classList.add('active');
+                    answer.style.display = 'block';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
