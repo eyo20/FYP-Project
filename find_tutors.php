@@ -259,13 +259,12 @@ if (!$tutorResult) {
                                             <p class="card-text text-truncate"><?php echo htmlspecialchars($tutor['bio']); ?></p>
                                         <?php endif; ?>
                                         
-                                        <div class="mt-3">
-                                            <a href="tutor_profile.php?id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
-                                            <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
-                                            <a href="add_to_cart.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-success btn-sm">
-                                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                                            </a>
-                                        </div>
+                                    <div class="mt-3">
+                                        <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
+                                        <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
+                                        <a href="add_to_cart.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-success btn-sm"><i class="fas fa-shopping-cart"></i> Add to Cart</a>
+                                    </div>
+ 
                                     </div>
                                 </div>
                             </div>

@@ -25,7 +25,7 @@ if (isset($_POST['reset_btn'])) {
         $email_error = 'Not an MMU email address';
     } else {
         // Check if email exists in the database
-        $sql = "SELECT user_id, email FROM user WHERE email = ?";
+        $sql = "SELECT user_id, email FROM user WHERE email = ?";   //'?' is only serve as a Parameter placeholders
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);
             if (mysqli_stmt_execute($stmt)) {
