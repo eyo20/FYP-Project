@@ -690,7 +690,7 @@ $conn->close();
                 </div>
                 <p class="action-description">Filter tutors by subject, availability,reviews and booking a new session.</p>
                 <a href="find_tutors.php" class="btn">Search Now</a>
-            </div>📅
+            </div>
 
             <div class="action-card" onclick="window.location.href='manage_appointment.php'">
                 <div class="action-header">
