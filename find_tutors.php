@@ -68,8 +68,8 @@ if (!$tutorResult) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find a Tutor - Peer Tutoring Platform</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/find_tutor_style.css">
+    
     <style>
         .tutor-card {
             transition: transform 0.3s;
@@ -132,11 +132,38 @@ if (!$tutorResult) {
             .nav-item {
                 margin: 5px 10px;
             }
+            
+            }
+        
+        .mt-3 btn :hover{
+            background-color: #C4D600;
+            color: white;
+        
         }
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include 'header/stud_head.php'; ?>
+    <nav class="navbar">
+        <div class="logo">PeerLearn</div>
+        <div class="nav-links">
+            <a href="find_tutors.php" class="active">Find Tutors</a>
+            <a href="student_sessions.php">My Sessions</a>
+            <a href="student_profile.php">Profile</a>
+            <a href="messages.php">Messages</a>
+        </div>
+        <div class="user-menu">
+            <div class="user-avatar">
+                <?php if($profile_image): ?>
+                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
+                <?php else: ?>
+                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
+                <?php endif; ?>
+            </div>
+            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
+        </div>
+        <div class="menu-toggle">☰</div>
+    </nav>
 
     <div class="container mt-4">
         <h1 class="mb-4">Find a Tutor</h1>
@@ -262,7 +289,6 @@ if (!$tutorResult) {
                                     <div class="mt-3">
                                         <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
                                         <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
-                                        <a href="add_to_cart.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-success btn-sm"><i class="fas fa-shopping-cart"></i> Add to Cart</a>
                                     </div>
  
                                     </div>
@@ -281,7 +307,9 @@ if (!$tutorResult) {
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <footer>
+        <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>

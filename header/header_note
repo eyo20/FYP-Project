@@ -1,0 +1,21 @@
+这一行是用在body 的navbar，用着的page 要在 a href 后面加一个 class="active"。
+<nav class="navbar">
+        <div class="logo">PeerLearn</div>
+        <div class="nav-links">
+            <a href="student_main_page.php">Find Tutors</a>
+            <a href="student_sessions.php">My Sessions</a>
+            <a href="student_profile.php">Profile</a>
+            <a href="messages.php">Messages</a>
+        </div>
+        <div class="user-menu">
+            <div class="user-avatar">
+                <?php if($profile_image): ?>
+                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
+                <?php else: ?>
+                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
+                <?php endif; ?>
+            </div>
+            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
+        </div>
+        <div class="menu-toggle">☰</div>
+</nav>
