@@ -678,7 +678,7 @@ $conn->close();
             <span>PeerLearn</span>
         </div>
         <div class="nav-links">
-            <a href="tutor_main_page.php" class="active">Schedule Management</a>
+            <a href="tutor_main_page.php" class="active">Main Page</a>
             <a href="tutor_profile.php">Profile</a>
             <a href="tutor_requests.php">Appointment Requests<?php if($pending_requests > 0): ?><span class="notification-badge"><?php echo $pending_requests; ?></span><?php endif; ?></a>
             <a href="tutor_students.php">My Students</a>
