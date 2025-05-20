@@ -674,31 +674,31 @@ $conn->close();
         
         <h2 class="section-title">Quick Actions</h2>
         <div class="quick-actions">
+            <div class="action-card" onclick="window.location.href='student_profile.php'">
+                <div class="action-header">
+                    <div class="action-icon">⭐</div>
+                    <div class="action-title">Edit Profile</div>
+                </div>
+                <p class="action-description">Add your personal information and related settings.</p>
+                <a href="reviews.php" class="btn">Edit Now</a>
+            </div>
+
             <div class="action-card" onclick="window.location.href='find_tutors.php'">
                 <div class="action-header">
                     <div class="action-icon">🔍</div>
                     <div class="action-title">Find Tutors</div>
                 </div>
-                <p class="action-description">Filter tutors by subject, availability, and reviews.</p>
+                <p class="action-description">Filter tutors by subject, availability,reviews and booking a new session.</p>
                 <a href="find_tutors.php" class="btn">Search Now</a>
             </div>
-            
-            <div class="action-card" onclick="window.location.href='appointments.php'">
+
+            <div class="action-card" onclick="window.location.href='manage_appointment.php'">
                 <div class="action-header">
                     <div class="action-icon">📅</div>
-                    <div class="action-title">Book Session</div>
+                    <div class="action-title">Manage Appointment</div>
                 </div>
-                <p class="action-description">Schedule a new tutoring session with your preferred tutor.</p>
-                <a href="appointments.php" class="btn">Book Now</a>
-            </div>
-            
-            <div class="action-card" onclick="window.location.href='reviews.php'">
-                <div class="action-header">
-                    <div class="action-icon">⭐</div>
-                    <div class="action-title">Submit Review</div>
-                </div>
-                <p class="action-description">Share feedback on your recent tutoring experience.</p>
-                <a href="reviews.php" class="btn">Write Review</a>
+                <p class="action-description">Manage the booking sessions and view the completed sessions.</p>
+                <a href="find_tutors.php" class="btn">Manage Now</a>
             </div>
             
             <div class="action-card" onclick="window.location.href='messages.php'">

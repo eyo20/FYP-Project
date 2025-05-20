@@ -23,63 +23,85 @@ $unread_messages = 0;
 // 查询未读消息数量
 $message_query = "SELECT COUNT(*) as count FROM message WHERE receiver_id = ? AND is_read = 0";
 $stmt = $conn->prepare($message_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-if ($row = $result->fetch_assoc()) {
-    $unread_messages = $row['count'];
+if ($stmt) {
+    $stmt->bind_param("i", $user_id);  // 这可能是第95行
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $unread_messages = $row['count'];
+    }
+    $stmt->close();
+} else {
+    // 处理准备语句失败的情况
+    $error_message = "Database Error: Failed to prepare message count statement - " . $conn->error;
+    error_log($error_message);
+    $unread_messages = 0; // 设置默认值
 }
 
-// 获取用户信息
-$user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified 
+
+        // 获取用户信息
+        $user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified, cf.file_path as credential_file
                FROM user u 
-               LEFT JOIN tutorprofile tp ON u.user_id = tp.user_id 
+               LEFT JOIN tutorprofile tp ON u.user_id = tp.user_id
+               LEFT JOIN credential_file cf ON u.user_id = cf.user_id
                WHERE u.user_id = ?";
-$stmt = $conn->prepare($user_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
 
-if ($result->num_rows === 0) {
-    header('Location: logout.php');
-    exit;
-}
 
-$user = $result->fetch_assoc();
-$first_name = $user['first_name'];
-$last_name = $user['last_name'];
-$email = $user['email'];
-$phone = $user['phone'] ?? '';
-$major = $user['major'] ?? '';
-$year = $user['year'] ?? '';
-$bio = $user['bio'] ?? '';
-$qualifications = $user['qualifications'] ?? '';
-$profile_image = $user['profile_image'] ?? '';
-$is_verified = $user['is_verified'] ?? 0;
+        // 准备并执行查询
+        if ($stmt = $conn->prepare($user_query)) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows === 0) {
+                header('Location: logout.php');
+                exit;
+            }
+            
+            $user = $result->fetch_assoc();
+            $stmt->close();
+            
+            // 提取用户数据
+            $first_name = $user['first_name'];
+            $last_name = $user['last_name'];
+            $email = $user['email'];
+            $phone = $user['phone'] ?? '';
+            $major = $user['major'] ?? '';
+            $year = $user['year'] ?? '';
+            $bio = $user['bio'] ?? '';
+            $qualifications = $user['qualifications'] ?? '';
+            $profile_image = $user['profile_image'] ?? '';
+            $is_verified = $user['is_verified'] ?? 0;
+            $credential_file = $user['credential_file'] ?? '';
+        } else {
+            // 查询准备失败
+            $error_message = "Database error: " . $conn->error;
+            error_log($error_message);
+        }
 
-// 获取所有学科
-$all_subjects_query = "SELECT * FROM subject ORDER BY subject_name";
-$all_subjects_result = $conn->query($all_subjects_query);
-$all_subjects = [];
-while ($subject = $all_subjects_result->fetch_assoc()) {
-    $all_subjects[] = $subject;
-}
+        // 获取所有学科
+        $all_subjects_query = "SELECT * FROM subject ORDER BY subject_name";
+        $all_subjects_result = $conn->query($all_subjects_query);
+        $all_subjects = [];
+        while ($subject = $all_subjects_result->fetch_assoc()) {
+            $all_subjects[] = $subject;
+        }
 
-// 获取导师教授的学科和课程
-$tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
-                        FROM tutorsubject ts
-                        JOIN subject s ON ts.subject_id = s.subject_id
-                        LEFT JOIN programme p ON ts.programme_id = p.programme_id
-                        LEFT JOIN course c ON ts.course_id = c.course_id
-                        WHERE ts.tutor_id = ?";
-$stmt = $conn->prepare($tutor_subjects_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$subjects_result = $stmt->get_result();
-$tutor_subjects = [];
-while ($subject = $subjects_result->fetch_assoc()) {
-    $tutor_subjects[] = $subject;
-}
+        // 获取导师教授的学科和课程
+        $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
+                                FROM tutorsubject ts
+                                JOIN subject s ON ts.subject_id = s.subject_id
+                                LEFT JOIN programme p ON ts.programme_id = p.programme_id
+                                LEFT JOIN course c ON ts.course_id = c.course_id
+                                WHERE ts.tutor_id = ?";
+        $stmt = $conn->prepare($tutor_subjects_query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $subjects_result = $stmt->get_result();
+        $tutor_subjects = [];
+        while ($subject = $subjects_result->fetch_assoc()) {
+            $tutor_subjects[] = $subject;
+        }
 
 // 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -92,263 +114,333 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = trim($_POST['year']);
         $bio = trim($_POST['bio']);
         $qualifications = trim($_POST['qualifications']);
+        $credential_file = $user['credential_file'] ?? '';
         
- // Validate Malaysian phone number
-$phone_valid = false;
-if (!empty($phone)) {
-    // Remove all non-numeric characters
-    $phone = preg_replace('/[^0-9]/', '', $phone);
+        // 处理凭证文件上传
+if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 0) {
+    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    $max_size = 10 * 1024 * 1024; // 10MB
     
-    // Check phone number format
-    if (substr($phone, 0, 3) === '011') {
-        // Numbers starting with 011 must be 11 digits
-        $phone_valid = (strlen($phone) === 11);
-    } else if (substr($phone, 0, 2) === '01') {
-        // Other numbers starting with 01x must be 10 digits
-        $phone_valid = (strlen($phone) === 10);
-    }
-    
-    if (!$phone_valid) {
-        $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
-        error_log($error_message);
-    }
-} else {
-    // If the phone number is empty, it is considered valid (optional field)
-    $phone_valid = true;
-}
-
-// Continue only if the phone number is valid
-if ($phone_valid) {
-    // Update user basic information
-    $update_user_query = "UPDATE user SET 
-                         first_name = ?, 
-                         last_name = ?, 
-                         phone = ? 
-                         WHERE user_id = ?";
-    
-    $stmt = $conn->prepare($update_user_query);
-    if (!$stmt) {
-        $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
-        error_log($error_message);
-    } else {
-        $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-        $user_updated = $stmt->execute();
-        if (!$user_updated) {
-            $error_message = "Database Error: Failed to update user information - " . $stmt->error;
-            error_log($error_message);
-        }
-        $stmt->close();
-    }
-            
-            // 更新导师资料
-            $update_tutor_query = "UPDATE tutorprofile SET 
-                                 major = ?, 
-                                 year = ?, 
-                                 bio = ?, 
-                                 qualifications = ? 
-                                 WHERE user_id = ?";
-            
-            $stmt = $conn->prepare($update_tutor_query);
-            $stmt->bind_param("ssssi", $major, $year, $bio, $qualifications, $user_id);
-            $tutor_updated = $stmt->execute();
-            
-            if ($user_updated && $tutor_updated) {
-                $success_message = "Profile updated successfully！";
-            } else {
-                $error_message = "An error occurred while updating your profile. Please try again！";
-            }
-        }
-    }
-    
-    // 处理添加学科、程序和课程
-if (isset($_POST['add_subject'])) {
-    $subject_id = $_POST['subject_id'];
-    $programme_id = $_POST['programme_id'];
-    $course_id = $_POST['course_id'];
-    $hourly_rate = $_POST['hourly_rate'];
-    
-    if (empty($subject_id) || empty($programme_id) || empty($course_id) || empty($hourly_rate)) {
-        $error_message = "Please select a subject, programme, course and enter an hourly rate!";
-    } else {
-        // 检查是否已经添加过该组合
-        $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND programme_id = ? AND course_id = ?";
-        $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    if (in_array($_FILES['credential_file']['type'], $allowed_types) && $_FILES['credential_file']['size'] <= $max_size) {
+        $upload_dir = 'uploads/credentials/';
         
-        if ($result->num_rows > 0) {
-            $error_message = "You have already added this subject, programme and course combination!";
-        } else {
-            // 添加新组合
-            $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, programme_id, course_id, hourly_rate) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($insert_query);
-            $stmt->bind_param("iiiid", $user_id, $subject_id, $programme_id, $course_id, $hourly_rate);
-            $inserted = $stmt->execute();
-            
-            if ($inserted) {
-                $success_message = "Subject, programme and course added successfully!";
-                
-                // 重新获取导师学科和课程列表
-                $stmt = $conn->prepare($tutor_subjects_query);
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $subjects_result = $stmt->get_result();
-                $tutor_subjects = [];
-                while ($subject = $subjects_result->fetch_assoc()) {
-                    $tutor_subjects[] = $subject;
-                }
-            } else {
-                $error_message = "An error occurred while adding the subject, programme and course. Please try again!";
-            }
-        }
-    }
-}
-
-// 处理删除学科和课程
-if (isset($_POST['remove_subject'])) {
-    $subject_id = $_POST['subject_id'];
-    $programme_id = isset($_POST['programme_id']) ? $_POST['programme_id'] : null;
-    $course_id = isset($_POST['course_id']) ? $_POST['course_id'] : null;
-    
-    // 调试信息
-    error_log("Removing: subject_id=$subject_id, programme_id=$programme_id, course_id=$course_id");
-    
-    if (empty($subject_id)) {
-        $error_message = "Invalid record ID!";
-    } else {
-        // 删除学科和课程
-        $delete_query = "DELETE FROM tutorsubject WHERE tutor_id = ? AND subject_id = ?";
-        
-        // 如果提供了 programme_id 和 course_id，则包含在查询中
-        if (!empty($programme_id) && !empty($course_id)) {
-            $delete_query .= " AND programme_id = ? AND course_id = ?";
-            $stmt = $conn->prepare($delete_query);
-            $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
-        } else {
-            $stmt = $conn->prepare($delete_query);
-            $stmt->bind_param("ii", $user_id, $subject_id);
-        }
-        
-        // 执行删除
-        $deleted = $stmt->execute();
-        
-        if ($deleted) {
-            $success_message = "Course record removed successfully!";
-            
-            // 重新获取导师学科和课程列表
-            $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
-                        FROM tutorsubject ts
-                        JOIN subject s ON ts.subject_id = s.subject_id
-                        LEFT JOIN programme p ON ts.programme_id = p.programme_id
-                        LEFT JOIN course c ON ts.course_id = c.course_id
-                        WHERE ts.tutor_id = ?";
-            
-            $stmt = $conn->prepare($tutor_subjects_query);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $subjects_result = $stmt->get_result();
-            $tutor_subjects = [];
-            while ($subject = $subjects_result->fetch_assoc()) {
-                $tutor_subjects[] = $subject;
-            }
-        } else {
-            $error_message = "An error occurred while removing the subject and course. Error: " . $conn->error;
-        }
-    }
-}
-
-}
-
-// 处理头像上传
-if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
-    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-    $max_size = 5 * 1024 * 1024; // 5MB
-    
-    if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
-        $upload_dir = 'uploads/profile_images/';
-        
-        // 创建上传目录（如果不存在）
+        // Create upload directory if it doesn't exist
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
         
-        $filename = uniqid() . '_' . $_FILES['profile_image']['name'];
+        $filename = uniqid() . '_' . $_FILES['credential_file']['name'];
         $target_file = $upload_dir . $filename;
         
-        if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
-            // 更新数据库中的头像路径
-            $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_image);
-            $stmt->bind_param("si", $target_file, $user_id);
-            $image_updated = $stmt->execute();
+        if (move_uploaded_file($_FILES['credential_file']['tmp_name'], $target_file)) {
+            // 文件上传成功，现在更新数据库
             
-            if ($image_updated) {
-                $profile_image = $target_file;
-                $success_message = "Avatar updated successfully！";
+            // 检查是否已存在凭证文件记录
+            $check_credential = "SELECT * FROM credential_file WHERE user_id = ?";
+            $stmt = $conn->prepare($check_credential);
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                // 更新现有记录
+                $update_credential = "UPDATE credential_file SET file_path = ?, status = 'pending' WHERE user_id = ?";
+                $stmt = $conn->prepare($update_credential);
+                $stmt->bind_param("si", $target_file, $user_id);
+                $credential_updated = $stmt->execute();
             } else {
-                $error_message = "An error occurred while updating the avatar information. Please try again.！";
+                // 插入新记录
+                $insert_credential = "INSERT INTO credential_file (user_id, file_path, status) VALUES (?, ?, 'pending')";
+                $stmt = $conn->prepare($insert_credential);
+                $stmt->bind_param("is", $user_id, $target_file);
+                $credential_updated = $stmt->execute();
             }
+            
+            if (isset($credential_updated) && $credential_updated) {
+                $success_message = "Credential file uploaded successfully. It will be reviewed by an administrator.";
+            } else {
+                $error_message = "Failed to update credential file information in the database.";
+            }
+            
         } else {
-            $error_message = "An error occurred while uploading your avatar. Please try again.！";
+            $error_message = "Failed to upload credential file. Please try again.";
         }
     } else {
-        $error_message = "Please upload a valid image file (JPG, PNG, GIF), no larger than 5MB！";
+        $error_message = "Please upload a valid file (PDF, Word, or image) no larger than 10MB.";
     }
+    if (isset($credential_updated) && $credential_updated) {
+    $success_message = "Credential file uploaded successfully. It will be reviewed by an administrator.";
+    error_log("Credential file updated for user ID: $user_id, file: $target_file");
+    } else {
+    $error_message = "Failed to update credential file information in the database. Error: " . $conn->error;
+    error_log("Failed to update credential file for user ID: $user_id. Error: " . $conn->error);
+   }    
 }
 
-// 处理密码更改
-if (isset($_POST['change_password'])) {
-    $current_password = $_POST['current_password'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
-    
-    // 验证表单输入
-    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-        $error_message = "All password fields are required!";
-    } elseif ($new_password !== $confirm_password) {
-        $error_message = "New password and confirm password do not match!";
-    } elseif (strlen($new_password) < 8) {
-        $error_message = "New password must be at least 8 characters long!";
-    } else {
-        // 获取用户当前的密码哈希
-        $password_query = "SELECT password FROM user WHERE user_id = ?";
-        $stmt = $conn->prepare($password_query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+
         
-        if ($result->num_rows === 1) {
-            $user_data = $result->fetch_assoc();
-            $current_password_hash = $user_data['password'];
+        // Validate Malaysian phone number
+        $phone_valid = false;
+        if (!empty($phone)) {
+            // Remove all non-numeric characters
+            $phone = preg_replace('/[^0-9]/', '', $phone);
             
-            // 验证当前密码
-            if (password_verify($current_password, $current_password_hash)) {
-                // 当前密码正确，更新为新密码
-                $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+            // Check phone number format
+            if (substr($phone, 0, 3) === '011') {
+                // Numbers starting with 011 must be 11 digits
+                $phone_valid = (strlen($phone) === 11);
+            } else if (substr($phone, 0, 2) === '01') {
+                // Other numbers starting with 01x must be 10 digits
+                $phone_valid = (strlen($phone) === 10);
+            }
+            
+            if (!$phone_valid) {
+                $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
+                error_log($error_message);
+            }
+        } else {
+            // If the phone number is empty, it is considered valid (optional field)
+            $phone_valid = true;
+        }
+
+        // Continue only if the phone number is valid
+        if ($phone_valid) {
+            // Update user basic information
+            $update_user_query = "UPDATE user SET 
+                                first_name = ?, 
+                                last_name = ?, 
+                                phone = ? 
+                                WHERE user_id = ?";
+            
+            $stmt = $conn->prepare($update_user_query);
+            if (!$stmt) {
+                $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
+                $user_updated = $stmt->execute();
+                if (!$user_updated) {
+                    $error_message = "Database Error: Failed to update user information - " . $stmt->error;
+                    error_log($error_message);
+                }
+                $stmt->close();
+            }
+            
+            // 更新导师资料
+            $update_tutor_query = "UPDATE tutorprofile SET
+                        major = ?,
+                        year = ?,
+                        bio = ?,
+                        qualifications = ?,
+                        credential_file = ?
+                        WHERE user_id = ?";
+
+            $stmt = $conn->prepare($update_tutor_query);
+            if (!$stmt) {
+                $error_message = "Database Error: Failed to prepare tutor update statement - " . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("sssssi", $major, $year, $bio, $qualifications, $credential_file, $user_id);
+                $tutor_updated = $stmt->execute();
+                if (!$tutor_updated) {
+                    $error_message = "Database Error: Failed to update tutor information - " . $stmt->error;
+                    error_log($error_message);
+                }
+                $stmt->close();
+            }
+
+    
+                // 处理添加学科、程序和课程
+            if (isset($_POST['add_subject'])) {
+                $subject_id = $_POST['subject_id'];
+                $programme_id = $_POST['programme_id'];
+                $course_id = $_POST['course_id'];
+                $hourly_rate = $_POST['hourly_rate'];
                 
-                $update_query = "UPDATE user SET password = ? WHERE user_id = ?";
-                $stmt = $conn->prepare($update_query);
-                $stmt->bind_param("si", $new_password_hash, $user_id);
-                $updated = $stmt->execute();
-                
-                if ($updated) {
-                    $success_message = "Password updated successfully!";
+                if (empty($subject_id) || empty($programme_id) || empty($course_id) || empty($hourly_rate)) {
+                    $error_message = "Please select a subject, programme, course and enter an hourly rate!";
                 } else {
-                    $error_message = "Failed to update password. Please try again!";
+                    // 检查是否已经添加过该组合
+                    $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND programme_id = ? AND course_id = ?";
+                    $stmt = $conn->prepare($check_query);
+                    $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    
+                    if ($result->num_rows > 0) {
+                        $error_message = "You have already added this subject, programme and course combination!";
+                    } else {
+                        // 添加新组合
+                        $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, programme_id, course_id, hourly_rate) VALUES (?, ?, ?, ?, ?)";
+                        $stmt = $conn->prepare($insert_query);
+                        $stmt->bind_param("iiiid", $user_id, $subject_id, $programme_id, $course_id, $hourly_rate);
+                        $inserted = $stmt->execute();
+                        
+                        if ($inserted) {
+                            $success_message = "Subject, programme and course added successfully!";
+                            
+                            // 重新获取导师学科和课程列表
+                            $stmt = $conn->prepare($tutor_subjects_query);
+                            $stmt->bind_param("i", $user_id);
+                            $stmt->execute();
+                            $subjects_result = $stmt->get_result();
+                            $tutor_subjects = [];
+                            while ($subject = $subjects_result->fetch_assoc()) {
+                                $tutor_subjects[] = $subject;
+                            }
+                        } else {
+                            $error_message = "An error occurred while adding the subject, programme and course. Please try again!";
+                        }
+                    }
+                }
+            }
+
+            // 处理删除学科和课程
+            if (isset($_POST['remove_subject'])) {
+                $subject_id = $_POST['subject_id'];
+                $programme_id = isset($_POST['programme_id']) ? $_POST['programme_id'] : null;
+                $course_id = isset($_POST['course_id']) ? $_POST['course_id'] : null;
+                
+                // 调试信息
+                error_log("Removing: subject_id=$subject_id, programme_id=$programme_id, course_id=$course_id");
+                
+                if (empty($subject_id)) {
+                    $error_message = "Invalid record ID!";
+                } else {
+                    // 删除学科和课程
+                    $delete_query = "DELETE FROM tutorsubject WHERE tutor_id = ? AND subject_id = ?";
+                    
+                    // 如果提供了 programme_id 和 course_id，则包含在查询中
+                    if (!empty($programme_id) && !empty($course_id)) {
+                        $delete_query .= " AND programme_id = ? AND course_id = ?";
+                        $stmt = $conn->prepare($delete_query);
+                        $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
+                    } else {
+                        $stmt = $conn->prepare($delete_query);
+                        $stmt->bind_param("ii", $user_id, $subject_id);
+                    }
+                    
+                    // 执行删除
+                    $deleted = $stmt->execute();
+                    
+                    if ($deleted) {
+                        $success_message = "Course record removed successfully!";
+                        
+                        // 重新获取导师学科和课程列表
+                        $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
+                                    FROM tutorsubject ts
+                                    JOIN subject s ON ts.subject_id = s.subject_id
+                                    LEFT JOIN programme p ON ts.programme_id = p.programme_id
+                                    LEFT JOIN course c ON ts.course_id = c.course_id
+                                    WHERE ts.tutor_id = ?";
+                        
+                        $stmt = $conn->prepare($tutor_subjects_query);
+                        $stmt->bind_param("i", $user_id);
+                        $stmt->execute();
+                        $subjects_result = $stmt->get_result();
+                        $tutor_subjects = [];
+                        while ($subject = $subjects_result->fetch_assoc()) {
+                            $tutor_subjects[] = $subject;
+                        }
+                    } else {
+                        $error_message = "An error occurred while removing the subject and course. Error: " . $conn->error;
+                    }
+                }
+            }
+
+        }
+
+        // 处理头像上传
+        if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+            
+            if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
+                $upload_dir = 'uploads/profile_images/';
+                
+                // 创建上传目录（如果不存在）
+                if (!file_exists($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                
+                $filename = uniqid() . '_' . $_FILES['profile_image']['name'];
+                $target_file = $upload_dir . $filename;
+                
+                if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
+                    // 更新数据库中的头像路径
+                    $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
+                    $stmt = $conn->prepare($update_image);
+                    $stmt->bind_param("si", $target_file, $user_id);
+                    $image_updated = $stmt->execute();
+                    
+                    if ($image_updated) {
+                        $profile_image = $target_file;
+                        $success_message = "Avatar updated successfully！";
+                    } else {
+                        $error_message = "An error occurred while updating the avatar information. Please try again.！";
+                    }
+                } else {
+                    $error_message = "An error occurred while uploading your avatar. Please try again.！";
                 }
             } else {
-                $error_message = "Current password is incorrect!";
+                $error_message = "Please upload a valid image file (JPG, PNG, GIF), no larger than 5MB！";
             }
-        } else {
-            $error_message = "User not found!";
+        }
+
+        // 处理密码更改
+        if (isset($_POST['change_password'])) {
+            $current_password = $_POST['current_password'];
+            $new_password = $_POST['new_password'];
+            $confirm_password = $_POST['confirm_password'];
+            
+            // 验证表单输入
+            if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+                $error_message = "All password fields are required!";
+            } elseif ($new_password !== $confirm_password) {
+                $error_message = "New password and confirm password do not match!";
+            } elseif (strlen($new_password) < 8) {
+                $error_message = "New password must be at least 8 characters long!";
+            } else {
+                // 获取用户当前的密码哈希
+                $password_query = "SELECT password FROM user WHERE user_id = ?";
+                $stmt = $conn->prepare($password_query);
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows === 1) {
+                    $user_data = $result->fetch_assoc();
+                    $current_password_hash = $user_data['password'];
+                    
+                    // 验证当前密码
+                    if (password_verify($current_password, $current_password_hash)) {
+                        // 当前密码正确，更新为新密码
+                        $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+                        
+                        $update_query = "UPDATE user SET password = ? WHERE user_id = ?";
+                        $stmt = $conn->prepare($update_query);
+                        $stmt->bind_param("si", $new_password_hash, $user_id);
+                        $updated = $stmt->execute();
+                        
+                        if ($updated) {
+                            $success_message = "Password updated successfully!";
+                        } else {
+                            $error_message = "Failed to update password. Please try again!";
+                        }
+                    } else {
+                        $error_message = "Current password is incorrect!";
+                    }
+                } else {
+                    $error_message = "User not found!";
+                }
+            }
         }
     }
 }
-
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -356,7 +448,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peer Tutoring Platform - Tutor Profile</title>
     <style>
-        /* 保持原有的CSS样式 */
+        
         :root {
             --primary: #2B3990;
             --secondary: #00AEEF;
@@ -847,7 +939,7 @@ $conn->close();
             <div class="profile-content">
                 <div class="profile-section">
                     <h3 class="section-title">Personal Information</h3>
-                    <form action="" method="post">
+                    <form action="" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="update_profile" value="1">
                         <div class="form-group">
                             <label for="first_name">First Name</label>
@@ -876,6 +968,16 @@ $conn->close();
                              <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
                              <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
                              </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="credential_file">Academic Credentials</label>
+                            <input type="file" class="form-control" id="credential_file" name="credential_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">Upload your academic transcripts, certificates or diplomas (PDF, Word, or image files)</small>
+                            <?php if(isset($user['credential_file']) && !empty($user['credential_file'])): ?>
+                                <div class="mt-2">
+                                    <span>Current file: <?php echo basename($user['credential_file']); ?></span>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="form-group">
                             <label for="bio">About me</label>
