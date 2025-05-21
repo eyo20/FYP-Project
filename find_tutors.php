@@ -67,10 +67,18 @@ if (!$tutorResult) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find a Tutor - Peer Tutoring Platform</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/find_tutor_style.css">
+    <link rel="stylesheet" href="css/find_tutor_style2.css"> 
+    
     
     <style>
+        :root {
+            --primary: #2B3990;
+            --secondary: #00AEEF;
+            --accent: #C4D600;
+            --light-gray: #f5f7fa;
+            --gray: #e9ecef;
+            --dark-gray: #6c757d;
+        }
         .tutor-card {
             transition: transform 0.3s;
             margin-bottom: 20px;
@@ -134,18 +142,32 @@ if (!$tutorResult) {
             }
             
             }
-        
-        .mt-3 btn :hover{
-            background-color: #C4D600;
+            
+        .btn {
+            background-color: var(--accent);
             color: white;
-        
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
+        
+        .btn:hover {
+            background-color: #b3c300;
+        }
+        
+        
     </style>
 </head>
 <body>
     <?php include 'header/stud_head.php'; ?>
     <nav class="navbar">
-        <div class="logo">PeerLearn</div>
+        <div class="logo"><a href= "student_main_page.php">PeerLearn</a></div>
         <div class="nav-links">
             <a href="find_tutors.php" class="active">Find Tutors</a>
             <a href="student_sessions.php">My Sessions</a>
@@ -162,7 +184,7 @@ if (!$tutorResult) {
             </div>
             <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
         </div>
-        <div class="menu-toggle">☰</div>
+        
     </nav>
 
     <div class="container mt-4">

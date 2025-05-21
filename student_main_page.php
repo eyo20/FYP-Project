@@ -616,25 +616,26 @@ $conn->close();
     </style>
 </head>
 <body>
+    <?php include 'header/stud_head.php'; ?>
     <nav class="navbar">
-        <div class="logo">
-            <!-- <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo"> -->
-            <span>PeerLearn</span>
-        </div>
+        <div class="logo">PeerLearn</div>
         <div class="nav-links">
-            <a href="student_profile.php">Profile</a>
             <a href="find_tutors.php">Find Tutors</a>
-            <a href="appointments.php">Manage Appointments</a>
-            <a href="review.php">Submit Review</a>
-            <a href="message.php">Messages <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
-            <a href="home_page.html">LOGOUT</a>
+            <a href="student_sessions.php">My Sessions</a>
+            <a href="student_profile.php">Profile</a>
+            <a href="messages.php">Messages</a>
         </div>
         <div class="user-menu">
-            <?php if($unread_messages > 0): ?>
-            <div class="notification-badge"><?php echo $unread_messages; ?></div>
-            <?php endif; ?>
-            <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
+            <div class="user-avatar">
+                <?php if($profile_image): ?>
+                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
+                <?php else: ?>
+                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
+                <?php endif; ?>
+            </div>
+            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
         </div>
+        
     </nav>
     
     <main>
