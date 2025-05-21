@@ -729,7 +729,7 @@ $conn->close();
     <nav class="navbar">
         <div class="logo">PeerLearn</div>
         <div class="nav-links">
-            <a href="student_main_page.php">Find Tutors</a>
+            <a href="find_tutors.php">Find Tutors</a>
             <a href="student_sessions.php">My Sessions</a>
             <a href="student_profile.php" class="active">Profile</a>
             <a href="messages.php">Messages
