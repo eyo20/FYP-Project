@@ -8,6 +8,14 @@ if ($conn->connect_error) {
     error_log($error_message);
 }
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// 记录POST数据
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log("POST data received: " . print_r($_POST, true));
+}
+
 // 检查用户是否登录
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'tutor') {
     header('Location: login.php');
@@ -24,7 +32,7 @@ $unread_messages = 0;
 $message_query = "SELECT COUNT(*) as count FROM message WHERE receiver_id = ? AND is_read = 0";
 $stmt = $conn->prepare($message_query);
 if ($stmt) {
-    $stmt->bind_param("i", $user_id);  // 这可能是第95行
+    $stmt->bind_param("i", $user_id);  
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
@@ -88,12 +96,13 @@ if ($stmt) {
         }
 
         // 获取导师教授的学科和课程
-        $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code 
-                                FROM tutorsubject ts
-                                JOIN subject s ON ts.subject_id = s.subject_id
-                                LEFT JOIN programme p ON ts.programme_id = p.programme_id
-                                LEFT JOIN course c ON ts.course_id = c.course_id
-                                WHERE ts.tutor_id = ?";
+        // 修改此查询以一致使用tutor_id
+        $tutor_subjects_query = "SELECT ts.*, s.subject_name, p.programme_name, c.course_name, c.course_code
+                         FROM tutorsubject ts
+                         JOIN subject s ON ts.subject_id = s.subject_id
+                         LEFT JOIN programme p ON ts.programme_id = p.programme_id
+                         LEFT JOIN course c ON ts.course_id = c.course_id
+                         WHERE ts.tutor_id = ?";
         $stmt = $conn->prepare($tutor_subjects_query);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -225,14 +234,13 @@ if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 
                 }
                 $stmt->close();
             }
-            
-            // 更新导师资料
+           
+        // 更新导师资料
             $update_tutor_query = "UPDATE tutorprofile SET
                         major = ?,
                         year = ?,
                         bio = ?,
-                        qualifications = ?,
-                        credential_file = ?
+                        qualifications = ?
                         WHERE user_id = ?";
 
             $stmt = $conn->prepare($update_tutor_query);
@@ -240,7 +248,7 @@ if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 
                 $error_message = "Database Error: Failed to prepare tutor update statement - " . $conn->error;
                 error_log($error_message);
             } else {
-                $stmt->bind_param("sssssi", $major, $year, $bio, $qualifications, $credential_file, $user_id);
+                $stmt->bind_param("ssssi", $major, $year, $bio, $qualifications, $user_id);
                 $tutor_updated = $stmt->execute();
                 if (!$tutor_updated) {
                     $error_message = "Database Error: Failed to update tutor information - " . $stmt->error;
@@ -249,35 +257,80 @@ if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 
                 $stmt->close();
             }
 
-    
-                // 处理添加学科、程序和课程
-            if (isset($_POST['add_subject'])) {
-                $subject_id = $_POST['subject_id'];
-                $programme_id = $_POST['programme_id'];
-                $course_id = $_POST['course_id'];
-                $hourly_rate = $_POST['hourly_rate'];
+        // 处理添加学科、程序和课程
+        if (isset($_POST['add_subject'])) {
+            error_log("Form submitted with data: " . print_r($_POST, true));
+            $subject_id = intval($_POST['subject_id']);
+            $programme_id = intval($_POST['programme_id']);
+            $course_id = intval($_POST['course_id']);
+            $hourly_rate = floatval($_POST['hourly_rate']);
                 
-                if (empty($subject_id) || empty($programme_id) || empty($course_id) || empty($hourly_rate)) {
-                    $error_message = "Please select a subject, programme, course and enter an hourly rate!";
+            error_log("Adding subject: subject_id=$subject_id, programme_id=$programme_id, course_id=$course_id, hourly_rate=$hourly_rate");
+                
+            if (empty($subject_id) || empty($programme_id) || empty($course_id) || empty($hourly_rate)) {
+                $error_message = "Please select a subject, programme, course and enter an hourly rate!";
+                error_log("Validation failed: Empty values detected");
+            } else {
+                // 检查是否已经添加过该组合
+                $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND programme_id = ? AND course_id = ?";
+                $stmt = $conn->prepare($check_query);
+                $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                    
+                if ($result->num_rows > 0) {
+                    $error_message = "You have already added this subject, programme and course combination!";
+                    error_log("Duplicate combination detected");
                 } else {
-                    // 检查是否已经添加过该组合
-                    $check_query = "SELECT * FROM tutorsubject WHERE tutor_id = ? AND subject_id = ? AND programme_id = ? AND course_id = ?";
-                    $stmt = $conn->prepare($check_query);
-                    $stmt->bind_param("iiii", $user_id, $subject_id, $programme_id, $course_id);
+                    // 验证外键值是否存在
+                    $valid_subject = false;
+                    $valid_programme = false;
+                    $valid_course = false;
+                        
+                    // 验证 subject_id
+                    $check_subject = "SELECT subject_id FROM subject WHERE subject_id = ?";
+                    $stmt = $conn->prepare($check_subject);
+                    $stmt->bind_param("i", $subject_id);
                     $stmt->execute();
                     $result = $stmt->get_result();
+                    $valid_subject = ($result->num_rows > 0);
+                        
+                    // 验证 programme_id
+                    $check_programme = "SELECT programme_id FROM programme WHERE programme_id = ?";
+                    $stmt = $conn->prepare($check_programme);
+                    $stmt->bind_param("i", $programme_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $valid_programme = ($result->num_rows > 0);
                     
-                    if ($result->num_rows > 0) {
-                        $error_message = "You have already added this subject, programme and course combination!";
+                    // 验证 course_id
+                    $check_course = "SELECT course_id FROM course WHERE course_id = ?";
+                    $stmt = $conn->prepare($check_course);
+                    $stmt->bind_param("i", $course_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $valid_course = ($result->num_rows > 0);
+                    
+                    error_log("Validation results: subject=$valid_subject, programme=$valid_programme, course=$valid_course");
+                    
+                    if (!$valid_subject || !$valid_programme || !$valid_course) {
+                        $error_message = "Invalid subject, programme or course selected!";
+                        error_log("Foreign key validation failed");
                     } else {
                         // 添加新组合
-                        $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, programme_id, course_id, hourly_rate) VALUES (?, ?, ?, ?, ?)";
+                        $insert_query = "INSERT INTO tutorsubject (tutor_id, subject_id, programme_id, course_id, hourly_rate) 
+                                         VALUES (?, ?, ?, ?, ?)";
+
                         $stmt = $conn->prepare($insert_query);
                         $stmt->bind_param("iiiid", $user_id, $subject_id, $programme_id, $course_id, $hourly_rate);
+                        
+                        error_log("Executing insert: " . $insert_query . " with values: $user_id, $subject_id, $programme_id, $course_id, $hourly_rate");
+                        
                         $inserted = $stmt->execute();
                         
                         if ($inserted) {
                             $success_message = "Subject, programme and course added successfully!";
+                            error_log("Insert successful");
                             
                             // 重新获取导师学科和课程列表
                             $stmt = $conn->prepare($tutor_subjects_query);
@@ -289,11 +342,13 @@ if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 
                                 $tutor_subjects[] = $subject;
                             }
                         } else {
-                            $error_message = "An error occurred while adding the subject, programme and course. Please try again!";
+                            $error_message = "An error occurred while adding the subject, programme and course. Error: " . $conn->error;
+                            error_log("Insert failed: " . $conn->error);
                         }
                     }
                 }
             }
+        }
 
             // 处理删除学科和课程
             if (isset($_POST['remove_subject'])) {
@@ -1013,8 +1068,8 @@ $conn->close();
                         
                         <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="1" required>
                         <button type="submit" class="btn btn-secondary">Add Subject & Course</button>
-                    </form>
-                    
+                        </form>
+
                     <?php if(empty($tutor_subjects)): ?>
                     <p>You haven't added any subjects yet. Please use the form above to add subjects you can teach.</p>
                     <?php else: ?>
@@ -1079,28 +1134,7 @@ $conn->close();
             document.querySelector('.nav-links').classList.toggle('show');
         });
 
-        function updateCourseOptions() {
-          const subjectId = document.getElementById('subject_select').value;
-          const courseSelect = document.getElementById('course_select');
-    
-          // 清空当前选项
-          courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
-            
-          if (subjectId) {
-               // 使用AJAX获取该学科下的课程
-               fetch('get_courses.php?subject_id=' + subjectId)
-                    .then(response => response.json())
-                    .then(courses => {
-                        courses.forEach(course => {
-                            const option = document.createElement('option');
-                            option.value = course.course_id;
-                            option.textContent = `${course.course_name} (${course.course_code})`;
-                            courseSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching courses:', error));
-            }
-        }
+        
 
         function updateProgrammeOptions() {
             const subjectId = document.getElementById('subject_select').value;
