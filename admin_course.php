@@ -35,7 +35,7 @@
                 <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                 <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
                 <a href="session.php"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
-                <a href="review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
+                <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
                 <a href="sales.php"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
                 <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
@@ -60,7 +60,7 @@
                         $servername = "localhost";
                         $username = "root"; // replace with your MySQL username
                         $password = ""; // replace with your MySQL password
-                        $dbname = "mine_fyp";
+                        $dbname = "peer_tutoring_platform";
 
                         // Create connection
                         $conn = new mysqli($servername, $username, $password, $dbname);

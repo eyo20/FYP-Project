@@ -1,3 +1,16 @@
+<?php
+session_start();
+// Display messages if they exist
+if (isset($_SESSION['message'])) {
+    echo '<div class="alert success">' . $_SESSION['message'] . '</div>';
+    unset($_SESSION['message']);
+}
+if (isset($_SESSION['error'])) {
+    echo '<div class="alert error">' . $_SESSION['error'] . '</div>';
+    unset($_SESSION['error']);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,12 +43,12 @@
             <div class="sidebar">
                 <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="#"></a>
-                        <a href="student.php" class="active"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
+                        <a href="admin_student.php" class="active"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                             <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
                                 <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                                     <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
                                     <a href="session.php"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
-                                    <a href="review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
+                                    <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
                                     <a href="sales.php"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
                                     <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
@@ -61,7 +74,7 @@
                     $servername = "localhost";
                     $username = "root"; 
                     $password = ""; 
-                    $dbname = "mine_fyp";
+                    $dbname = "peer_tutoring_platform";
 
                     // Create connection
                     $conn = new mysqli($servername, $username, $password, $dbname);

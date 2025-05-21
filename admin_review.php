@@ -1,117 +1,200 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-    <meta charset="utf-8" />
-    <title>Review & Rating System in PHP & Mysql using Ajax</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge">
+    <meta name="viewport" content="width-device-width, initial-scale=1.0">
+    <title>Peer Tutoring Website - Reviews</title>
+
+    <!--Material Cdn-->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
+
+    <!--Style Sheet-->
+    <link rel="stylesheet" href="studentstyle.css">
 </head>
+
 <body>
     <div class="container">
-    	<h1 class="mt-5 mb-5">Review & Rating System in PHP & Mysql using Ajax</h1>
-    	<div class="card">
-    		<div class="card-header">Sample Product</div>
-    		<div class="card-body">
-    			<div class="row">
-    				<div class="col-sm-4 text-center">
-    					<h1 class="text-warning mt-4 mb-4">
-    						<b><span id="average_rating">0.0</span> / 5</b>
-    					</h1>
-    					<div class="mb-3">
-    						<i class="fas fa-star star-light mr-1 main_star"></i>
-                            <i class="fas fa-star star-light mr-1 main_star"></i>
-                            <i class="fas fa-star star-light mr-1 main_star"></i>
-                            <i class="fas fa-star star-light mr-1 main_star"></i>
-                            <i class="fas fa-star star-light mr-1 main_star"></i>
-	    				</div>
-    					<h3><span id="total_review">0</span> Review</h3>
-    				</div>
-    				<div class="col-sm-4">
-    					<p>
-                            <div class="progress-label-left"><b>5</b> <i class="fas fa-star text-warning"></i></div>
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="image/logo.png">
+                    <h2>PEER<span class="danger">LEARN</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp">close</span>
+                </div>
+            </div>
 
-                            <div class="progress-label-right">(<span id="total_five_star_review">0</span>)</div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="five_star_progress"></div>
+            <div class="sidebar">
+                <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="#"></a>
+                <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
+                <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
+                <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
+                <a href="session.php"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
+                <a href="admin_review.php" class="active"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
+                <a href="sales.php"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
+                <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+            </div>
+        </aside>
+
+        <main>
+            <div class="reviews">
+                <h2>Customer Reviews</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>REVIEW ID</th>
+                            <th>USER NAME</th>
+                            <th>RATING</th>
+                            <th>REVIEW</th>
+                            <th>DATE/TIME</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Database connection
+                        $servername = "localhost";
+                        $username = "root"; // replace with your MySQL username
+                        $password = ""; // replace with your MySQL password
+                        $dbname = "peer_tutoring_platform";
+
+                        // Create connection
+                        $conn = new mysqli($servername, $username, $password, $dbname);
+
+                        // Check connection
+                        if ($conn->connect_error) {
+                            die("Connection failed: " . $conn->connect_error);
+                        }
+
+                        // Fetch reviews from database
+                        $sql = "SELECT * FROM review_table";
+                        $result = $conn->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            // Output data of each row
+                            while($row = $result->fetch_assoc()) {
+                                // Convert timestamp to readable date/time
+                                $formatted_date = date('Y-m-d H:i:s', $row['datetime']);
+                                
+                                echo "<tr>
+                                    <td>".$row["review_id"]."</td>
+                                    <td>".$row["user_name"]."</td>
+                                    <td>";
+                                
+                                // Display star rating
+                                for ($i = 1; $i <= 5; $i++) {
+                                    if ($i <= $row["user_rating"]) {
+                                        echo "<span class='material-symbols-sharp'>star</span>";
+                                    } else {
+                                        echo "<span class='material-symbols-sharp'>star_outline</span>";
+                                    }
+                                }
+                                
+                                echo "</td>
+                                    <td>".$row["user_review"]."</td>
+                                    <td>".$formatted_date."</td>
+                                    <td>
+                                        <a href='edit_review.php?id=".$row["review_id"]."' class='edit-btn'>Edit</a>
+                                        <a href='delete_review.php?id=".$row["review_id"]."' class='delete-btn'>Delete</a>
+                                    </td>
+                                </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6'>No reviews found</td></tr>";
+                        }
+                        $conn->close();
+                        ?>
+                    </tbody>
+                </table>
+                <a href="#">Show All</a>
+            </div>
+        </main>
+
+        <!-------------------END OF REVIEWS------------------->
+        
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <span class="material-symbols-sharp">menu</span>
+                </button>
+                <div class="theme-toggler">
+                    <span class="material-symbols-sharp active">light_mode</span>
+                    <span class="material-symbols-sharp">dark_mode</span>
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hey, <b>MengWen</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="image/profile-1.jpg">
+                    </div>
+                </div>
+            </div>
+
+            <!-----------------END OF RIGHT---------------------->
+            
+            <div class="recent-updates">
+                <h2>Recent Updates</h2>
+                <div class="updates">
+                    <div class="update">
+                        <span class="material-symbols-sharp">star</span>
+                        <h3>Add Review</h3>
+                    </div>
+                    <div class="message">
+                        <p>Admin can add review here!</p>
+                        <form action="review_record.php" method="POST">
+                            <div>
+                                <label for="user_name">User Name:</label>
+                                <input type="text" id="user_name" name="user_name" placeholder="Enter User Name" required>
                             </div>
-                        </p>
-    					<p>
-                            <div class="progress-label-left"><b>4</b> <i class="fas fa-star text-warning"></i></div>
+
+                            <br>
+
+                            <div>
+                                <label for="user_rating">Rating (1-5):</label>
+                                <select id="user_rating" name="user_rating" required>
+                                    <option value="">Select Rating</option>
+                                    <option value="1">1 Star</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="5">5 Stars</option>
+                                </select>
+                            </div>
+
+                            <br>
+
+                            <div>
+                                <label for="user_review">Review:</label>
+                                <textarea id="user_review" name="user_review" placeholder="Enter Review" required></textarea>
+                            </div>
                             
-                            <div class="progress-label-right">(<span id="total_four_star_review">0</span>)</div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="four_star_progress"></div>
-                            </div>               
-                        </p>
-    					<p>
-                            <div class="progress-label-left"><b>3</b> <i class="fas fa-star text-warning"></i></div>
-                            
-                            <div class="progress-label-right">(<span id="total_three_star_review">0</span>)</div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="three_star_progress"></div>
-                            </div>               
-                        </p>
-    					<p>
-                            <div class="progress-label-left"><b>2</b> <i class="fas fa-star text-warning"></i></div>
-                            
-                            <div class="progress-label-right">(<span id="total_two_star_review">0</span>)</div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="two_star_progress"></div>
-                            </div>               
-                        </p>
-    					<p>
-                            <div class="progress-label-left"><b>1</b> <i class="fas fa-star text-warning"></i></div>
-                            
-                            <div class="progress-label-right">(<span id="total_one_star_review">0</span>)</div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="one_star_progress"></div>
-                            </div>               
-                        </p>
-    				</div>
-    				<div class="col-sm-4 text-center">
-    					<h3 class="mt-4 mb-3">Write Review Here</h3>
-    					<button type="button" name="add_review" id="add_review" class="btn btn-primary">Review</button>
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-    	<div class="mt-5" id="review_content"></div>
+                            <br>
+                            <div>
+                                <input type="reset" value="Reset">
+                            </div>
+
+                            <br>
+                            <div>
+                                <input type="submit" value="Add Review">
+                            </div>
+                        </form>
+                        <div class="item add-review">
+                            <div>
+                                <span class="material-symbols-sharp">add</span>
+                                <h3>ADD REVIEW</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
-
-<div id="review_modal" class="modal" tabindex="-1" role="dialog">
-  	<div class="modal-dialog" role="document">
-    	<div class="modal-content">
-	      	<div class="modal-header">
-	        	<h5 class="modal-title">Submit Review</h5>
-	        	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          		<span aria-hidden="true">&times;</span>
-	        	</button>
-	      	</div>
-	      	<div class="modal-body">
-	      		<h4 class="text-center mt-2 mb-4">
-	        		<i class="fas fa-star star-light submit_star mr-1" id="submit_star_1" data-rating="1"></i>
-                    <i class="fas fa-star star-light submit_star mr-1" id="submit_star_2" data-rating="2"></i>
-                    <i class="fas fa-star star-light submit_star mr-1" id="submit_star_3" data-rating="3"></i>
-                    <i class="fas fa-star star-light submit_star mr-1" id="submit_star_4" data-rating="4"></i>
-                    <i class="fas fa-star star-light submit_star mr-1" id="submit_star_5" data-rating="5"></i>
-	        	</h4>
-	        	<div class="form-group">
-	        		<input type="text" name="user_name" id="user_name" class="form-control" placeholder="Enter Your Name" />
-	        	</div>
-	        	<div class="form-group">
-	        		<textarea name="user_review" id="user_review" class="form-control" placeholder="Type Review Here"></textarea>
-	        	</div>
-	        	<div class="form-group text-center mt-4">
-	        		<button type="button" class="btn btn-primary" id="save_review">Submit</button>
-	        	</div>
-	      	</div>
-    	</div>
-  	</div>
-</div>
-
