@@ -137,7 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>预约学习伙伴 - 学生同伴辅导平台</title>
+    <title>Book a study partner - a peer tutoring platform</title>
     <style>
         :root {
             --primary-color: #2B3990;
@@ -221,6 +221,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         h2 {
             color: var(--primary-color);
             margin-bottom: 1.5rem;
+        }
+
+        h4 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
         }
         
         .form-group {
@@ -468,23 +475,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <header>
-        <h1>学生同伴辅导平台</h1>
+        <h1>Peer Tutoring Platform</h1>
     </header>
     
     <div class="container">
-        <h2>预约学习伙伴</h2>
+        <h2>Book a study partner</h2>
         
         <div class="appointment-section">
             <div class="tutor-info">
                 <div class="tutor-profile">
                     <div class="tutor-image">
                         <?php if (!empty($tutor['profile_image'])): ?>
-                            <img src="<?php echo htmlspecialchars($tutor['profile_image']); ?>" alt="学习伙伴头像" class="tutor-image">
+                            <img src="<?php echo htmlspecialchars($tutor['profile_image']); ?>" alt="study partner avatar" class="tutor-image">
                         <?php endif; ?>
                     </div>
                     <div class="tutor-details">
                         <h3><?php echo htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']); ?></h3>
-                        <p><?php echo htmlspecialchars($tutor['major']); ?> | <?php echo htmlspecialchars($tutor['year']); ?>学生</p>
+                        <p><?php echo htmlspecialchars($tutor['major']); ?> | <?php echo htmlspecialchars($tutor['year']); ?>  Student</p>
                         <div class="rating">
                             <?php 
                             $rating = $tutor['rating'];
@@ -504,26 +511,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 
                 <div class="tutor-subjects">
-                    <h4>擅长科目</h4>
+                    <h4>Subject Options</h4>
                     <p>
                         <?php 
                         if(count($subjects) > 0) {
                             $subject_names = array_column($subjects, 'subject_name');
                             echo htmlspecialchars(implode(', ', $subject_names));
                         } else {
-                            echo "暂无科目信息";
+                            echo "No subject information";
                         }
                         ?>
                     </p>
                 </div>
                 
                 <div class="tutor-pricing">
-                    <h4>辅导价格</h4>
-                    <p>RM<?php echo htmlspecialchars($tutor['hourly_rate']); ?>/小时</p>
+                    <h4>Tutoring Price</h4>
+                    <p>RM<?php echo htmlspecialchars($tutor['hourly_rate']); ?>/hour</p>
                 </div>
                 
                 <div class="tutor-bio">
-                    <h4>个人简介</h4>
+                    <h4>Personal Profile
+                    </h4>
                     <p><?php echo htmlspecialchars($tutor['bio']); ?></p>
                 </div>
             </div>
@@ -534,9 +542,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="hidden" id="availability_id" name="availability_id" value="">
                     
                     <div class="form-group">
-                        <label for="subject">选择学科</label>
+                        <label for="subject">Select Discipline</label>
                         <select id="subject" name="subject" required>
-                            <option value="">请选择学科</option>
+                            <option value="">Please Select A Discipline</option>
+                            <?php foreach($all_subjects as $subject): ?>
+                                <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
+                                    <?php echo htmlspecialchars($subject['subject_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="programme">Select Programme</label>
+                        <select id="programme" name="programme" required>
+                            <option value="">Please Select A Programme</option>
+                            <?php foreach($all_subjects as $subject): ?>
+                                <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
+                                    <?php echo htmlspecialchars($subject['subject_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course">Select Course</label>
+                        <select id="course" name="course" required>
+                            <option value="">Please Select A Programme</option>
                             <?php foreach($all_subjects as $subject): ?>
                                 <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
                                     <?php echo htmlspecialchars($subject['subject_name']); ?>
@@ -545,18 +577,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="course">选择课程</label>
-                        <select id="course" name="course" required>
-                            <option value="">请先选择学科</option>
-                        </select>
-                    </div>
+                    
                     
                     <div class="form-group">
-                        <label>选择日期</label>
+                        <label>Select Date</label>
                         <div class="calendar">
                             <div class="calendar-header">
-                                <h4><?php echo date('Y年n月'); ?></h4>
+                                <h4><?php echo date('Y M'); ?></h4>
                                 <div class="calendar-nav">
                                     <button type="button" id="prev-month">&lt;</button>
                                     <button type="button" id="next-month">&gt;</button>
@@ -564,13 +591,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
                             
                             <div class="calendar-grid">
-                                <div class="day-name">日</div>
-                                <div class="day-name">一</div>
-                                <div class="day-name">二</div>
-                                <div class="day-name">三</div>
-                                <div class="day-name">四</div>
-                                <div class="day-name">五</div>
-                                <div class="day-name">六</div>
+                                <div class="day-name">S</div>
+                                <div class="day-name">M</div>
+                                <div class="day-name">T</div>
+                                <div class="day-name">W</div>
+                                <div class="day-name">T</div>
+                                <div class="day-name">F</div>
+                                <div class="day-name">S</div>
                                 
                                 <?php 
                                 // Display empty cells for days before the first day of month
@@ -600,7 +627,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div class="form-group">
-                        <label>选择时间段</label>
+                        <label>Select Time-Slot</label>
                         <div class="time-slots">
                             <?php foreach($time_slots as $slot): ?>
                                 <div class="time-slot" data-id="<?php echo $slot['availability_id']; ?>">
@@ -614,18 +641,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div class="form-group">
-                        <label for="duration">辅导时长</label>
+                        <label for="duration">Tutor duration</label>
                         <select id="duration" name="duration" required>
-                            <option value="1">1小时</option>
-                            <option value="1.5">1.5小时</option>
-                            <option value="2" selected>2小时</option>
+                            <option value="1">1 hour</option>
+                            <option value="1.5">1.5 hours</option>
+                            <option value="2" selected>2 hours</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="location">学习地点</label>
+                        <label for="location">Study Venue</label>
                         <select id="location" name="location" required>
-                            <option value="">请选择地点</option>
+                            <option value="">Please select a study venue</option>
                             <?php foreach($locations as $location): ?>
                                 <option value="<?php echo htmlspecialchars($location['location_id']); ?>">
                                     <?php echo htmlspecialchars($location['location_name']); ?>
@@ -635,23 +662,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div class="form-group">
-                        <label for="notes">学习目标和问题描述</label>
-                        <textarea id="notes" name="notes" rows="4" placeholder="请描述你的学习目标和具体需要帮助的内容..."></textarea>
+                        <label for="notes">Learning objectives and problem statement</label>
+                        <textarea id="notes" name="notes" rows="4" placeholder="Please describe your learning goals and what specific help you need..."></textarea>
                     </div>
                     
                     <div class="price-summary">
-                        <h4>费用汇总</h4>
+                        <h4>Fees Summary</h4>
                         <div class="price-row">
-                            <span>辅导费用 (RM<?php echo $tutor['hourly_rate']; ?> × 2小时)</span>
+                            <span>Tutor Fees (RM<?php echo $tutor['hourly_rate']; ?> × 2 hours)</span>
                             <span id="tutor-fee">RM<?php echo $tutor['hourly_rate'] * 2; ?></span>
                         </div>
                         <div class="price-row">
-                            <span>平台服务费</span>
+                            <span>Platform Charge</span>
                             <span id="platform-fee">RM<?php echo ceil($tutor['hourly_rate'] * 2 * 0.05); ?></span>
                         </div>
                         <hr>
                         <div class="price-row total-price">
-                            <span>总计</span>
+                            <span>Total</span>
                             <span id="total-fee">RM<?php echo $tutor['hourly_rate'] * 2 + ceil($tutor['hourly_rate'] * 2 * 0.05); ?></span>
                         </div>
                     </div>
@@ -662,7 +689,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div class="form-group" style="margin-top: 2rem;">
-                        <button type="submit" class="btn btn-block">确认预约并前往支付</button>
+                        <button type="submit" class="btn btn-block">Confirm your reservation and proceed to payment</button>
                     </div>
                 </form>
             </div>

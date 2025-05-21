@@ -20,7 +20,7 @@ $amount = $_GET['amount'];
 <!DOCTYPE html>
 <html>
 <head>
-    <title>确认付款 - Peer Tutoring</title>
+    <title>Confirm payment - Peer Tutoring</title>
     <style>
         body {
             font-family: Arial;
@@ -49,11 +49,11 @@ $amount = $_GET['amount'];
 </head>
 <body>
 
-<h2>预约付款确认</h2>
+<h2>Booking payment confirmation</h2>
 
 <div class="box">
-    <p><strong>预约编号：</strong> <?php echo $booking_id; ?></p>
-    <p><strong>付款金额：</strong> RM <?php echo number_format($amount, 2); ?></p>
+    <p><strong>Booking ID：</strong> <?php echo $booking_id; ?></p>
+    <p><strong>Payment Amount：</strong> RM <?php echo number_format($amount, 2); ?></p>
 
     <form method="post" action="payment_process.php">
         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
