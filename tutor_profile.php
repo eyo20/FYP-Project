@@ -45,12 +45,23 @@ if ($stmt) {
     error_log($error_message);
     $unread_messages = 0; // 设置默认值
 }
+
+// 检查会话中是否有闪存消息
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); // 使用后删除消息
+}
+
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); // 使用后删除消息
+}
     
 // 获取用户信息
-$user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified, cf.file_path as credential_file
+$user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified, cf.file_path as cgpa_file
        FROM user u 
        LEFT JOIN tutorprofile tp ON u.user_id = tp.user_id
-       LEFT JOIN credential_file cf ON u.user_id = cf.user_id
+       LEFT JOIN cgpa_file cf ON u.user_id = cf.user_id
        WHERE u.user_id = ?";
 
 // 准备并执行查询
@@ -78,7 +89,7 @@ if ($stmt = $conn->prepare($user_query)) {
     $qualifications = $user['qualifications'] ?? '';
     $profile_image = $user['profile_image'] ?? '';
     $is_verified = $user['is_verified'] ?? 0;
-    $credential_file = $user['credential_file'] ?? '';
+    $cgpa_file = $user['cgpa_file'] ?? '';
 } else {
     // 查询准备失败
     $error_message = "Database error: " . $conn->error;
@@ -110,6 +121,150 @@ while ($subject = $subjects_result->fetch_assoc()) {
     $tutor_subjects[] = $subject;
 }
 
+// 获取用户当前的CGPA文件信息
+$user_cgpa_file = null;
+$sql = "SELECT file_path FROM cgpa_file WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    if (!empty($row['file_path'])) {
+        $user_cgpa_file = $row['file_path'];
+    }
+}
+
+
+
+// 在页面顶部处理文件删除请求
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_cgpa_file') {
+    // 获取当前文件路径
+    $sql = "SELECT file_path FROM cgpa_file WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $file_path = $row['file_path'];
+        
+        // 记录删除尝试
+        error_log("Attempting to delete file: $file_path for user ID: $user_id");
+        
+        // 检查文件是否存在并尝试删除
+        if (!empty($file_path) && file_exists($file_path)) {
+            if (unlink($file_path)) {
+                error_log("File successfully deleted from filesystem: $file_path");
+            } else {
+                error_log("Failed to delete file from filesystem: $file_path");
+            }
+        } else {
+            error_log("File does not exist or path is empty: $file_path");
+        }
+        
+        // 无论文件是否成功从文件系统删除，都更新数据库
+        $update_sql = "UPDATE cgpa_file SET file_path = NULL, file_name = NULL, file_type = NULL, status = 'pending' WHERE user_id = ?";
+        $stmt = $conn->prepare($update_sql);
+        $stmt->bind_param("i", $user_id);
+        
+        if ($stmt->execute()) {
+            $_SESSION['success_message'] = "CGPA credential file deleted successfully.";
+            error_log("Database updated: CGPA credential file record cleared for user ID: $user_id");
+        } else {
+            $_SESSION['error_message'] = "Failed to update database after file deletion. Error: " . $conn->error;
+            error_log("Database update failed after file deletion for user ID: $user_id. Error: " . $conn->error);
+        }
+        
+        // 重定向以防止表单重新提交
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
+
+// 处理CPGA凭证文件上传
+if (isset($_FILES['cgpa_file']) && $_FILES['cgpa_file']['error'] == 0) {
+    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    $max_size = 10 * 1024 * 1024; // 10MB
+    
+    if (in_array($_FILES['cgpa_file']['type'], $allowed_types) && $_FILES['cgpa_file']['size'] <= $max_size) {
+        $upload_dir = 'uploads/credentials/';
+        
+        // Create upload directory if it doesn't exist
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $filename = uniqid() . '_' . $_FILES['cgpa_file']['name'];
+        $target_file = $upload_dir . $filename;
+        
+        if (move_uploaded_file($_FILES['cgpa_file']['tmp_name'], $target_file)) {
+            // 文件上传成功，现在更新数据库
+            
+            // 检查是否已存在凭证文件记录
+            $check_credential = "SELECT * FROM cgpa_file WHERE user_id = ?";
+            $stmt = $conn->prepare($check_credential);
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows > 0) {
+                // 获取旧文件路径以便删除
+                $row = $result->fetch_assoc();
+                $old_file = $row['file_path'];
+                
+                // 如果存在旧文件，删除它
+                if (!empty($old_file) && file_exists($old_file) && $old_file != $target_file) {
+                    unlink($old_file);
+                    error_log("Old file deleted: $old_file");
+                }
+                
+                // 更新现有记录
+                $update_credential = "UPDATE cgpa_file SET 
+                    file_name = ?, 
+                    file_path = ?, 
+                    file_type = ?,
+                    upload_date = NOW(),
+                    status = 'pending' 
+                    WHERE user_id = ?";
+                $stmt = $conn->prepare($update_credential);
+                $file_name = $_FILES['cgpa_file']['name'];
+                $file_type = $_FILES['cgpa_file']['type'];
+                $stmt->bind_param("sssi", $file_name, $target_file, $file_type, $user_id);
+                $credential_updated = $stmt->execute();
+            } else {
+                // 插入新记录
+                $insert_credential = "INSERT INTO cgpa_file 
+                    (user_id, file_name, file_path, file_type, status) 
+                    VALUES (?, ?, ?, ?, 'pending')";
+                $stmt = $conn->prepare($insert_credential);
+                $file_name = $_FILES['cgpa_file']['name'];
+                $file_type = $_FILES['cgpa_file']['type'];
+                $stmt->bind_param("isss", $user_id, $file_name, $target_file, $file_type);
+                $credential_updated = $stmt->execute();
+            }
+            
+            if (isset($credential_updated) && $credential_updated) {
+                $user_cgpa_file = $target_file;
+                $success_message = "CGPA credential file uploaded successfully. It will be reviewed by an administrator.";
+                error_log("CGPA credential file updated for user ID: $user_id, file: $target_file");
+            } else {
+                $error_message = "Failed to update CGPA credential file information in the database. Error: " . $conn->error;
+                error_log("Failed to update CGPA credential file for user ID: $user_id. Error: " . $conn->error);
+            }
+            
+        } else {
+            $error_message = "Failed to upload CGPA credential file. Please try again.";
+            error_log("Failed to move uploaded file for user ID: $user_id");
+        }
+    } else {
+        $error_message = "Please upload a valid file (PDF, Word, or image) no larger than 10MB.";
+        error_log("Invalid file type or size for user ID: $user_id");
+    }
+}
+
+
 // 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 处理个人资料更新
@@ -122,62 +277,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = trim($_POST['year']);
         $bio = trim($_POST['bio']);
         $qualifications = trim($_POST['qualifications']);
-        
-        // 处理凭证文件上传
-        if (isset($_FILES['credential_file']) && $_FILES['credential_file']['error'] == 0) {
-            $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
-            $max_size = 10 * 1024 * 1024; // 10MB
-            
-            if (in_array($_FILES['credential_file']['type'], $allowed_types) && $_FILES['credential_file']['size'] <= $max_size) {
-                $upload_dir = 'uploads/credentials/';
-                
-                // Create upload directory if it doesn't exist
-                if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
-                
-                $filename = uniqid() . '_' . $_FILES['credential_file']['name'];
-                $target_file = $upload_dir . $filename;
-                
-                if (move_uploaded_file($_FILES['credential_file']['tmp_name'], $target_file)) {
-                    // 文件上传成功，现在更新数据库
-                    
-                    // 检查是否已存在凭证文件记录
-                    $check_credential = "SELECT * FROM credential_file WHERE user_id = ?";
-                    $stmt = $conn->prepare($check_credential);
-                    $stmt->bind_param("i", $user_id);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    if ($result->num_rows > 0) {
-                        // 更新现有记录
-                        $update_credential = "UPDATE credential_file SET file_path = ?, status = 'pending' WHERE user_id = ?";
-                        $stmt = $conn->prepare($update_credential);
-                        $stmt->bind_param("si", $target_file, $user_id);
-                        $credential_updated = $stmt->execute();
-                    } else {
-                        // 插入新记录
-                        $insert_credential = "INSERT INTO credential_file (user_id, file_path, status) VALUES (?, ?, 'pending')";
-                        $stmt = $conn->prepare($insert_credential);
-                        $stmt->bind_param("is", $user_id, $target_file);
-                        $credential_updated = $stmt->execute();
-                    }
-                    
-                    if (isset($credential_updated) && $credential_updated) {
-                        $credential_file = $target_file;
-                        $success_message = "Credential file uploaded successfully. It will be reviewed by an administrator.";
-                        error_log("Credential file updated for user ID: $user_id, file: $target_file");
-                    } else {
-                        $error_message = "Failed to update credential file information in the database. Error: " . $conn->error;
-                        error_log("Failed to update credential file for user ID: $user_id. Error: " . $conn->error);
-                    }
-                    
-                } else {
-                    $error_message = "Failed to upload credential file. Please try again.";
-                }
-            } else {
-                $error_message = "Please upload a valid file (PDF, Word, or image) no larger than 10MB.";
-            }
-        }
         
         // Validate Malaysian phone number
         $phone_valid = false;
@@ -462,10 +561,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // 获取最新的导师信息（如果有更新）
-$refresh_user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified, cf.file_path as credential_file
+$refresh_user_query = "SELECT u.*, tp.major, tp.year, tp.bio, tp.qualifications, tp.is_verified, cf.file_path as cgpa_file
                   FROM user u 
                   LEFT JOIN tutorprofile tp ON u.user_id = tp.user_id
-                  LEFT JOIN credential_file cf ON u.user_id = cf.user_id
+                  LEFT JOIN cgpa_file cf ON u.user_id = cf.user_id
                   WHERE u.user_id = ?";
 $stmt = $conn->prepare($refresh_user_query);
 $stmt->bind_param("i", $user_id);
@@ -494,7 +593,7 @@ $bio = $user['bio'] ?? '';
 $qualifications = $user['qualifications'] ?? '';
 $profile_image = $user['profile_image'] ?? '';
 $is_verified = $user['is_verified'] ?? 0;
-$credential_file = $user['credential_file'] ?? '';
+$cgpa_file = $user['cgpa_file'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -1070,15 +1169,27 @@ $credential_file = $user['credential_file'] ?? '';
                              </select>
                         </div>
                         <div class="form-group">
-                            <label for="credential_file">Academic Credentials</label>
-                            <input type="file" class="form-control" id="credential_file" name="credential_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                            <small class="form-text text-muted">Upload your academic transcripts, certificates or diplomas (PDF, Word, or image files)</small>
-                            <?php if(isset($user['credential_file']) && !empty($user['credential_file'])): ?>
-                                <div class="mt-2">
-                                    <span>Current file: <?php echo basename($user['credential_file']); ?></span>
+                            <label for="cgpa_file">Cgpa Credentials</label>
+                            <input type="file" class="form-control" id="cgpa_file" name="cgpa_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">Upload your Cgpa transcripts (PDF, Word, or image files)</small>
+                            
+                            <?php if(isset($user_cgpa_file) && !empty($user_cgpa_file)): ?>
+                                <div class="mt-2 border p-2 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-file"></i> Current file: <?php echo basename($user_cgpa_file); ?>
+                                        </div>
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="delete_cgpa_file">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file?');">
+                                                <i class="fas fa-trash"></i> Delete File
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
+
                         <div class="form-group">
                             <label for="bio">About me</label>
                             <textarea class="form-control" id="bio" name="bio" placeholder="Introduce yourself, including your teaching style, experience, etc."><?php echo htmlspecialchars($bio); ?></textarea>
