@@ -1063,11 +1063,10 @@ $credential_file = $user['credential_file'] ?? '';
                              <label for="year">Level</label>
                              <select class="form-control" id="year" name="year">
                              <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select level --</option>
-                             <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
-                             <option value="Diploma" <?php echo $year == 'Diploma' ? 'selected' : ''; ?>>Diploma</option>
-                             <option value="Degree" <?php echo $year == 'Degree' ? 'selected' : ''; ?>>Degree</option>
-                             <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
-                             <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
+                             <option value="Diploma first year" <?php echo $year == 'Diploma first year' ? 'selected' : ''; ?>>Diploma first year</option>
+                             <option value="Diploma second year" <?php echo $year == 'Diploma second year' ? 'selected' : ''; ?>>Diploma second year</option>
+                             <option value="Degree first year" <?php echo $year == 'Degree first year' ? 'selected' : ''; ?>>Degree first year</option>
+                             <option value="Degree second year" <?php echo $year == 'Degree second year' ? 'selected' : ''; ?>>Degree second year</option>
                              </select>
                         </div>
                         <div class="form-group">
