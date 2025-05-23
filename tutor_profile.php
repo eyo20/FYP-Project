@@ -1092,100 +1092,83 @@ $credential_file = $user['credential_file'] ?? '';
                     </form>
                 </div>
                 <div class="profile-section">
-    <h3 class="section-title">Courses Taught</h3>
-    
-    <!-- 成功提示消息，使用与页面风格匹配的设计 -->
-    <?php if (isset($_GET['success']) && $_GET['success'] == 'subject_added'): ?>
-        <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
-            <div class="alert-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="alert-content">
-                <strong>Success!</strong> Subject, programme and course added successfully!
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    <?php endif; ?>
-    
-    <!-- 失败提示消息示例 -->
-    <?php if (isset($error_message)): ?>
-        <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert">
-            <div class="alert-icon">
-                <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <div class="alert-content">
-                <strong>Error!</strong> <?php echo $error_message; ?>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    <?php endif; ?>
-    
-    <form action="" method="post" class="add-subject-form">
-        <input type="hidden" name="add_subject" value="1">
-        <select name="subject_id" id="subject_select" class="form-control" required onchange="updateProgrammeOptions()">
-            <option value="">-- Select Faculty --</option>
-            <?php foreach($all_subjects as $subject): ?>
-            <option value="<?php echo $subject['subject_id']; ?>"><?php echo htmlspecialchars($subject['subject_name']); ?></option>
-            <?php endforeach; ?>
-        </select>
-        
-        <!-- 其余表单内容保持不变 -->
-        <!-- ... -->
-    </form>
-    
-    <!-- 其余内容保持不变 -->
-    <!-- ... -->
-</div>
-
-        
-        <select name="programme_id" id="programme_select" class="form-control" required onchange="updateCourseOptions()">
-            <option value="">-- Select Programme --</option>
-            <!-- Program options will be populated dynamically via JavaScript -->
-        </select>
-        
-        <select name="course_id" id="course_select" class="form-control" required>
-            <option value="">-- Select Course --</option>
-            <!-- The course options will be populated dynamically via JavaScript -->
-        </select>
-        
-        <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="1" required>
-        <button type="submit" class="btn btn-secondary">Add Subject & Course</button>
-    </form>
-    
-    <?php if(empty($tutor_subjects)): ?>
-    <p>You haven't added any subjects yet. Please use the form above to add subjects you can teach.</p>
-    <?php else: ?>
-    <div class="subject-list">
-        <?php foreach($tutor_subjects as $subject): ?>
-            <div class="subject-item">
-            <div class="subject-info">
-                <div class="subject-name"><?php echo htmlspecialchars($subject['subject_name']); ?></div>
-                <div class="programme-name"><?php echo htmlspecialchars($subject['programme_name']); ?></div>
-                <?php if(!empty($subject['course_name'])): ?>
-                <div class="course-name"><?php echo htmlspecialchars($subject['course_name']); ?> (<?php echo htmlspecialchars($subject['course_code']); ?>)</div>
-                <?php endif; ?>
-            </div>
-            <div class="subject-rate">RM<?php echo htmlspecialchars($subject['hourly_rate']); ?>/hour</div>
-            <div class="subject-actions">
-                <form action="" method="post" style="display: inline;">
-                    <input type="hidden" name="remove_subject" value="1">
-                    <input type="hidden" name="subject_id" value="<?php echo $subject['subject_id']; ?>">
-                    <input type="hidden" name="programme_id" value="<?php echo $subject['programme_id']; ?>">
-                    <input type="hidden" name="course_id" value="<?php echo $subject['course_id']; ?>">
-                    <button type="submit" onclick="return confirm('Are you sure you want to remove this subject?')">
-                        <i>🗑️</i>
-                    </button>
-                </form>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-</div>
+                    <h3 class="section-title">Courses Taught</h3>
+                    
+                    <!-- 成功提示消息 -->
+                    <?php if (isset($_GET['success']) && $_GET['success'] == 'subject_added'): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            Subject, programme and course added successfully!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <form action="" method="post" class="add-subject-form">
+                        <input type="hidden" name="add_subject" value="1">
+                        
+                        <div class="form-group">
+                            <select name="subject_id" id="subject_select" class="form-control" required onchange="updateProgrammeOptions()">
+                                <option value="">-- Select Faculty --</option>
+                                <?php foreach($all_subjects as $subject): ?>
+                                <option value="<?php echo $subject['subject_id']; ?>"><?php echo htmlspecialchars($subject['subject_name']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select name="programme_id" id="programme_select" class="form-control" required onchange="updateCourseOptions()">
+                                <option value="">-- Select Programme --</option>
+                                <!-- Program options will be populated dynamically via JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select name="course_id" id="course_select" class="form-control" required>
+                                <option value="">-- Select Course --</option>
+                                <!-- The course options will be populated dynamically via JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-secondary">Add Subject & Course</button>
+                        </div>
+                    </form>
+                    
+                    <?php if(empty($tutor_subjects)): ?>
+                    <p>You haven't added any subjects yet. Please use the form above to add subjects you can teach.</p>
+                    <?php else: ?>
+                    <div class="subject-list">
+                        <?php foreach($tutor_subjects as $subject): ?>
+                            <div class="subject-item">
+                            <div class="subject-info">
+                                <div class="subject-name"><?php echo htmlspecialchars($subject['subject_name']); ?></div>
+                                <div class="programme-name"><?php echo htmlspecialchars($subject['programme_name']); ?></div>
+                                <?php if(!empty($subject['course_name'])): ?>
+                                <div class="course-name"><?php echo htmlspecialchars($subject['course_name']); ?> (<?php echo htmlspecialchars($subject['course_code']); ?>)</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="subject-rate">RM<?php echo htmlspecialchars($subject['hourly_rate']); ?>/hour</div>
+                            <div class="subject-actions">
+                                <form action="" method="post" style="display: inline;">
+                                    <input type="hidden" name="remove_subject" value="1">
+                                    <input type="hidden" name="subject_id" value="<?php echo $subject['subject_id']; ?>">
+                                    <input type="hidden" name="programme_id" value="<?php echo $subject['programme_id']; ?>">
+                                    <input type="hidden" name="course_id" value="<?php echo $subject['course_id']; ?>">
+                                    <button type="submit" onclick="return confirm('Are you sure you want to remove this subject?')">
+                                        <i>🗑️</i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
 
                 <div class="profile-section">
                         <h3 class="section-title">Change Password</h3>
