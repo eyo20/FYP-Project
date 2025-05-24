@@ -39,12 +39,20 @@ while ($row = $subjects_result->fetch_assoc()) {
     $subjects[] = $row;
 }
 
-// Fetch all subjects for dropdown
+// Fetch all subjects(discipline) for dropdown
 $all_subjects_query = "SELECT * FROM subject ORDER BY subject_name";
 $all_subjects_result = $conn->query($all_subjects_query);
 $all_subjects = [];
 while ($row = $all_subjects_result->fetch_assoc()) {
     $all_subjects[] = $row;
+}
+
+// Fetch all programme for dropdown
+$all_programme_query = "SELECT * FROM programme ORDER BY programme_name";
+$all_programme_result = $conn->query($all_programme_query);
+$all_programme = [];
+while ($row = $all_programme_result->fetch_assoc()) {
+    $all_programme[] = $row;
 }
 
 // Fetch available time slots

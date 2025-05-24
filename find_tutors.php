@@ -159,7 +159,7 @@ if (!$tutorResult) {
         
         .btn:hover {
             background-color: #b3c300;
-        }
+        }   
         
         
     </style>
