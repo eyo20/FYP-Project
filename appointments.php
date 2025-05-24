@@ -576,7 +576,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="form-group">
                         <label for="course">Select Course</label>
                         <select id="course" name="course" required>
-                            <option value="">Please Select A Programme</option>
+                            <option value="">Please Select A Course</option>
                             <?php foreach($all_subjects as $subject): ?>
                                 <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
                                     <?php echo htmlspecialchars($subject['subject_name']); ?>
@@ -692,8 +692,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div class="community-box">
-                        <h4>加入学习社区</h4>
-                        <p>预约完成后，你可以加入该学科的学习讨论群，与其他同学分享学习资料和讨论问题！</p>
+                        <h4>Join the Learning Community</h4>
+                        <p>After the appointment is completed, you can join the study discussion group of the subject to share learning materials and discuss issues with other students!</p>
                     </div>
                     
                     <div class="form-group" style="margin-top: 2rem;">
