@@ -620,10 +620,10 @@ $conn->close();
     <nav class="navbar">
         <div class="logo">PeerLearn</div>
         <div class="nav-links">
+            <a href="student_profile.php">Profile</a>
             <a href="find_tutors.php">Find Tutors</a>
             <a href="student_sessions.php">My Sessions</a>
-            <a href="student_profile.php">Profile</a>
-            <a href="messages.php">Messages</a>
+            <a href="student_messages.php">Messages</a>
         </div>
         <div class="user-menu">
             <div class="user-avatar">
