@@ -26,42 +26,17 @@ $stmt->execute();
 $tutor_result = $stmt->get_result();
 $tutor = $tutor_result->fetch_assoc();
 
-// //Fetch tutor hourly rate
-// $tutorsubject_query = "SELECT h.* FROM tutorsubject h ";
-// $stmt = $conn->prepare($tutorsubject_query);
-// $stmt->bind_param("i", $tutor_id);
-// $stmt->execute();
-// $tutor_result = $stmt->get_result();
-// $tutor = $tutor_result->fetch_assoc();
-
-
-// Fetch subjects that the tutor teaches(include hourly rate)
-$subjects_query = "SELECT s.* FROM subject s 
-                  JOIN tutorsubject ts ON s.subject_id = ts.subject_id 
-                  WHERE ts.tutor_id = ?";
-$stmt = $conn->prepare($subjects_query);
+// Fetch courses that the tutor teaches with their hourly rates
+$courses_query = "SELECT c.*, ts.hourly_rate FROM courses c 
+                 JOIN tutorsubject ts ON c.course_id = ts.course_id 
+                 WHERE ts.tutor_id = ?";
+$stmt = $conn->prepare($courses_query);
 $stmt->bind_param("i", $tutor_id);
 $stmt->execute();
-$subjects_result = $stmt->get_result();
-$subjects = [];
-while ($row = $subjects_result->fetch_assoc()) {
-    $subjects[] = $row;
-}
-
-// Fetch all subjects(discipline) for dropdown
-$all_subjects_query = "SELECT * FROM subject ORDER BY subject_name";
-$all_subjects_result = $conn->query($all_subjects_query);
-$all_subjects = [];
-while ($row = $all_subjects_result->fetch_assoc()) {
-    $all_subjects[] = $row;
-}
-
-// Fetch all programme for dropdown
-$all_programme_query = "SELECT * FROM programme ORDER BY programme_name";
-$all_programme_result = $conn->query($all_programme_query);
-$all_programme = [];
-while ($row = $all_programme_result->fetch_assoc()) {
-    $all_programme[] = $row;
+$courses_result = $stmt->get_result();
+$courses = [];
+while ($row = $courses_result->fetch_assoc()) {
+    $courses[] = $row;
 }
 
 // Fetch available time slots
@@ -88,73 +63,7 @@ $current_month = date('n');
 $current_year = date('Y');
 $days_in_month = date('t');
 $first_day_of_month = date('w', strtotime(date('Y-m-01')));
-
-// Handle form submission if POST data exists
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Process booking form submission
-    $subject_id = $_POST['subject'];
-    $course_id = $_POST['course'];
-    $selected_date = $_POST['selected_date'];
-    $availability_id = $_POST['availability_id'];
-    $duration = $_POST['duration'];
-    $location_id = $_POST['location'];
-    $notes = $_POST['notes'];
-
-    // Get student ID from session (assuming student is logged in)
-    $student_id = 2; // For testing purposes, replace with actual session variable
-
-    // Calculate start and end datetime
-    $availability_query = "SELECT start_datetime, end_datetime FROM availability WHERE availability_id = ?";
-    $stmt = $conn->prepare($availability_query);
-    $stmt->bind_param("i", $availability_id);
-    $stmt->execute();
-    $availability_result = $stmt->get_result();
-    $availability = $availability_result->fetch_assoc();
-
-    $start_datetime = $availability['start_datetime'];
-    $end_datetime = date('Y-m-d H:i:s', strtotime($start_datetime . " + {$duration} hours"));
-
-    // Insert into Session table
-    $session_query = "INSERT INTO session (tutor_id, student_id, course_id, availability_id, location_id, 
-                     status, start_datetime, end_datetime) 
-                     VALUES (?, ?, ?, ?, ?, 'scheduled', ?, ?)";
-    $stmt = $conn->prepare($session_query);
-    $stmt->bind_param(
-        "iiiiiss",
-        $tutor_id,
-        $student_id,
-        $course_id,
-        $availability_id,
-        $location_id,
-        $start_datetime,
-        $end_datetime
-    );
-    $stmt->execute();
-    $session_id = $conn->insert_id;
-
-    // Update Availability status
-    $update_availability = "UPDATE availability SET status = 'booked' WHERE availability_id = ?";
-    $stmt = $conn->prepare($update_availability);
-    $stmt->bind_param("i", $availability_id);
-    $stmt->execute();
-
-    // Calculate payment amount
-    $amount = $tutor['hourly_rate'] * $duration;
-    $platform_fee = ceil($amount * 0.05); // 5% platform fee
-    $total_amount = $amount + $platform_fee;
-
-    // Create a Payment record
-    $payment_query = "INSERT INTO payment (session_id, amount, status, payment_method) 
-                     VALUES (?, ?, 'pending', 'online')";
-    $stmt = $conn->prepare($payment_query);
-    $stmt->bind_param("id", $session_id, $total_amount);
-    $stmt->execute();
-    $payment_id = $conn->insert_id;
-
-    // Redirect to make payment page
-    header("Location: make_payment.php?payment_id={$payment_id}");
-    exit();
-}
+$today = date('Y-m-d');
 ?>
 
 <!DOCTYPE html>
@@ -227,7 +136,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 50%;
             margin-right: 1rem;
             background-color: #ddd;
-            /* Placeholder for missing image */
         }
 
         .tutor-details h3 {
@@ -430,38 +338,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Subject and course selection
-            const subjectSelect = document.getElementById('subject');
+            // Course selection
             const courseSelect = document.getElementById('course');
 
-            // Load courses when subject changes
-            subjectSelect.addEventListener('change', function() {
-                const subjectId = this.value;
+            // Store hourly rates for each course
+            const hourlyRates = <?php echo json_encode(array_column($courses, 'hourly_rate', 'course_id')); ?>;
 
-                // Clear current courses
-                courseSelect.innerHTML = '<option value="">请选择课程</option>';
-
-                if (subjectId) {
-                    // Fetch courses for the selected subject
-                    fetch(`get_courses.php?subject_id=${subjectId}`)
-                        .then(response => response.json())
-                        .then(courses => {
-                            courses.forEach(course => {
-                                const option = document.createElement('option');
-                                option.value = course.course_id;
-                                option.textContent = `${course.course_code} - ${course.course_name}`;
-                                courseSelect.appendChild(option);
-                            });
-                        });
-                }
-            });
-
-            // Calculate price based on duration
+            // Calculate price based on duration and course
             const durationSelect = document.getElementById('duration');
-            const hourlyRate = <?php echo $tutor['hourly_rate']; ?>;
 
             function updatePrice() {
+                const courseId = courseSelect.value;
                 const duration = parseFloat(durationSelect.value);
+                const hourlyRate = courseId ? hourlyRates[courseId] || 0 : 0;
                 const tutorFee = hourlyRate * duration;
                 const platformFee = Math.ceil(tutorFee * 0.05); // 5% platform fee
                 const totalFee = tutorFee + platformFee;
@@ -469,13 +358,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 document.getElementById('tutor-fee').innerHTML = 'RM' + tutorFee.toFixed(2);
                 document.getElementById('platform-fee').innerHTML = 'RM' + platformFee.toFixed(2);
                 document.getElementById('total-fee').innerHTML = 'RM' + totalFee.toFixed(2);
+                document.getElementById('tutor-price').innerHTML = 'RM' + (hourlyRate ? hourlyRate.toFixed(2) : '0.00') + '/hour';
             }
 
             // Initialize price calculation
             updatePrice();
 
-            // Update price when duration changes
+            // Update price when duration or course changes
             durationSelect.addEventListener('change', updatePrice);
+            courseSelect.addEventListener('change', updatePrice);
 
             // Time slot selection
             const timeSlots = document.querySelectorAll('.time-slot');
@@ -488,14 +379,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             });
 
             // Calendar day selection
+            const today = new Date('<?php echo $today; ?>');
             const calendarDays = document.querySelectorAll('.calendar-day:not(.disabled)');
             calendarDays.forEach(day => {
                 day.addEventListener('click', function() {
-                    calendarDays.forEach(d => d.classList.remove('selected'));
-                    this.classList.add('selected');
-                    const selectedDay = this.textContent;
+                    const selectedDay = parseInt(this.textContent);
                     const month = <?php echo $current_month; ?>;
                     const year = <?php echo $current_year; ?>;
+                    const selectedDate = new Date(year, month - 1, selectedDay);
+
+                    // Prevent selection of dates before today
+                    if (selectedDate < today.setHours(0, 0, 0, 0)) {
+                        return;
+                    }
+
+                    calendarDays.forEach(d => d.classList.remove('selected'));
+                    this.classList.add('selected');
                     document.getElementById('selected_date').value = `${year}-${month.toString().padStart(2, '0')}-${selectedDay.toString().padStart(2, '0')}`;
                 });
             });
@@ -541,14 +440,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
 
                 <div class="tutor-subjects">
-                    <h4>Subject Options</h4>
+                    <h4>Course Options</h4>
                     <p>
                         <?php
-                        if (count($subjects) > 0) {
-                            $subject_names = array_column($subjects, 'subject_name');
-                            echo htmlspecialchars(implode(', ', $subject_names));
+                        if (count($courses) > 0) {
+                            $course_names = array_column($courses, 'course_name');
+                            echo htmlspecialchars(implode(', ', $course_names));
                         } else {
-                            echo "No subject information";
+                            echo "No course information";
                         }
                         ?>
                     </p>
@@ -556,58 +455,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="tutor-pricing">
                     <h4>Tutoring Price</h4>
-                    <p>RM<?php echo htmlspecialchars($subjects['hourly_rate']); ?>/hour</p>
+                    <p id="tutor-price">Please select a course</p>
                 </div>
 
                 <div class="tutor-bio">
-                    <h4>Personal Profile
-                    </h4>
+                    <h4>Personal Profile</h4>
                     <p><?php echo htmlspecialchars($tutor['bio']); ?></p>
                 </div>
             </div>
 
             <div class="booking-form">
-                <form id="appointmentForm" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . "?tutor_id=" . $tutor_id; ?>">
+                <form id="appointmentForm" method="POST" action="confirm_booking.php">
+                    <input type="hidden" name="tutor_id" value="<?php echo $tutor_id; ?>">
                     <input type="hidden" id="selected_date" name="selected_date" value="<?php echo date('Y-m-d'); ?>">
                     <input type="hidden" id="availability_id" name="availability_id" value="">
-
-                    <!-- <div class="form-group">
-                        <label for="subject">Select Discipline</label>
-                        <select id="subject" name="subject" required>
-                            <option value="">Please Select A Discipline</option>
-                            <?php foreach ($all_subjects as $subject): ?>
-                                <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
-                                    <?php echo htmlspecialchars($subject['subject_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="programme">Select Programme</label>
-                        <select id="programme" name="programme" required>
-                            <option value="">Please Select A Programme</option>
-                            <?php foreach ($all_subjects as $subject): ?>
-                                <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
-                                    <?php echo htmlspecialchars($subject['subject_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div> -->
 
                     <div class="form-group">
                         <label for="course">Select Course</label>
                         <select id="course" name="course" required>
                             <option value="">Please Select A Course</option>
-                            <?php foreach ($all_subjects as $subject): ?>
-                                <option value="<?php echo htmlspecialchars($subject['subject_id']); ?>">
-                                    <?php echo htmlspecialchars($subject['subject_name']); ?>
+                            <?php foreach ($courses as $course): ?>
+                                <option value="<?php echo htmlspecialchars($course['course_id']); ?>">
+                                    <?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-
 
                     <div class="form-group">
                         <label>Select Date</label>
@@ -615,8 +488,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div class="calendar-header">
                                 <h4><?php echo date('Y M'); ?></h4>
                                 <div class="calendar-nav">
-                                    <button type="button" id="prev-month">&lt;</button>
-                                    <button type="button" id="next-month">&gt;</button>
+                                    <button type="button" id="prev-month">
+                                        << /button>
+                                            <button type="button" id="next-month">></button>
                                 </div>
                             </div>
 
@@ -637,9 +511,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 }
 
                                 // Display days of current month
-                                $today = intval(date('j'));
+                                $today_day = intval(date('j'));
                                 for ($day = 1; $day <= $days_in_month; $day++) {
-                                    if ($day == $today) {
+                                    $current_date = date('Y-m-d', strtotime("{$current_year}-{$current_month}-{$day}"));
+                                    if ($current_date < $today) {
+                                        echo "<div class='calendar-day disabled'>{$day}</div>";
+                                    } elseif ($day == $today_day) {
                                         echo "<div class='calendar-day selected'>{$day}</div>";
                                     } else {
                                         echo "<div class='calendar-day'>{$day}</div>";
@@ -699,17 +576,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="price-summary">
                         <h4>Fees Summary</h4>
                         <div class="price-row">
-                            <span>Tutor Fees (RM<?php echo $tutor['hourly_rate']; ?> × 2 hours)</span>
-                            <span id="tutor-fee">RM<?php echo $tutor['hourly_rate'] * 2; ?></span>
+                            <span>Tutor Fees</span>
+                            <span id="tutor-fee">RM0.00</span>
                         </div>
                         <div class="price-row">
                             <span>Platform Charge</span>
-                            <span id="platform-fee">RM<?php echo ceil($tutor['hourly_rate'] * 2 * 0.05); ?></span>
+                            <span id="platform-fee">RM0.00</span>
                         </div>
                         <hr>
                         <div class="price-row total-price">
                             <span>Total</span>
-                            <span id="total-fee">RM<?php echo $tutor['hourly_rate'] * 2 + ceil($tutor['hourly_rate'] * 2 * 0.05); ?></span>
+                            <span id="total-fee">RM0.00</span>
                         </div>
                     </div>
 
@@ -726,9 +603,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <!-- 需要创建一个get_courses.php文件来处理AJAX请求 -->
     <script>
-        // 这里可以添加额外的JavaScript代码
+        // Additional JavaScript code can be added here if needed
     </script>
 </body>
 
