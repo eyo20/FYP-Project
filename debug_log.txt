@@ -34,3 +34,63 @@ Received POST data: Array
 )
 
 Errors: Invalid or unavailable time slot selected. Please choose another time slot.
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-05-30
+    [availability_id] => 
+    [course] => 7
+    [duration] => 2
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Time slot is not selected.
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-05-30
+    [availability_id] => 
+    [course] => 7
+    [duration] => 1.5
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Time slot is not selected.
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-05-30
+    [availability_id] => 
+    [course] => 7
+    [duration] => 1.5
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Time slot is not selected.
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-05-30
+    [availability_id] => 
+    [course] => 7
+    [duration] => 1.5
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Invalid student ID. Please ensure you are logged in as a valid student.
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-05-30
+    [availability_id] => 
+    [course] => 7
+    [duration] => 2
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Invalid student ID. Please ensure you are logged in as a valid student.

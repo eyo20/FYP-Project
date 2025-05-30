@@ -13,7 +13,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Initialize error message
+// Initialize error messages and debug info
 $error = [];
 $debug = [];
 
@@ -23,7 +23,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tutor_id = isset($_POST['tutor_id']) ? intval($_POST['tutor_id']) : 0;
     $course_id = isset($_POST['course']) ? intval($_POST['course']) : 0;
     $selected_date = isset($_POST['selected_date']) ? trim($_POST['selected_date']) : "";
-    $availability_id = isset($_POST['availability_id']) ? intval($_POST['availability_id']) : 0;
     $duration = isset($_POST['duration']) ? floatval($_POST['duration']) : 0;
     $location_id = isset($_POST['location']) ? intval($_POST['location']) : 0;
     $notes = isset($_POST['notes']) ? trim($_POST['notes']) : "";
@@ -31,79 +30,114 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Debug: Log received form data
     $debug[] = "Received POST data: " . print_r($_POST, true);
 
-    // Get student ID from session (replace with actual session variable)
+    // Get student ID (hardcoded for testing; replace with session variable in production)
     $student_id = 2; // For testing purposes
 
     // Validate required fields
     if ($tutor_id <= 0) $error[] = "Tutor ID is missing or invalid.";
     if ($course_id <= 0) $error[] = "Course is not selected.";
     if (empty($selected_date) || !preg_match("/^\d{4}-\d{2}-\d{2}$/", $selected_date)) $error[] = "Date is not selected or invalid.";
-    if ($availability_id <= 0) $error[] = "Time slot is not selected.";
     if ($duration <= 0) $error[] = "Duration is not selected or invalid.";
     if ($location_id <= 0) $error[] = "Study venue is not selected.";
 
-    // If no errors, proceed with booking
+    // Validate student_id exists in user table
     if (empty($error)) {
-        // Get hourly rate for the selected course
-        $rate_query = "SELECT hourly_rate FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
-        $stmt = $conn->prepare($rate_query);
-        $stmt->bind_param("ii", $tutor_id, $course_id);
+        $student_query = "SELECT user_id FROM user WHERE user_id = ? AND role = 'student'";
+        $stmt = $conn->prepare($student_query);
+        $stmt->bind_param("i", $student_id);
         $stmt->execute();
-        $rate_result = $stmt->get_result();
-        $rate_row = $rate_result->fetch_assoc();
+        $student_result = $stmt->get_result();
+        if ($student_result->num_rows === 0) {
+            $error[] = "Invalid student ID. Please ensure you are logged in as a valid student.";
+        }
+    }
 
-        if (!$rate_row) {
-            $error[] = "No hourly rate found for the selected course. Please contact support.";
+    // If no errors, proceed with booking request
+    if (empty($error)) {
+        // Get course details for display
+        $course_query = "SELECT course_code, course_name FROM courses WHERE course_id = ?";
+        $stmt = $conn->prepare($course_query);
+        $stmt->bind_param("i", $course_id);
+        $stmt->execute();
+        $course_result = $stmt->get_result();
+        $course = $course_result->fetch_assoc();
+
+        if (!$course) {
+            $error[] = "Invalid course selected.";
         } else {
-            $hourly_rate = $rate_row['hourly_rate'];
-
-            // Get availability details
-            $availability_query = "SELECT start_datetime, end_datetime FROM availability WHERE availability_id = ? AND tutor_id = ? AND status = 'open'";
-            $stmt = $conn->prepare($availability_query);
-            $stmt->bind_param("ii", $availability_id, $tutor_id);
+            // Get hourly rate for the selected course
+            $rate_query = "SELECT hourly_rate FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
+            $stmt = $conn->prepare($rate_query);
+            $stmt->bind_param("ii", $tutor_id, $course_id);
             $stmt->execute();
-            $availability_result = $stmt->get_result();
-            $availability = $availability_result->fetch_assoc();
+            $rate_result = $stmt->get_result();
+            $rate_row = $rate_result->fetch_assoc();
 
-            if (!$availability || empty($availability['start_datetime']) || empty($availability['end_datetime'])) {
-                $error[] = "Invalid or unavailable time slot selected. Please choose another time slot.";
+            if (!$rate_row) {
+                $error[] = "No hourly rate found for the selected course. Please contact support.";
             } else {
-                $start_datetime = $availability['start_datetime'];
-                $end_datetime = date('Y-m-d H:i:s', strtotime($start_datetime . " + {$duration} hours"));
+                $hourly_rate = $rate_row['hourly_rate'];
 
-                // Insert into session table
-                $session_query = "INSERT INTO session (tutor_id, student_id, course_id, availability_id, location_id, status, start_datetime, end_datetime) 
-                                 VALUES (?, ?, ?, ?, ?, 'scheduled', ?, ?)";
-                $stmt = $conn->prepare($session_query);
-                $stmt->bind_param("iiiiiss", $tutor_id, $student_id, $course_id, $availability_id, $location_id, $start_datetime, $end_datetime);
+                // Get location details for display
+                $location_query = "SELECT location_name FROM location WHERE location_id = ?";
+                $stmt = $conn->prepare($location_query);
+                $stmt->bind_param("i", $location_id);
+                $stmt->execute();
+                $location_result = $stmt->get_result();
+                $location = $location_result->fetch_assoc();
 
-                if ($stmt->execute()) {
-                    $session_id = $conn->insert_id;
-
-                    // Update availability status to 'booked'
-                    $update_availability = "UPDATE availability SET status = 'booked' WHERE availability_id = ?";
-                    $stmt = $conn->prepare($update_availability);
-                    $stmt->bind_param("i", $availability_id);
-                    $stmt->execute();
-
-                    // Calculate payment amount
-                    $amount = $hourly_rate * $duration;
-                    $platform_fee = ceil($amount * 0.05); // 5% platform fee
-                    $total_amount = $amount + $platform_fee;
-
-                    // Create a payment record
-                    $payment_query = "INSERT INTO payment (session_id, amount, status, payment_method) 
-                                     VALUES (?, ?, 'pending', 'online')";
-                    $stmt = $conn->prepare($payment_query);
-                    $stmt->bind_param("id", $session_id, $total_amount);
-                    $stmt->execute();
-                    $payment_id = $conn->insert_id;
-
-                    // Redirect to payment page
-                    header("Location: make_payment.php?payment_id={$payment_id}");
-                    exit();
+                if (!$location) {
+                    $error[] = "Invalid study venue selected.";
                 } else {
-                    $error[] = "Failed to create session. Please try again.";
+                    // Insert into session_requests table
+                    $request_query = "INSERT INTO session_requests (tutor_id, student_id, course_id, location_id, duration, selected_date, notes, status, created_at) 
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
+                    $stmt = $conn->prepare($request_query);
+                    $stmt->bind_param("iiiidss", $tutor_id, $student_id, $course_id, $location_id, $duration, $selected_date, $notes);
+
+                    if ($stmt->execute()) {
+                        $request_id = $conn->insert_id;
+
+                        // Display confirmation page
+                        echo "<!DOCTYPE html>
+                        <html lang='zh'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Booking Confirmation - Peer Tutoring Platform</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 0; padding: 2rem; text-align: center; }
+                                .container { max-width: 600px; margin: 0 auto; }
+                                .confirmation { background-color: #f5f5f5; padding: 1.5rem; border-radius: 8px; }
+                                h1 { color: #2B3990; }
+                                .details { text-align: left; margin: 1rem 0; }
+                                .details p { margin: 0.5rem 0; }
+                                .btn { background-color: #C4D600; padding: 0.8rem 1.5rem; text-decoration: none; color: #333; border-radius: 4px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <h1>Booking Request Submitted</h1>
+                                <div class='confirmation'>
+                                    <p>Your booking is awaiting peer tutor confirmation.</p>
+                                    <div class='details'>
+                                        <h3>Booking Details</h3>
+                                        <p><strong>Course:</strong> " . htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']) . "</p>
+                                        <p><strong>Date:</strong> " . htmlspecialchars($selected_date) . "</p>
+                                        <p><strong>Duration:</strong> " . htmlspecialchars($duration) . " hours</p>
+                                        <p><strong>Study Venue:</strong> " . htmlspecialchars($location['location_name']) . "</p>
+                                        <p><strong>Notes:</strong> " . (empty($notes) ? "None" : htmlspecialchars($notes)) . "</p>
+                                        <p><strong>Hourly Rate:</strong> RM " . number_format($hourly_rate, 2) . "</p>
+                                    </div>
+                                </div>
+                                <a href='appointments.php?tutor_id=$tutor_id' class='btn'>Back to Booking</a>
+                            </div>
+                        </body>
+                        </html>";
+                        exit();
+                    } else {
+                        $error[] = "Failed to create booking request. Please try again.";
+                    }
                 }
             }
         }
