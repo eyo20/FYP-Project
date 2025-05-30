@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-05-30 09:42:49
+-- 生成日期： 2025-05-30 09:49:22
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -343,7 +343,8 @@ CREATE TABLE `session_requests` (
 
 INSERT INTO `session_requests` (`request_id`, `tutor_id`, `student_id`, `course_id`, `location_id`, `duration`, `selected_date`, `notes`, `status`, `created_at`) VALUES
 (2, 16, 16, 4, 1, 2, '2025-05-30', '', 'pending', '2025-05-30 07:41:39'),
-(3, 16, 16, 4, 1, 2, '2025-05-30', '', 'pending', '2025-05-30 07:42:16');
+(3, 16, 16, 4, 1, 2, '2025-05-30', '', 'pending', '2025-05-30 07:42:16'),
+(4, 16, 23, 4, 3, 1, '2025-05-30', 'Pls help me out.', 'pending', '2025-05-30 07:47:10');
 
 -- --------------------------------------------------------
 
@@ -799,7 +800,7 @@ ALTER TABLE `session`
 -- 使用表AUTO_INCREMENT `session_requests`
 --
 ALTER TABLE `session_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `student_cart`
