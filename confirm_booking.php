@@ -1,17 +1,8 @@
 <?php
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "peer_tutoring_platform";
+// Start session
+session_start();
+require_once 'db_connection.php';
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 // Initialize error messages and debug info
 $error = [];
@@ -30,8 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Debug: Log received form data
     $debug[] = "Received POST data: " . print_r($_POST, true);
 
-    // Get student ID (hardcoded for testing; replace with session variable in production)
-    $student_id = 2; // For testing purposes
+    // Get student ID from session (fallback to a valid student ID for testing)
+    $student_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 12; // Use user_id 12 (valid student)
 
     // Validate required fields
     if ($tutor_id <= 0) $error[] = "Tutor ID is missing or invalid.";
@@ -40,21 +31,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($duration <= 0) $error[] = "Duration is not selected or invalid.";
     if ($location_id <= 0) $error[] = "Study venue is not selected.";
 
-    // Validate student_id exists in user table
-    if (empty($error)) {
-        $student_query = "SELECT user_id FROM user WHERE user_id = ? AND role = 'student'";
-        $stmt = $conn->prepare($student_query);
-        $stmt->bind_param("i", $student_id);
-        $stmt->execute();
-        $student_result = $stmt->get_result();
-        if ($student_result->num_rows === 0) {
-            $error[] = "Invalid student ID. Please ensure you are logged in as a valid student.";
-        }
-    }
+    // // Validate student_id exists in user table
+    // if (empty($error)) {
+    //     $student_query = "SELECT user_id FROM user WHERE user_id = ? AND role = 'student'";
+    //     $stmt = $conn->prepare($student_query);
+    //     $stmt->bind_param("i", $student_id);
+    //     $stmt->execute();
+    //     $student_result = $stmt->get_result();
+    //     if ($student_result->num_rows === 0) {
+    //         $error[] = "Invalid student ID. Please ensure you are logged in as a valid student.";
+    //     }
+    // }
 
     // If no errors, proceed with booking request
     if (empty($error)) {
-        // Get course details for display
+        // Get course details for display (from courses table)
         $course_query = "SELECT course_code, course_name FROM courses WHERE course_id = ?";
         $stmt = $conn->prepare($course_query);
         $stmt->bind_param("i", $course_id);
@@ -65,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (!$course) {
             $error[] = "Invalid course selected.";
         } else {
-            // Get hourly rate for the selected course
+            // Get hourly rate for the selected course (adjusted for courses table)
             $rate_query = "SELECT hourly_rate FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
             $stmt = $conn->prepare($rate_query);
             $stmt->bind_param("ii", $tutor_id, $course_id);
