@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action']) && isset($_POST['request_id'])) {
         $action = $_POST['action'];
         $request_id = $_POST['request_id'];
-        
+
         // 验证请求是否属于当前导师
         // 注意：这里需要根据您的实际表结构修改
         // 假设您有一个session_requests表
@@ -57,25 +57,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ii", $request_id, $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($result->num_rows > 0) {
             $request = $result->fetch_assoc();
-            
+
             if ($action === 'accept') {
                 // 接受请求
                 $stmt = $conn->prepare("UPDATE session_requests SET status = 'accepted', updated_at = NOW() WHERE id = ?");
                 $stmt->bind_param("i", $request_id);
-                
+
                 if ($stmt->execute()) {
                     // 创建会话记录
                     // 注意：这里需要根据您的session表结构修改
                     $stmt = $conn->prepare("INSERT INTO session (tutor_id, student_id, course_id, start_datetime, end_datetime, status, created_at)
                                     VALUES (?, ?, ?, ?, ?, 'scheduled', NOW())");
                     $stmt->bind_param("iiiss", $user_id, $request['student_id'], $request['course_id'], $request['preferred_time'], $request['end_time']);
-                    
+
                     if ($stmt->execute()) {
                         $success_message = 'Request accepted successfully!';
-                        
+
                         // 向学生发送通知
                         $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
                                         VALUES (?, 'session', 'Request Accepted', 'Your tutoring request has been accepted', ?, NOW())");
@@ -91,10 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 拒绝请求
                 $stmt = $conn->prepare("UPDATE session_requests SET status = 'rejected', updated_at = NOW() WHERE id = ?");
                 $stmt->bind_param("i", $request_id);
-                
+
                 if ($stmt->execute()) {
                     $success_message = 'Request rejected.';
-                    
+
                     // 向学生发送通知
                     $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
                                     VALUES (?, 'session', 'Request Rejected', 'Your tutoring request has been rejected', ?, NOW())");
@@ -107,13 +107,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 建议替代时间
                 $suggested_time = $_POST['suggested_time'];
                 $suggested_end_time = date('Y-m-d H:i:s', strtotime($suggested_time) + (strtotime($request['end_time']) - strtotime($request['preferred_time'])));
-                
+
                 $stmt = $conn->prepare("UPDATE session_requests SET status = 'time_suggested', suggested_time = ?, suggested_end_time = ?, updated_at = NOW() WHERE id = ?");
                 $stmt->bind_param("ssi", $suggested_time, $suggested_end_time, $request_id);
-                
+
                 if ($stmt->execute()) {
                     $success_message = 'Alternative time suggested successfully.';
-                    
+
                     // 向学生发送通知
                     $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
                                     VALUES (?, 'session', 'Alternative Time Suggested', 'Your tutor has suggested an alternative time for your request', ?, NOW())");
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error_message = 'Invalid request ID or you do not have permission to perform this action.';
         }
-        
+
         // 重定向以防止表单重复提交
         if ($success_message) {
             header('Location: tutor_requests.php?success=' . urlencode($success_message));
@@ -146,14 +146,14 @@ $pending_count = 0;
 try {
     $stmt = $conn->prepare("SELECT sr.*, s.subject_name, u.first_name, u.last_name, u.profile_image
                          FROM session_requests sr
-                         JOIN subject s ON sr.subject_id = s.subject_id
+                         JOIN subject s ON sr.course_id = s.subject_id
                          JOIN user u ON sr.student_id = u.user_id
                          WHERE sr.tutor_id = ? AND sr.status = 'pending'
-                         ORDER BY sr.preferred_time ASC");
+                         ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $pending_requests_result = $stmt->get_result();
-    
+
     while ($row = $pending_requests_result->fetch_assoc()) {
         $pending_requests[] = $row;
     }
@@ -168,7 +168,7 @@ $processed_requests = [];
 try {
     $stmt = $conn->prepare("SELECT sr.*, s.subject_name, u.first_name, u.last_name, u.profile_image
                          FROM session_requests sr
-                         JOIN subject s ON sr.subject_id = s.subject_id
+                         JOIN subject s ON sr.course_id = s.subject_id
                          JOIN user u ON sr.student_id = u.user_id
                          WHERE sr.tutor_id = ? AND sr.status != 'pending'
                          ORDER BY sr.updated_at DESC
@@ -176,7 +176,7 @@ try {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $processed_requests_result = $stmt->get_result();
-    
+
     while ($row = $processed_requests_result->fetch_assoc()) {
         $processed_requests[] = $row;
     }
@@ -201,6 +201,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -215,20 +216,20 @@ $conn->close();
             --light-gray: #f5f5f5;
             --dark-gray: #777;
         }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: var(--light-gray);
             color: #333;
             line-height: 1.6;
         }
-        
+
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -236,20 +237,20 @@ $conn->close();
             background-color: var(--primary);
             color: white;
             padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .logo span {
             font-size: 1.5rem;
             font-weight: bold;
             color: white;
         }
-        
+
         .nav-links {
             display: flex;
             gap: 1.5rem;
         }
-        
+
         .nav-links a {
             color: white;
             text-decoration: none;
@@ -257,15 +258,15 @@ $conn->close();
             position: relative;
             transition: color 0.3s;
         }
-        
+
         .nav-links a:hover {
             color: var(--accent);
         }
-        
+
         .nav-links a.active {
             color: var(--accent);
         }
-        
+
         .notification-badge {
             position: absolute;
             top: -8px;
@@ -281,13 +282,13 @@ $conn->close();
             font-size: 0.7rem;
             font-weight: bold;
         }
-        
+
         .user-menu {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -301,49 +302,49 @@ $conn->close();
             overflow: hidden;
             border: 2px solid white;
         }
-        
+
         .profile-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         main {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
+
         .page-title {
             margin-bottom: 1.5rem;
             color: var(--primary);
             font-weight: 600;
         }
-        
+
         .alert {
             padding: 1rem;
             border-radius: 4px;
             margin-bottom: 1.5rem;
         }
-        
+
         .alert-success {
             background-color: rgba(196, 214, 0, 0.1);
             border-left: 4px solid var(--accent);
             color: #5a6400;
         }
-        
+
         .alert-danger {
             background-color: rgba(220, 53, 69, 0.1);
             border-left: 4px solid #dc3545;
             color: #dc3545;
         }
-        
+
         .tabs {
             display: flex;
             border-bottom: 1px solid var(--gray);
             margin-bottom: 1.5rem;
         }
-        
+
         .tab {
             padding: 0.75rem 1.5rem;
             cursor: pointer;
@@ -353,54 +354,54 @@ $conn->close();
             color: var(--dark-gray);
             position: relative;
         }
-        
+
         .tab.active {
             border-bottom-color: var(--accent);
             color: var(--primary);
             font-weight: 600;
         }
-        
+
         .tab:hover {
             background-color: rgba(0, 174, 239, 0.05);
             color: var(--primary);
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
         .request-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 1.5rem;
         }
-        
-                .request-card {
+
+        .request-card {
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding: 1.5rem;
             transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .request-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border-color: rgba(0, 174, 239, 0.2);
         }
-        
+
         .request-header {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .student-avatar {
             width: 50px;
             height: 50px;
@@ -414,21 +415,21 @@ $conn->close();
             overflow: hidden;
             border: 2px solid var(--light-gray);
         }
-        
+
         .request-info {
             flex: 1;
         }
-        
+
         .student-name {
             font-weight: 600;
             color: var(--primary);
         }
-        
+
         .request-subject {
             color: var(--dark-gray);
             font-size: 0.9rem;
         }
-        
+
         .request-details {
             margin-bottom: 1.5rem;
             background-color: rgba(0, 174, 239, 0.03);
@@ -436,30 +437,30 @@ $conn->close();
             border-radius: 6px;
             border-left: 3px solid var(--secondary);
         }
-        
+
         .detail-item {
             display: flex;
             margin-bottom: 0.5rem;
         }
-        
+
         .detail-label {
             width: 120px;
             color: var(--dark-gray);
             font-size: 0.9rem;
         }
-        
+
         .detail-value {
             flex: 1;
             font-weight: 500;
             color: var(--primary);
         }
-        
+
         .request-actions {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 0.5rem 1rem;
             border: none;
@@ -471,51 +472,51 @@ $conn->close();
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .btn-primary {
             background-color: var(--secondary);
             color: white;
         }
-        
+
         .btn-primary:hover {
             background-color: #0095cc;
             transform: translateY(-2px);
             box-shadow: 0 3px 8px rgba(0, 174, 239, 0.3);
         }
-        
+
         .btn-success {
             background-color: var(--accent);
             color: white;
         }
-        
+
         .btn-success:hover {
             background-color: #b1c100;
             transform: translateY(-2px);
             box-shadow: 0 3px 8px rgba(196, 214, 0, 0.3);
         }
-        
+
         .btn-danger {
             background-color: #dc3545;
             color: white;
         }
-        
+
         .btn-danger:hover {
             background-color: #c82333;
             transform: translateY(-2px);
             box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 1px solid var(--secondary);
             color: var(--secondary);
         }
-        
+
         .btn-outline:hover {
             background-color: rgba(0, 174, 239, 0.1);
             transform: translateY(-2px);
         }
-        
+
         .status-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -524,48 +525,48 @@ $conn->close();
             font-weight: 600;
             margin-left: auto;
         }
-        
+
         .status-pending {
             background-color: rgba(255, 193, 7, 0.1);
             color: #ffc107;
         }
-        
+
         .status-accepted {
             background-color: rgba(196, 214, 0, 0.1);
             color: var(--accent);
         }
-        
+
         .status-rejected {
             background-color: rgba(220, 53, 69, 0.1);
             color: #dc3545;
         }
-        
+
         .status-suggested {
             background-color: rgba(0, 174, 239, 0.1);
             color: var(--secondary);
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 3rem;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .empty-icon {
             font-size: 3rem;
             color: var(--secondary);
             margin-bottom: 1rem;
             opacity: 0.5;
         }
-        
+
         .empty-text {
             color: var(--dark-gray);
             margin-bottom: 1.5rem;
         }
-        
+
         .modal {
             display: none;
             position: fixed;
@@ -573,35 +574,35 @@ $conn->close();
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        
+
         .modal-content {
             background-color: white;
             border-radius: 8px;
             width: 100%;
             max-width: 500px;
             padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border-top: 5px solid var(--secondary);
         }
-        
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
         }
-        
+
         .modal-title {
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary);
         }
-        
+
         .modal-close {
             background: none;
             border: none;
@@ -610,26 +611,26 @@ $conn->close();
             color: var(--dark-gray);
             transition: color 0.3s;
         }
-        
+
         .modal-close:hover {
             color: var(--primary);
         }
-        
+
         .modal-body {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group {
             margin-bottom: 1rem;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--primary);
         }
-        
+
         .form-control {
             width: 100%;
             padding: 0.75rem;
@@ -638,36 +639,36 @@ $conn->close();
             font-size: 1rem;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
-        
+
         .form-control:focus {
             outline: none;
             border-color: var(--secondary);
             box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.2);
         }
-        
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
         }
-        
+
         @media (max-width: 768px) {
             .navbar {
                 padding: 1rem;
             }
-            
+
             .nav-links {
                 gap: 1rem;
             }
-            
+
             .request-list {
                 grid-template-columns: 1fr;
             }
-            
+
             .request-actions {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
                 justify-content: center;
@@ -699,27 +700,27 @@ $conn->close();
             <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
         </div>
     </nav>
-    
+
     <main>
         <h1 class="page-title">Tutoring Requests</h1>
-        
+
         <?php if ($success_message): ?>
             <div class="alert alert-success">
                 <?php echo htmlspecialchars($success_message); ?>
             </div>
         <?php endif; ?>
-        
+
         <?php if ($error_message): ?>
             <div class="alert alert-danger">
                 <?php echo htmlspecialchars($error_message); ?>
             </div>
         <?php endif; ?>
-        
+
         <div class="tabs">
             <div class="tab active" data-tab="pending">Pending Requests <?php if ($pending_count > 0): ?><span class="notification-badge"><?php echo $pending_count; ?></span><?php endif; ?></div>
             <div class="tab" data-tab="processed">Processed Requests</div>
         </div>
-        
+
         <div id="pending-tab" class="tab-content active">
             <?php if (count($pending_requests) > 0): ?>
                 <div class="request-list">
@@ -738,7 +739,7 @@ $conn->close();
                                     <div class="request-subject"><?php echo htmlspecialchars($request['subject_name']); ?></div>
                                 </div>
                             </div>
-                            
+
                             <div class="request-details">
                                 <div class="detail-item">
                                     <div class="detail-label">Course:</div>
@@ -746,16 +747,16 @@ $conn->close();
                                 </div>
                                 <div class="detail-item">
                                     <div class="detail-label">Requested Time:</div>
-                                    <div class="detail-value"><?php echo date('M d, Y g:i A', strtotime($request['preferred_time'])); ?></div>
+                                    <div class="detail-value"><?php echo date('M d, Y g:i A'); ?></div>
                                 </div>
                                 <div class="detail-item">
                                     <div class="detail-label">Duration:</div>
                                     <div class="detail-value">
-                                        <?php 
-                                            $start = new DateTime($request['preferred_time']);
-                                            $end = new DateTime($request['end_time']);
-                                            $duration = $start->diff($end);
-                                            echo $duration->format('%h hour(s) %i minute(s)');
+                                        <?php
+                                        $start = new DateTime($request['preferred_time']);
+                                        $end = new DateTime($request['end_time']);
+                                        $duration = $start->diff($end);
+                                        echo $duration->format('%h hour(s) %i minute(s)');
                                         ?>
                                     </div>
                                 </div>
@@ -766,7 +767,7 @@ $conn->close();
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            
+
                             <div class="request-actions">
                                 <form method="post" action="tutor_requests.php">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
@@ -775,7 +776,7 @@ $conn->close();
                                         <i class="fas fa-check"></i> Accept
                                     </button>
                                 </form>
-                                
+
                                 <form method="post" action="tutor_requests.php">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
                                     <input type="hidden" name="action" value="reject">
@@ -783,7 +784,7 @@ $conn->close();
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </form>
-                                
+
                                 <button type="button" class="btn btn-outline suggest-time-btn" data-request-id="<?php echo $request['id']; ?>">
                                     <i class="fas fa-clock"></i> Suggest Time
                                 </button>
@@ -801,7 +802,7 @@ $conn->close();
                 </div>
             <?php endif; ?>
         </div>
-        
+
         <div id="processed-tab" class="tab-content">
             <?php if (count($processed_requests) > 0): ?>
                 <div class="request-list">
@@ -820,29 +821,29 @@ $conn->close();
                                     <div class="request-subject"><?php echo htmlspecialchars($request['subject_name']); ?></div>
                                 </div>
                                 <?php
-                                    $statusClass = '';
-                                    $statusText = '';
-                                    switch ($request['status']) {
-                                        case 'accepted':
-                                            $statusClass = 'status-accepted';
-                                            $statusText = 'Accepted';
-                                            break;
-                                        case 'rejected':
-                                            $statusClass = 'status-rejected';
-                                            $statusText = 'Rejected';
-                                            break;
-                                        case 'time_suggested':
-                                                                                        $statusClass = 'status-suggested';
-                                            $statusText = 'Time Suggested';
-                                            break;
-                                        default:
-                                            $statusClass = 'status-pending';
-                                            $statusText = 'Pending';
-                                    }
+                                $statusClass = '';
+                                $statusText = '';
+                                switch ($request['status']) {
+                                    case 'accepted':
+                                        $statusClass = 'status-accepted';
+                                        $statusText = 'Accepted';
+                                        break;
+                                    case 'rejected':
+                                        $statusClass = 'status-rejected';
+                                        $statusText = 'Rejected';
+                                        break;
+                                    case 'time_suggested':
+                                        $statusClass = 'status-suggested';
+                                        $statusText = 'Time Suggested';
+                                        break;
+                                    default:
+                                        $statusClass = 'status-pending';
+                                        $statusText = 'Pending';
+                                }
                                 ?>
                                 <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
                             </div>
-                            
+
                             <div class="request-details">
                                 <div class="detail-item">
                                     <div class="detail-label">Course:</div>
@@ -861,11 +862,11 @@ $conn->close();
                                 <div class="detail-item">
                                     <div class="detail-label">Duration:</div>
                                     <div class="detail-value">
-                                        <?php 
-                                            $start = new DateTime($request['preferred_time']);
-                                            $end = new DateTime($request['end_time']);
-                                            $duration = $start->diff($end);
-                                            echo $duration->format('%h hour(s) %i minute(s)');
+                                        <?php
+                                        $start = new DateTime($request['preferred_time']);
+                                        $end = new DateTime($request['end_time']);
+                                        $duration = $start->diff($end);
+                                        echo $duration->format('%h hour(s) %i minute(s)');
                                         ?>
                                     </div>
                                 </div>
@@ -888,7 +889,7 @@ $conn->close();
             <?php endif; ?>
         </div>
     </main>
-    
+
     <!-- Suggest Time Modal -->
     <div id="suggest-time-modal" class="modal">
         <div class="modal-content">
@@ -913,38 +914,38 @@ $conn->close();
             </form>
         </div>
     </div>
-    
+
     <script>
         // Tab switching
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
-        
+
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const tabId = tab.getAttribute('data-tab');
-                
+
                 // Remove active class from all tabs and contents
                 tabs.forEach(t => t.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
-                
+
                 // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
                 document.getElementById(`${tabId}-tab`).classList.add('active');
             });
         });
-        
+
         // Modal functionality
         const modal = document.getElementById('suggest-time-modal');
         const suggestButtons = document.querySelectorAll('.suggest-time-btn');
         const closeButtons = document.querySelectorAll('.modal-close, .modal-close-btn');
         const requestIdInput = document.getElementById('modal-request-id');
-        
+
         suggestButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const requestId = button.getAttribute('data-request-id');
                 requestIdInput.value = requestId;
                 modal.style.display = 'flex';
-                
+
                 // Set minimum date to today
                 const now = new Date();
                 const year = now.getFullYear();
@@ -952,18 +953,18 @@ $conn->close();
                 const day = String(now.getDate()).padStart(2, '0');
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
-                
+
                 const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
                 document.getElementById('suggested_time').min = minDateTime;
             });
         });
-        
+
         closeButtons.forEach(button => {
             button.addEventListener('click', () => {
                 modal.style.display = 'none';
             });
         });
-        
+
         // Close modal when clicking outside
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
@@ -972,6 +973,5 @@ $conn->close();
         });
     </script>
 </body>
+
 </html>
-
-
