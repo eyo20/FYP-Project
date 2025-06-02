@@ -35,7 +35,7 @@ if (isset($_POST['loginbtn'])) {
 
     if (!$error) {
         // Fetch user and role information
-        $sql = "SELECT user_id, email, password, role FROM user WHERE email = ?";
+        $sql = "SELECT user_id, email, password, role, first_name FROM user WHERE email = ?";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);
@@ -53,7 +53,8 @@ if (isset($_POST['loginbtn'])) {
                         $_SESSION['user_id'] = $id;
                         $_SESSION['email']    = $db_email;
                         $_SESSION['role']     = $role;
-                    
+                        $_SESSION['first_name'] = $first_name;
+
                         // Update last login time
                         $update_login_time = "UPDATE user SET last_login = NOW() WHERE user_id = ?";
                         $login_stmt = $conn->prepare($update_login_time);
@@ -68,8 +69,7 @@ if (isset($_POST['loginbtn'])) {
                         } elseif ($role === 'tutor') {
                             header('Location: tutor_main_page.php');
                             exit;
-                        }    
-                          elseif ($role === 'admin') {
+                        } elseif ($role === 'admin') {
                             header('Location: admin.html');
                             exit;
                         } else {
@@ -78,7 +78,7 @@ if (isset($_POST['loginbtn'])) {
                     } else {
                         $login_error = 'Invalid email or password';
                     }
-                } 
+                }
             } else {
                 $login_error = 'Oops! Something went wrong. Please try again later.';
             }
@@ -93,6 +93,7 @@ mysqli_close($conn);
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>PeerLearn - Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,7 +102,7 @@ mysqli_close($conn);
             box-sizing: border-box;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
-        
+
         body {
             background-color: #f5f5f5;
             margin: 0;
@@ -111,17 +112,17 @@ mysqli_close($conn);
             align-items: center;
             height: 100vh;
         }
-        
+
         .login-container {
             margin: 0 auto;
             border: 1px solid #ddd;
             border-radius: 10px;
             width: 400px;
             padding: 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: white;
         }
-        
+
         #login-title {
             background-color: #2B3990;
             border-radius: 8px 8px 0 0;
@@ -130,32 +131,32 @@ mysqli_close($conn);
             align-items: center;
             padding: 0 20px;
         }
-        
+
         .logo-container {
             display: flex;
             align-items: center;
         }
-        
+
         .logo-container img {
             height: 40px;
             margin-right: 10px;
         }
-        
+
         #login-title h2 {
             margin: 0;
             color: white;
             font-weight: 500;
         }
-        
+
         #login-form {
             padding: 25px;
         }
-        
+
         .input-group {
             position: relative;
             margin-bottom: 20px;
         }
-        
+
         .input-group label {
             display: block;
             text-align: left;
@@ -163,8 +164,8 @@ mysqli_close($conn);
             color: #555;
             font-size: 14px;
         }
-        
-        #login-form input[type=email], 
+
+        #login-form input[type=email],
         #login-form input[type=password] {
             width: 100%;
             border-radius: 5px;
@@ -174,20 +175,20 @@ mysqli_close($conn);
             font-size: 16px;
             transition: border 0.3s;
         }
-        
-        #login-form input[type=email]:focus, 
+
+        #login-form input[type=email]:focus,
         #login-form input[type=password]:focus {
             border: 1px solid #00AEEF;
             outline: none;
         }
-        
+
         .error-message {
             color: #e74c3c;
             font-size: 12px;
             margin-top: 5px;
             text-align: left;
         }
-        
+
         #login-form input[type=submit] {
             background-color: #C4D600;
             width: 100%;
@@ -201,27 +202,27 @@ mysqli_close($conn);
             transition: background-color 0.3s;
             margin-top: 10px;
         }
-        
+
         #login-form input[type=submit]:hover {
             background-color: #b5c500;
         }
-        
+
         #login-form p {
             margin-top: 20px;
             text-align: center;
         }
-        
+
         #login-form p a {
             text-decoration: none;
             color: #00AEEF;
             font-size: 14px;
         }
-        
+
         #login-form p a:hover {
             color: #2B3990;
             text-decoration: underline;
         }
-        
+
         .login-error {
             background-color: #fce4e4;
             border: 1px solid #e74c3c;
@@ -233,82 +234,83 @@ mysqli_close($conn);
         }
 
         .registration-success {
-           background-color: #d4edda;
-         border: 1px solid #c3e6cb;
-         color: #155724;
-         padding: 10px;
-         border-radius: 5px;
-         margin-bottom: 20px;
-         text-align: center;
-        }
-        
-        .reset-password-success-message {
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
+        .reset-password-success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
-<div class="login-container">
+    <div class="login-container">
         <div id="login-title">
             <div class="logo-container">
                 <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 <h2>PeerLearn</h2>
             </div>
         </div>
-        
+
         <div id="login-form">
-           <?php 
-             // 检查是否有注册成功的消息
-             $registrationSuccess = isset($_GET['registered']) && $_GET['registered'] === 'true';
-             if($registrationSuccess): 
-           ?>
-            <div class="registration-success">
-            Registration successful! You can now log in with your email and password.
-            </div>
+            <?php
+            // 检查是否有注册成功的消息
+            $registrationSuccess = isset($_GET['registered']) && $_GET['registered'] === 'true';
+            if ($registrationSuccess):
+            ?>
+                <div class="registration-success">
+                    Registration successful! You can now log in with your email and password.
+                </div>
             <?php endif; ?>
 
-            <?php if($password_reset_success): ?>
+            <?php if ($password_reset_success): ?>
                 <div class="reset-password-success-message">
-                   Your password has been reset successfully. You can now log in with your new password.
+                    Your password has been reset successfully. You can now log in with your new password.
                 </div>
             <?php endif; ?>
-    
-            <?php if(!empty($login_error)): ?>
+
+            <?php if (!empty($login_error)): ?>
                 <div class="login-error">
-                   <?php echo $login_error; ?>
+                    <?php echo $login_error; ?>
                 </div>
             <?php endif; ?>
-            
+
             <form name="loginfrm" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                 <div class="input-group">
                     <label for="user_email">Email Address</label>
                     <input type="email" name="user_email" id="user_email" value="<?php echo isset($_POST['user_email']) ? htmlspecialchars($_POST['user_email']) : ''; ?>">
-                    <?php if(!empty($email_error)): ?>
+                    <?php if (!empty($email_error)): ?>
                         <div class="error-message"><?php echo $email_error; ?></div>
                     <?php endif; ?>
                 </div>
-                
+
                 <div class="input-group">
                     <label for="user_password">Password</label>
                     <input type="password" name="user_password" id="user_password">
-                    <?php if(!empty($password_error)): ?>
+                    <?php if (!empty($password_error)): ?>
                         <div class="error-message"><?php echo $password_error; ?></div>
                     <?php endif; ?>
                 </div>
-                
+
                 <input type="submit" name="loginbtn" value="LOGIN">
             </form>
-            
+
             <p><a href="forgot_password.php">Forgot your password?</a></p>
             <p><a href="register.php">New to PeerLearn? Create an account</a></p>
         </div>
     </div>
 </body>
+
 </html>

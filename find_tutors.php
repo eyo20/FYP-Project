@@ -63,13 +63,14 @@ if (!$tutorResult) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find a Tutor - Peer Tutoring Platform</title>
-    <link rel="stylesheet" href="css/find_tutor_style2.css"> 
-    
-    
+    <link rel="stylesheet" href="css/find_tutor_style2.css">
+
+
     <style>
         :root {
             --primary: #2B3990;
@@ -79,70 +80,79 @@ if (!$tutorResult) {
             --gray: #e9ecef;
             --dark-gray: #6c757d;
         }
+
         .tutor-card {
             transition: transform 0.3s;
             margin-bottom: 20px;
         }
+
         .tutor-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
         .profile-img {
             width: 100px;
             height: 100px;
             object-fit: cover;
             border-radius: 50%;
         }
+
         .verified-badge {
             color: #28a745;
         }
+
         .rating-stars {
             color: #ffc107;
         }
+
         .filter-section {
             background-color: #f8f9fa;
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
         }
+
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 0;
             background-color: var(--white);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-        .navbar > .container {
+
+        .navbar>.container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-grow: 1;
         }
+
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 padding: 15px 0;
             }
-            
+
             .logo {
                 margin-bottom: 15px;
             }
-            
+
             .nav-menu {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .nav-item {
                 margin: 5px 10px;
             }
-            
-            }
-            
+
+        }
+
         .btn {
             background-color: var(--accent);
             color: white;
@@ -156,62 +166,66 @@ if (!$tutorResult) {
             text-decoration: none;
             display: inline-block;
         }
-        
+
         .btn:hover {
             background-color: #b3c300;
-        }   
-        
-        
+        }
     </style>
 </head>
+
 <body>
     <?php include 'header/stud_head.php'; ?>
-    <nav class="navbar">
-        <div class="logo"><a href= "student_main_page.php">PeerLearn</a></div>
-        <div class="nav-links">
-            <a href="find_tutors.php" class="active">Find Tutors</a>
-            <a href="student_sessions.php">My Sessions</a>
-            <a href="student_profile.php">Profile</a>
-            <a href="messages.php">Messages</a>
-        </div>
-        <div class="user-menu">
-            <div class="user-avatar">
-                <?php if($profile_image): ?>
-                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
-                <?php else: ?>
-                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
-                <?php endif; ?>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Peer Tutoring Platform
             </div>
-            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
+            <nav class="nav-links">
+                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
+                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
+                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
+                <div class="user-menu" onclick="toggleDropdown()">
+                    <i class="fas fa-user-circle"></i>
+                    <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
+                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </nav>
         </div>
-        
-    </nav>
+    </header>
 
     <div class="container mt-4">
         <h1 class="mb-4">Find a Tutor</h1>
-        
+
         <!-- Filter Section -->
         <div class="filter-section">
             <form method="GET" action="find_tutors.php" class="row">
                 <div class="col-md-3 mb-3">
                     <label for="search_name">Tutor Name</label>
-                    <input type="text" class="form-control" id="search_name" name="search_name" 
-                           value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
+                    <input type="text" class="form-control" id="search_name" name="search_name"
+                        value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
                 </div>
-                
+
                 <div class="col-md-3 mb-3">
                     <label for="subject">Subject</label>
                     <select class="form-control" id="subject" name="subject">
                         <option value="0">All Subjects</option>
                         <?php while ($subject = mysqli_fetch_assoc($subjectResult)): ?>
-                            <option value="<?php echo $subject['subject_id']; ?>" 
+                            <option value="<?php echo $subject['subject_id']; ?>"
                                 <?php echo ($subjectFilter == $subject['subject_id']) ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($subject['subject_name']); ?>
                             </option>
                         <?php endwhile; ?>
                     </select>
                 </div>
-                
+
                 <div class="col-md-3 mb-3">
                     <label for="course">Course</label>
                     <select class="form-control" id="course" name="course">
@@ -225,7 +239,7 @@ if (!$tutorResult) {
                         <?php endwhile; ?>
                     </select>
                 </div>
-                
+
                 <div class="col-md-2 mb-3">
                     <label for="rating">Minimum Rating</label>
                     <select class="form-control" id="rating" name="rating">
@@ -236,13 +250,13 @@ if (!$tutorResult) {
                         <option value="2" <?php echo ($ratingFilter == 2) ? 'selected' : ''; ?>>2+ Stars</option>
                     </select>
                 </div>
-                
+
                 <div class="col-md-1 mb-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary btn-block">Filter</button>
                 </div>
             </form>
         </div>
-        
+
         <!-- Results Section -->
         <div class="row">
             <?php if (mysqli_num_rows($tutorResult) > 0): ?>
@@ -265,7 +279,7 @@ if (!$tutorResult) {
                                                 <span class="verified-badge" title="Verified Tutor"><i class="fas fa-check-circle"></i></span>
                                             <?php endif; ?>
                                         </h5>
-                                        
+
                                         <div class="rating-stars mb-2">
                                             <?php
                                             $rating = (float)$tutor['rating'];
@@ -281,7 +295,7 @@ if (!$tutorResult) {
                                             echo ' <span class="text-muted">(' . number_format($rating, 1) . ')</span>';
                                             ?>
                                         </div>
-                                        
+
                                         <?php
                                         // Get tutor's subjects and courses
                                         $tutorId = $tutor['user_id'];
@@ -290,7 +304,7 @@ if (!$tutorResult) {
                                                          JOIN subject s ON ts.subject_id = s.subject_id 
                                                          WHERE ts.tutor_id = $tutorId";
                                         $subjectsResult = mysqli_query($conn, $subjectsQuery);
-                                        
+
                                         if (mysqli_num_rows($subjectsResult) > 0):
                                         ?>
                                             <p class="card-text"><strong>Subjects:</strong>
@@ -303,16 +317,16 @@ if (!$tutorResult) {
                                                 ?>
                                             </p>
                                         <?php endif; ?>
-                                        
+
                                         <?php if (!empty($tutor['bio'])): ?>
                                             <p class="card-text text-truncate"><?php echo htmlspecialchars($tutor['bio']); ?></p>
                                         <?php endif; ?>
-                                        
-                                    <div class="mt-3">
-                                        <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
-                                        <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
-                                    </div>
- 
+
+                                        <div class="mt-3">
+                                            <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
+                                            <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -337,6 +351,12 @@ if (!$tutorResult) {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        //toggle dropdown in header
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
         // Dynamic course filtering based on subject selection
         $(document).ready(function() {
             $('#subject').change(function() {
@@ -346,7 +366,7 @@ if (!$tutorResult) {
                     $('#course option').each(function() {
                         const courseOption = $(this);
                         if (courseOption.val() == 0) return; // Skip "All Courses" option
-                        
+
                         // You would need to add a data attribute to course options with their subject_id
                         // For now, we'll reload the page with the subject filter
                     });
@@ -358,4 +378,5 @@ if (!$tutorResult) {
         });
     </script>
 </body>
+
 </html>

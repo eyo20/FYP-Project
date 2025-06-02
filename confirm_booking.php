@@ -120,8 +120,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         <p><strong>Notes:</strong> " . (empty($notes) ? "None" : htmlspecialchars($notes)) . "</p>
                                         <p><strong>Hourly Rate:</strong> RM " . number_format($hourly_rate, 2) . "</p>
                                     </div>
-                                </div>
-                                <a href='appointments.php?tutor_id=$tutor_id' class='btn'>Back to Booking</a>
+                            </div>
+                                
+                                <a href='student_main_page.php' class='btn'>Back to Main Page</a>
                             </div>
                         </body>
                         </html>";

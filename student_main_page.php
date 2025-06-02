@@ -60,7 +60,7 @@ if ($table_exists) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $student_result = $stmt->get_result();
-    
+
     if ($student_result->num_rows > 0) {
         $student_data = $student_result->fetch_assoc();
         $major        = $student_data['major'] ?: 'Not set';
@@ -97,7 +97,7 @@ try {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $upcoming_sessions_result = $stmt->get_result();
-        
+
         while ($row = $upcoming_sessions_result->fetch_assoc()) {
             $upcoming_sessions[] = $row;
         }
@@ -219,7 +219,7 @@ $major_search = !empty($major) ? "%$major%" : "%";
 //     $stmt->bind_param("s", $major_search);
 //     $stmt->execute();
 //     $tutors_result = $stmt->get_result();
-    
+
 //     while ($row = $tutors_result->fetch_assoc()) {
 //         $recommended_tutors[] = $row;
 //     }
@@ -242,9 +242,9 @@ if (count($recommended_tutors) == 0) {
         ORDER BY session_count DESC
         LIMIT 3
     ";
-    
+
     $major_search = !empty($major) ? "%$major%" : "%";
-    
+
     // $stmt = $conn->prepare($backup_tutors_query);
     // if ($stmt === false) {
     //     error_log("Prepare failed for backup tutors query: " . $conn->error);
@@ -252,7 +252,7 @@ if (count($recommended_tutors) == 0) {
     //     $stmt->bind_param("s", $major_search);
     //     $stmt->execute();
     //     $backup_result = $stmt->get_result();
-        
+
     //     while ($row = $backup_result->fetch_assoc()) {
     //         $row['availability'] = "Please contact for availability";
     //         $recommended_tutors[] = $row;
@@ -266,6 +266,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -279,19 +280,19 @@ $conn->close();
             --gray: #e9ecef;
             --dark-gray: #6c757d;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: var(--light-gray);
             color: #333;
         }
-        
+
         .navbar {
             background-color: var(--primary);
             color: white;
@@ -299,9 +300,9 @@ $conn->close();
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .logo {
             font-weight: bold;
             font-size: 1.5rem;
@@ -309,7 +310,7 @@ $conn->close();
             align-items: center;
             gap: 10px;
         }
-        
+
         .logo-icon {
             width: 30px;
             height: 30px;
@@ -321,12 +322,12 @@ $conn->close();
             color: var(--primary);
             font-weight: bold;
         }
-        
+
         .nav-links {
             display: flex;
             gap: 20px;
         }
-        
+
         .nav-links a {
             color: white;
             text-decoration: none;
@@ -334,17 +335,17 @@ $conn->close();
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-        
+
         .nav-links a:hover {
-            background-color: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        
+
         .user-menu {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .user-avatar {
             width: 35px;
             height: 35px;
@@ -356,7 +357,7 @@ $conn->close();
             color: white;
             font-weight: bold;
         }
-        
+
         .notification-badge {
             background-color: var(--accent);
             color: white;
@@ -368,47 +369,47 @@ $conn->close();
             justify-content: center;
             font-size: 0.75rem;
         }
-        
+
         main {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
+
         .welcome-section {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .welcome-title {
             color: var(--primary);
             margin-bottom: 1rem;
         }
-        
+
         .stats-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-top: 1.5rem;
         }
-        
+
         .stat-card {
             background-color: white;
             border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             text-align: center;
             transition: transform 0.3s;
         }
-        
+
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-icon {
             width: 50px;
             height: 50px;
@@ -421,54 +422,54 @@ $conn->close();
             color: var(--primary);
             font-size: 1.5rem;
         }
-        
+
         .stat-value {
             font-size: 1.75rem;
             font-weight: bold;
             color: var(--primary);
             margin-bottom: 0.5rem;
         }
-        
+
         .stat-label {
             color: var(--dark-gray);
         }
-        
+
         .section-title {
             margin: 2rem 0 1rem;
             color: var(--primary);
             font-weight: 600;
         }
-        
+
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .action-card {
             background-color: white;
             border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             gap: 1rem;
             cursor: pointer;
             transition: transform 0.3s;
         }
-        
+
         .action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .action-header {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        
+
         .action-icon {
             width: 40px;
             height: 40px;
@@ -480,17 +481,17 @@ $conn->close();
             color: white;
             font-size: 1.25rem;
         }
-        
+
         .action-title {
             font-weight: 600;
             color: var(--primary);
         }
-        
+
         .action-description {
             color: var(--dark-gray);
             font-size: 0.9rem;
         }
-        
+
         .btn {
             background-color: var(--accent);
             color: white;
@@ -504,34 +505,34 @@ $conn->close();
             text-decoration: none;
             display: inline-block;
         }
-        
+
         .btn:hover {
             background-color: #b3c300;
         }
-        
+
         .upcoming-sessions {
             background-color: white;
             border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             margin-bottom: 2rem;
         }
-        
+
         .session-list {
             margin-top: 1rem;
         }
-        
+
         .session-item {
             display: flex;
             align-items: center;
             padding: 1rem 0;
             border-bottom: 1px solid var(--gray);
         }
-        
+
         .session-item:last-child {
             border-bottom: none;
         }
-        
+
         .session-time {
             background-color: var(--light-gray);
             padding: 0.5rem;
@@ -539,27 +540,27 @@ $conn->close();
             min-width: 100px;
             text-align: center;
         }
-        
+
         .session-info {
             margin-left: 1rem;
             flex-grow: 1;
         }
-        
+
         .session-subject {
             font-weight: 600;
             color: var(--primary);
         }
-        
+
         .session-tutor {
             color: var(--dark-gray);
             font-size: 0.9rem;
         }
-        
+
         .session-actions {
             display: flex;
             gap: 0.5rem;
         }
-        
+
         .session-actions button {
             padding: 0.5rem;
             border: none;
@@ -568,11 +569,11 @@ $conn->close();
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
+
         .session-actions button:hover {
             background-color: var(--gray);
         }
-        
+
         footer {
             background-color: var(--primary);
             color: white;
@@ -580,13 +581,13 @@ $conn->close();
             padding: 1.5rem;
             margin-top: 2rem;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 2rem;
             color: var(--dark-gray);
         }
-        
+
         .empty-state p {
             margin-bottom: 1rem;
         }
@@ -597,58 +598,65 @@ $conn->close();
                 flex-direction: column;
                 padding: 1rem;
             }
-            
+
             .nav-links {
                 margin-top: 1rem;
                 width: 100%;
                 justify-content: space-around;
             }
-            
+
             .stats-container,
             .quick-actions {
                 grid-template-columns: 1fr;
             }
+
             .logo img {
-            height: 70px;
+                height: 70px;
             }
-            
+
         }
     </style>
 </head>
+
 <body>
     <?php include 'header/stud_head.php'; ?>
-    <nav class="navbar">
-        <div class="logo">PeerLearn</div>
-        <div class="nav-links">
-            <a href="student_profile.php">Profile</a>
-            <a href="find_tutors.php">Find Tutors</a>
-            <a href="student_sessions.php">My Sessions</a>
-            <a href="student_messages.php">Messages</a>
-        </div>
-        <div class="user-menu">
-            <div class="user-avatar">
-                <?php if($profile_image): ?>
-                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
-                <?php else: ?>
-                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
-                <?php endif; ?>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Peer Tutoring Platform
             </div>
-            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
+            <nav class="nav-links">
+                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
+                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
+                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
+                <div class="user-menu" onclick="toggleDropdown()">
+                    <i class="fas fa-user-circle"></i>
+                    <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
+                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </nav>
         </div>
-        
-    </nav>
-    
+    </header>
+
     <main>
         <section class="welcome-section">
             <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($username); ?>!</h1>
             <p>You are a <?php echo htmlspecialchars($major); ?> major in Year <?php echo htmlspecialchars($year); ?>.
-               <?php if(count($upcoming_sessions) > 0): ?>
-               You have <?php echo count($upcoming_sessions); ?> upcoming tutoring sessions. Keep it up!
-               <?php else: ?>
-               You currently have no scheduled sessions. Would you like to find a tutor to get started?
-               <?php endif; ?>
+                <?php if (count($upcoming_sessions) > 0): ?>
+                    You have <?php echo count($upcoming_sessions); ?> upcoming tutoring sessions. Keep it up!
+                <?php else: ?>
+                    You currently have no scheduled sessions. Would you like to find a tutor to get started?
+                <?php endif; ?>
             </p>
-            
+
             <div class="stats-container">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
@@ -672,7 +680,7 @@ $conn->close();
                 </div>
             </div>
         </section>
-        
+
         <h2 class="section-title">Quick Actions</h2>
         <div class="quick-actions">
             <div class="action-card" onclick="window.location.href='student_profile.php'">
@@ -701,34 +709,34 @@ $conn->close();
                 <p class="action-description">Manage the booking sessions and view the completed sessions.</p>
                 <a href="find_tutors.php" class="btn">Manage Now</a>
             </div>
-            
+
             <div class="action-card" onclick="window.location.href='messages.php'">
                 <div class="action-header">
                     <div class="action-icon">💬</div>
                     <div class="action-title">Messages</div>
                 </div>
                 <p class="action-description">View your messages and communicate with tutors.</p>
-                <a href="messages.php" class="btn">View Messages <?php if($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
+                <a href="messages.php" class="btn">View Messages <?php if ($unread_messages > 0): ?><span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
             </div>
         </div>
-        
+
         <h2 class="section-title">Upcoming Sessions</h2>
         <div class="upcoming-sessions">
             <div class="session-list">
-                <?php if(count($upcoming_sessions) > 0): ?>
-                    <?php foreach($upcoming_sessions as $session): ?>
-                        <?php 
-                            $session_date = new DateTime($session['session_date']);
-                            $today = new DateTime('today');
-                            $tomorrow = new DateTime('tomorrow');
-                            
-                            if($session_date->format('Y-m-d') == $today->format('Y-m-d')) {
-                                $date_display = "Today";
-                            } elseif($session_date->format('Y-m-d') == $tomorrow->format('Y-m-d')) {
-                                $date_display = "Tomorrow";
-                            } else {
-                                $date_display = $session_date->format('M d');
-                            }
+                <?php if (count($upcoming_sessions) > 0): ?>
+                    <?php foreach ($upcoming_sessions as $session): ?>
+                        <?php
+                        $session_date = new DateTime($session['session_date']);
+                        $today = new DateTime('today');
+                        $tomorrow = new DateTime('tomorrow');
+
+                        if ($session_date->format('Y-m-d') == $today->format('Y-m-d')) {
+                            $date_display = "Today";
+                        } elseif ($session_date->format('Y-m-d') == $tomorrow->format('Y-m-d')) {
+                            $date_display = "Tomorrow";
+                        } else {
+                            $date_display = $session_date->format('M d');
+                        }
                         ?>
                         <div class="session-item">
                             <div class="session-time">
@@ -740,8 +748,8 @@ $conn->close();
                                 <div class="session-tutor">with <?php echo htmlspecialchars($session['tutor_name']); ?></div>
                             </div>
                             <div class="session-actions">
-                                <?php if($date_display == "Today"): ?>
-                                <button onclick="joinSession(<?php echo $session['session_id']; ?>)">Join</button>
+                                <?php if ($date_display == "Today"): ?>
+                                    <button onclick="joinSession(<?php echo $session['session_id']; ?>)">Join</button>
                                 <?php endif; ?>
                                 <button onclick="rescheduleSession(<?php echo $session['session_id']; ?>)">Reschedule</button>
                                 <button onclick="cancelSession(<?php echo $session['session_id']; ?>)">Cancel</button>
@@ -756,19 +764,19 @@ $conn->close();
                 <?php endif; ?>
             </div>
         </div>
-        
+
         <h2 class="section-title">Recommended Tutors</h2>
         <div class="quick-actions">
-            <?php if(count($recommended_tutors) > 0): ?>
-                <?php foreach($recommended_tutors as $tutor): ?>
+            <?php if (count($recommended_tutors) > 0): ?>
+                <?php foreach ($recommended_tutors as $tutor): ?>
                     <div class="action-card">
                         <div class="action-header">
                             <div class="action-icon" style="background-color: var(--primary);">👨‍🏫</div>
                             <div class="action-title"><?php echo htmlspecialchars($tutor['username']); ?></div>
                         </div>
                         <p class="action-description"><?php echo htmlspecialchars($tutor['subjects'] ?? $tutor['subject']); ?></p>
-                        <?php if(isset($tutor['availability'])): ?>
-                        <p class="action-description">Availability: <?php echo htmlspecialchars($tutor['availability']); ?></p>
+                        <?php if (isset($tutor['availability'])): ?>
+                            <p class="action-description">Availability: <?php echo htmlspecialchars($tutor['availability']); ?></p>
                         <?php endif; ?>
                         <a href="tutor_profile.php?id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
                     </div>
@@ -781,20 +789,27 @@ $conn->close();
             <?php endif; ?>
         </div>
     </main>
-    
+
     <footer>
         <p>&copy; <?php echo date('Y'); ?> PeerTutor Platform. All rights reserved.</p>
     </footer>
-    
+
     <script>
+        //header dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+
         function joinSession(sessionId) {
             alert("Joining session #" + sessionId);
         }
-        
+
         function rescheduleSession(sessionId) {
             alert("Rescheduling session #" + sessionId);
         }
-        
+
         function cancelSession(sessionId) {
             if (confirm("Are you sure you want to cancel this session?")) {
                 var xhr = new XMLHttpRequest();
@@ -811,4 +826,5 @@ $conn->close();
         }
     </script>
 </body>
+
 </html>
