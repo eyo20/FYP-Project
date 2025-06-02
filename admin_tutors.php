@@ -28,7 +28,7 @@
             </div>
 
             <div class="sidebar">
-                <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="#"></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php" class="active"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
@@ -42,61 +42,87 @@
         </aside>
 
         <main>
-            <div class="available_tutors">
+            <div class="current_students">
                 <h2>Available Tutors</h2>
+
+                <di style="margin-left: 500px ; padding:100px;"> 
+
+                    <form action="" method="GET">
+                        <input type="text" name="my_search" placeholder="Search Tutors ...">
+
+                        <input  type="submit" name="search" value="Search">
+                    </form>
                 <table>
                     <thead>
                         <tr>
                             <th>TUTOR NAME</th>
-                            <th>FACULTY</th>
+                            <th>LEVEL</th>
+                            <th>PROGRAM</TH>
                             <th>COURSE</th>
-                            <th>COURSE CODE</th>
-                            <th>RATING</th>
+                            <th>DETIALS</th>
                             <th>ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        // Database connection
+                    // Database connection
                         $servername = "localhost";
-                        $username = "root"; // replace with your MySQL username
-                        $password = ""; // replace with your MySQL password
+                        $username = "root"; 
+                        $password = ""; 
                         $dbname = "peer_tutoring_platform";
 
-                        // Create connection
-                        $conn = new mysqli($servername, $username, $password, $dbname);
+                    // Create connection
+                    $conn = new mysqli($servername, $username, $password, $dbname);
 
-                        // Check connection
-                        if ($conn->connect_error) {
-                            die("Connection failed: " . $conn->connect_error);
+                    // Check connection
+                    if ($conn->connect_error) {
+                        die("Connection failed: " . $conn->connect_error);
+                    }
+
+               
+                    $sql = "SELECT * FROM tutors";
+
+                
+                    if(isset($_GET['search']) && !empty($_GET['my_search']))
+                    {
+                       
+                        $search_value = $conn->real_escape_string($_GET['my_search']);
+                        
+                        
+                        $sql .= " WHERE tutor_name LIKE '%$search_value%' 
+                                OR program LIKE '%$search_value%' 
+                                OR course_year LIKE '%$search_value%' 
+                                OR level LIKE '%$search_value%'";
+                    }
+
+                    
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        // Output data of each row
+                        while($row = $result->fetch_assoc()) {
+                            echo "<tr>
+                                <td>".htmlspecialchars($row["tutor_name"])."</td>
+                                <td>".htmlspecialchars($row["level"])."</td>
+                                <td>".htmlspecialchars($row["program"])."</td>
+                                <td>".htmlspecialchars($row["course_year"])."</td>                                    
+                                <td>
+                                    <a href='tutor_details.php?id=".$row["id"]."' class='details-btn'>Details</a>
+                                </td>
+                                <td>
+                                    <a href='tutor_action.php?id=".$row["id"]."&action=approve' class='approve-btn'>Approve</a>
+                                    <a href='tutor_action.php?id=".$row["id"]."&action=reject' class='reject-btn'>Reject</a>
+                                </td>
+                            </tr>";
                         }
-
-                        // Fetch tutors from database
-                        $sql = "SELECT * FROM tutors";
-                        $result = $conn->query($sql);
-
-                        if ($result->num_rows > 0) {
-                            // Output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                echo "<tr>
-                                    <td>".$row["tutors_name"]."</td>
-                                    <td>".$row["faculty"]."</td>
-                                    <td>".$row["course"]."</td>
-                                    <td>".$row["course_code"]."</td>
-                                    <td>".$row["rating"]."</td>
-                                    <td>
-                                        <a href='edit_tutor.php?id=".$row["id"]."' class='edit-btn'>Edit</a>
-                                        <a href='copy_tutor.php?id=".$row["id"]."' class='copy-btn'>Copy</a>
-                                        <a href='delete_tutor.php?id=".$row["id"]."' class='delete-btn'>Delete</a>
-                                        <a href='tutor_details.php?id=".$row["id"]."' class='details-btn'>Details</a>
-                                    </td>
-                                </tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6'>No tutors found</td></tr>";
-                        }
-                        $conn->close();
-                        ?>
+                    } else {
+                        $no_results_message = isset($_GET['search']) ? 
+                            "No tutors found matching '".htmlspecialchars($_GET['my_search'])."'" : 
+                            "No tutors found";
+                        echo "<tr><td colspan='6'>$no_results_message</td></tr>";
+                    }
+                    $conn->close();
+                    ?>
                     </tbody>
                 </table>
                 <a href="#">Show All</a>
@@ -125,66 +151,6 @@
                 </div>
             </div>
 
-            <!-----------------END OF RIGHT---------------------->
-            
-            <div class="recent-updates">
-                <h2>Recent Updates</h2>
-                <div class="updates">
-                    <div class="update">
-                        <span class="material-symbols-sharp">school</span>
-                        <h3>Add Tutor</h3>
-                    </div>
-                    <div class="message">
-                        <p>Admin can add tutor here!</p>
-                        <form action="tutor_record.php" method="POST">
-                            <div>
-                                <label for="tutors_name">Tutor Name:</label>
-                                <input type="text" id="tutors_name" name="tutors_name" placeholder="Enter Tutor Name" required>
-                            </div>
-
-                            <br>
-
-                            <div>
-                                <label for="faculty">Faculty:</label>
-                                <input type="text" id="faculty" name="faculty" placeholder="Enter Faculty" required>
-                            </div>
-
-                            <br>
-
-                            <div>
-                                <label for="course">Course:</label>
-                                <input type="text" id="course" name="course" placeholder="Enter Course" required>
-                            </div>
-
-                            <br>
-
-                            <div>
-                                <label for="course_code">Course Code:</label>
-                                <input type="text" id="course_code" name="course_code" placeholder="Enter Course Code" required>
-                            </div>
-                            
-                            <br>
-                            
-                            <div>
-                                <label for="rating">Rating:</label>
-                                <input type="number" step="0.01" id="rating" name="rating" placeholder="Enter Rating" required>
-                            </div>
-                            
-                            <br>
-                            <div>
-                                <input type="reset" value="Reset">
-                            </div>
-
-                            <br>
-                            <div>
-                                <input type="submit" value="Add Tutor">
-                            </div>
-                        </form>
-                        <div class="item add-tutor">
-                            <div>
-                                <span class="material-symbols-sharp">add</span>
-                                <h3>ADD TUTOR</h3>
-                            </div>
                         </div>
                     </div>
                 </div>

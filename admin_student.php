@@ -9,6 +9,7 @@ if (isset($_SESSION['error'])) {
     echo '<div class="alert error">' . $_SESSION['error'] . '</div>';
     unset($_SESSION['error']);
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -55,26 +56,34 @@ if (isset($_SESSION['error'])) {
         </aside>
 
     <main>
-        <div class="current_students">
-            <h2>STUDENTS</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>STUDENTS</th>
-                        <th>FACULTY</th>
-                        <th>PROGRAMME</th>
-                        <th>COURSE</th>
-                        <th>STATUS</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
+       <div class="current_students">
+                <h2>Available Students</h2>
+
+                <di style="margin-left: 500px ; padding:100px;"> 
+
+                    <form action="" method="GET">
+                        <input type="text" name="my_search" placeholder="Search Students ...">
+
+                        <input  type="submit" name="search" value="Search">
+                    </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STUDENT NAME</th>
+                            <th>LEVEL</th>
+                            <th>PROGRAM</TH>
+                            <th>COURSE</th>
+                            <th>DETIALS</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
                     // Database connection
-                    $servername = "localhost";
-                    $username = "root"; 
-                    $password = ""; 
-                    $dbname = "peer_tutoring_platform";
+                        $servername = "localhost";
+                        $username = "root";
+                        $password = ""; 
+                        $dbname = "peer_tutoring_platform";
 
                     // Create connection
                     $conn = new mysqli($servername, $username, $password, $dbname);
@@ -84,43 +93,55 @@ if (isset($_SESSION['error'])) {
                         die("Connection failed: " . $conn->connect_error);
                     }
 
-                    // Fetch data from students table
-                    $sql = "SELECT student_name, faculty, programme, course_code, status FROM students";
+               
+                    $sql = "SELECT * FROM students";
+
+                
+                    if(isset($_GET['search']) && !empty($_GET['my_search']))
+                    {
+                       
+                        $search_value = $conn->real_escape_string($_GET['my_search']);
+                        
+                        
+                        $sql .= " WHERE student_name LIKE '%$search_value%' 
+                                OR program LIKE '%$search_value%' 
+                                OR course LIKE '%$search_value%' 
+                                OR level LIKE '%$search_value%'";
+                    }
+
+                    
                     $result = $conn->query($sql);
 
                     if ($result->num_rows > 0) {
                         // Output data of each row
                         while($row = $result->fetch_assoc()) {
-                            // Determine status class based on value
-                            $statusClass = '';
-                            if ($row["status"] == "ONLINE") {
-                                $statusClass = "success";
-                            } elseif ($row["status"] == "OFFLINE") {
-                                $statusClass = "danger";
-                            } elseif ($row["status"] == "IN CLASS") {
-                                $statusClass = "warning";
-                            }
-                            
                             echo "<tr>
                                 <td>".htmlspecialchars($row["student_name"])."</td>
-                                <td>".htmlspecialchars($row["faculty"])."</td>
-                                <td>".htmlspecialchars($row["programme"])."</td>
-                                <td>".htmlspecialchars($row["course_code"])."</td>
-                                <td class='".$statusClass."'>".htmlspecialchars($row["status"])."</td>
-                                <td class='primary'>Details</td>
+                                <td>".htmlspecialchars($row["level"])."</td>
+                                <td>".htmlspecialchars($row["program"])."</td>
+                                <td>".htmlspecialchars($row["course"])."</td>                                    
+                                <td>
+                                    <a href='student_details.php?id=".$row["id"]."' class='details-btn'>Details</a>
+                                </td>
+                                <td>
+                                    <a href='student_action.php?id=".$row["id"]."&action=approve' class='approve-btn'>Approve</a>
+                                    <a href='student_action.php?id=".$row["id"]."&action=reject' class='reject-btn'>Reject</a>
+                                </td>
                             </tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='6'>No students found</td></tr>";
+                        $no_results_message = isset($_GET['search']) ? 
+                            "No tutors found matching '".htmlspecialchars($_GET['my_search'])."'" : 
+                            "No tutors found";
+                        echo "<tr><td colspan='6'>$no_results_message</td></tr>";
                     }
                     $conn->close();
                     ?>
-                </tbody>
-            </table>
-            <a href="#">Show All</a>
-        </div>
-    </main>
-
+                    </tbody>
+                </table>
+                <a href="#">Show All</a>
+            </div>
+        </main>
     <!-------------------END OF COURES------------------->
 
     <div class="right">
@@ -143,55 +164,4 @@ if (isset($_SESSION['error'])) {
             </div>
         </div>
 
-        <!-----------------END OF RIGHT---------------------->
-        
-        <div class="recent-updates">
-        <h2>Recent Updates</h2>
-        <div class="updates">
-            <div class="update">
-                <span class="material-symbols-sharp">person</span>
-                <h3>Add Students</h3>
-            </div>
-            <div class="message">
-                <p>Admin can add Students here!</p>
-                <br>
-                <form action="student_add.php" method="POST">
-                    <div>
-                        <label for="sname">Students Name:</label>
-                        <input type="text" id="sname" name="sname" placeholder="Enter Student Name" required>
-                    </div>
-                    <br>
-                    <div>
-                        <label for="faculty">Faculty:</label>
-                        <select id="faculty" name="faculty" required>
-                            <option value="Business">Business</option>
-                            <option value="Information Technology">Information Technology</option>
-                            <option value="Engineering">Engineering</option>
-                            <option value="Law">Law</option>
-                        </select>
-                    </div>
-                    <br>
-                    <div>
-                        <label for="programme">Programme:</label>
-                        <input type="text" id="programme" name="programme" placeholder="Enter Programme" required>
-                    </div>
-                    <br>
-                    <div>
-                        <label for="course_code">Course Code:</label>
-                        <input type="text" id="course_code" name="course_code" placeholder="Enter Course Code" required>
-                    </div>
-                    <br>
-                    <div class="form-actions">
-                        <button type="reset" class="reset-btn">
-                            <span class="material-symbols-sharp">undo</span>
-                            <span>Reset</span>
-                        </button>
-                        <button type="submit" class="add-students-btn">
-                            <span class="material-symbols-sharp">add</span>
-                            <span>ADD STUDENTS</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+       

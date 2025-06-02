@@ -1,9 +1,9 @@
 <?php
 // Database connection
 $servername = "localhost";
-$username = "root"; // replace with your MySQL username
-$password = ""; // replace with your MySQL password
-$dbname = "mine_fyp";
+$username = "root"; 
+$password = ""; //
+$dbname = "peer_tutoring_platform";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -14,19 +14,16 @@ if ($conn->connect_error) {
 }
 
 // Get form data
-$faculty = $_POST['faculty'];
-$programme = $_POST['programme'];
-$course_code = $_POST['course_code'];
-$requirement = $_POST['requirement'];
+$course_name = $_POST['course_name'];
 
 // Insert data into database
-$sql = "INSERT INTO courses (faculty, programme, course_code, requirement)
-VALUES ('$faculty', '$programme', '$course_code', '$requirement')";
+$sql = "INSERT INTO course (course_name)
+VALUES ('$course_name')";
 
 if ($conn->query($sql) === TRUE) {
     echo "New course added successfully";
-    // Redirect back to course.php
-    header("Location: course.php");
+    // Redirect back to admin_course.php
+    header("Location: admin_course.php");
 } else {
     echo "Error: " . $sql . "<br>" . $conn->error;
 }

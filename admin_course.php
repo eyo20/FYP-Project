@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE-edge">
     <meta name="viewport" content="width-device-width, initial-scale=1.0">
-    <title>Peer Tutoring Website</title>
+    <title>Peer Tutoring Website - Courses</title>
 
     <!--Material Cdn-->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
 
     <!--Style Sheet-->
-    <link rel="stylesheet" href="coursestyle.css">
+    <link rel="stylesheet" href="studentstyle.css">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
             </div>
 
             <div class="sidebar">
-                <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="#"></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
@@ -42,24 +42,31 @@
         </aside>
 
         <main>
-            <div class="available_courses">
+            <div class="current_students">
                 <h2>Available Courses</h2>
+
+                 <di style="margin-left: 500px ; padding:100px;"> 
+
+
+                    <form action="" method="GET">
+                        <input type="text" name="my_search" placeholder="Search Courses ...">
+                        <input type="submit" name="search" value="Search">
+
+                    </form>
                 <table>
                     <thead>
                         <tr>
-                            <th>FACULTY</th>
-                            <th>PROGRAMME</th>
-                            <th>COURSES</th>
-                            <th>REQUIREMENT</th>
-                            <th></th>
+                            <th>COURSE NAME</th>
+                            <th>DETAILS</th>
+                            <th>STATUS</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
                         // Database connection
                         $servername = "localhost";
-                        $username = "root"; // replace with your MySQL username
-                        $password = ""; // replace with your MySQL password
+                        $username = "root"; 
+                        $password = ""; 
                         $dbname = "peer_tutoring_platform";
 
                         // Create connection
@@ -70,23 +77,38 @@
                             die("Connection failed: " . $conn->connect_error);
                         }
 
-                        // Fetch courses from database
-                        $sql = "SELECT * FROM courses";
+                        $sql = "SELECT * FROM course";
+
+                        if(isset($_GET['search']) && !empty($_GET['my_search']))
+                        {
+                            $search_value = $conn->real_escape_string($_GET['my_search']);
+                            
+                            $sql .= " WHERE course_name LIKE '%$search_value%' 
+                                    OR details LIKE '%$search_value%' 
+                                    OR status LIKE '%$search_value%'";
+                        }
+
                         $result = $conn->query($sql);
 
                         if ($result->num_rows > 0) {
                             // Output data of each row
                             while($row = $result->fetch_assoc()) {
                                 echo "<tr>
-                                    <td>".$row["faculty"]."</td>
-                                    <td>".$row["programme"]."</td>
-                                    <td>".$row["course_code"]."</td>
-                                    <td class='danger'>".$row["requirement"]."</td>
-                                    <td class='primary'>Details</td>
+                                    <td>".htmlspecialchars($row["course_name"])."</td>
+
+                                     <td>
+                                    <a href='course_details.php?id=".$row["id"]."' class='details-btn'>Details</a>
+                                    </td>   
+                                    <th>
+                                        <a>Available</a>
+                                    </th>
                                 </tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='5'>No courses found</td></tr>";
+                            $no_results_message = isset($_GET['search']) ? 
+                                "No courses found matching '".htmlspecialchars($_GET['my_search'])."'" : 
+                                "No courses found";
+                            echo "<tr><td colspan='4'>$no_results_message</td></tr>";
                         }
                         $conn->close();
                         ?>
@@ -117,8 +139,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-----------------END OF RIGHT---------------------->
+             <!-----------------END OF RIGHT---------------------->
             
             <div class="recent-updates">
                 <h2>Recent Updates</h2>
@@ -131,31 +152,9 @@
                         <p>Admin can add course here!</p>
                         <form action="course_record.php" method="POST">
                             <div>
-                                <label for="faculty">Faculty:</label>
-                                <input type="text" id="faculty" name="faculty" placeholder="Enter Faculty" required>
+                                <label for="Course">Course:</label>
+                                <input type="text" id="course" name="course_name" placeholder="Enter Course" required>
                             </div>
-
-                            <br>
-
-                            <div>
-                                <label for="programme">Programme:</label>
-                                <input type="text" id="programme" name="programme" placeholder="Enter Programme" required>
-                            </div>
-
-                            <br>
-
-                            <div>
-                                <label for="course_code">Course Code:</label>
-                                <input type="text" id="course_code" name="course_code" placeholder="Enter Course Code" required>
-                            </div>
-
-                            <br>
-
-                            <div>
-                                <label for="requirement">Requirement:</label>
-                                <input type="text" id="requirement" name="requirement" placeholder="Enter Requirement" required>
-                            </div>
-                            
                             <br>
                             <div>
                                 <input type="reset" value="Reset">
@@ -166,16 +165,7 @@
                                 <input type="submit" value="Add Course">
                             </div>
                         </form>
-                        <div class="item add-course">
-                            <div>
-                                <span class="material-symbols-sharp">add</span>
-                                <h3>ADD COURSE</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+    
 </body>
 </html>
