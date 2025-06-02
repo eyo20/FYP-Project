@@ -35,7 +35,7 @@ if (isset($_POST['loginbtn'])) {
 
     if (!$error) {
         // Fetch user and role information
-        $sql = "SELECT user_id, email, password, role, first_name FROM user WHERE email = ?";
+        $sql = "SELECT user_id, email, password, role FROM user WHERE email = ?";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);
@@ -53,7 +53,7 @@ if (isset($_POST['loginbtn'])) {
                         $_SESSION['user_id'] = $id;
                         $_SESSION['email']    = $db_email;
                         $_SESSION['role']     = $role;
-                        $_SESSION['first_name'] = $first_name;
+
 
                         // Update last login time
                         $update_login_time = "UPDATE user SET last_login = NOW() WHERE user_id = ?";
