@@ -689,7 +689,7 @@
                     <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
                     <i class="fas fa-chevron-down"></i>
                     <div class="dropdown" id="userDropdown">
-                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
+                        <a href="tutor_profile.php"><i class="fas fa-user"></i> Profile</a>
                         <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
                     </div>
                 </div>
