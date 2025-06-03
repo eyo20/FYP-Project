@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-06-03 20:18:59
+-- 生成日期： 2025-06-03 22:49:38
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.0.30
 
@@ -154,6 +154,15 @@ CREATE TABLE `notification` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- 转存表中的数据 `notification`
+--
+
+INSERT INTO `notification` (`notification_id`, `user_id`, `title`, `message`, `type`, `related_id`, `is_read`, `created_at`) VALUES
+(1, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 9, 0, '2025-06-03 19:08:31'),
+(2, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 10, 0, '2025-06-03 19:25:39'),
+(3, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 11, 0, '2025-06-03 20:20:42');
+
 -- --------------------------------------------------------
 
 --
@@ -247,9 +256,8 @@ CREATE TABLE `session` (
   `tutor_id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
-  `availability_id` int(11) NOT NULL,
   `location_id` int(11) DEFAULT NULL,
-  `status` enum('scheduled','completed','cancelled') NOT NULL DEFAULT 'scheduled',
+  `status` enum('pending','confirmed','rejected','completed','cancelled') NOT NULL DEFAULT 'pending',
   `start_datetime` datetime NOT NULL,
   `end_datetime` datetime NOT NULL,
   `cancellation_deadline` datetime GENERATED ALWAYS AS (`start_datetime` - interval 24 hour) STORED,
@@ -257,6 +265,15 @@ CREATE TABLE `session` (
   `cancelled_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 转存表中的数据 `session`
+--
+
+INSERT INTO `session` (`session_id`, `tutor_id`, `student_id`, `course_id`, `location_id`, `status`, `start_datetime`, `end_datetime`, `cancellation_reason`, `cancelled_by`, `created_at`) VALUES
+(2, 16, 23, 2, 2, '', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:08:31'),
+(3, 16, 23, 3, 1, '', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:25:39'),
+(4, 16, 23, 2, 2, '', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-03 20:20:42');
 
 -- --------------------------------------------------------
 
@@ -282,8 +299,9 @@ CREATE TABLE `session_requests` (
 --
 
 INSERT INTO `session_requests` (`request_id`, `tutor_id`, `student_id`, `course_id`, `location_id`, `duration`, `selected_date`, `notes`, `status`, `created_at`) VALUES
-(3, 16, 23, 6, 1, 2.00, '2025-06-03', '', '', '2025-06-03 23:15:22'),
-(4, 16, 23, 6, 1, 2.00, '2025-06-03', '', '', '2025-06-04 00:44:37');
+(10, 16, 23, 3, 1, 2.00, '2025-06-03', '', 'confirmed', '2025-06-04 03:25:27'),
+(11, 16, 23, 2, 2, 2.00, '2025-06-06', '', 'confirmed', '2025-06-04 03:46:06'),
+(12, 16, 23, 2, 1, 2.00, '2025-06-04', '', 'pending', '2025-06-04 04:21:29');
 
 -- --------------------------------------------------------
 
@@ -657,7 +675,7 @@ ALTER TABLE `message`
 -- 使用表AUTO_INCREMENT `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用表AUTO_INCREMENT `password_reset`
@@ -681,13 +699,13 @@ ALTER TABLE `review`
 -- 使用表AUTO_INCREMENT `session`
 --
 ALTER TABLE `session`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `session_requests`
 --
 ALTER TABLE `session_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- 使用表AUTO_INCREMENT `students`
@@ -755,9 +773,8 @@ ALTER TABLE `review`
 -- 限制表 `session`
 --
 ALTER TABLE `session`
-  ADD CONSTRAINT `fk_session_availability` FOREIGN KEY (`availability_id`) REFERENCES `availability` (`availability_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_session_cancelled_by` FOREIGN KEY (`cancelled_by`) REFERENCES `user` (`user_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_session_course` FOREIGN KEY (`course_id`) REFERENCES `course2` (`course_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_session_course` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_session_location` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_session_student` FOREIGN KEY (`student_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_session_tutor` FOREIGN KEY (`tutor_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
