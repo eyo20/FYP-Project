@@ -238,3 +238,17 @@ Received POST data: Array
 
 Errors: Course is not selected.; Study venue is not selected.
 
+2025-06-03 21:38:19
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [student_id] => 23
+    [course_id] => 2
+    [duration] => 2
+    [location_id] => 2
+    [notes] => 
+)
+
+Errors: Course is not selected.; Study venue is not selected.
+
