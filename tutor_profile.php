@@ -69,15 +69,15 @@ if ($stmt = $conn->prepare($user_query)) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         header('Location: logout.php');
         exit;
     }
-    
+
     $user = $result->fetch_assoc();
     $stmt->close();
-    
+
     $first_name = $user['first_name'];
     $last_name = $user['last_name'];
     $email = $user['email'];
@@ -138,13 +138,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $file_path = $row['file_path'];
-        
+
         error_log("Attempting to delete file: $file_path for user ID: $user_id");
-        
+
         if (!empty($file_path) && file_exists($file_path)) {
             if (unlink($file_path)) {
                 error_log("File successfully deleted from filesystem: $file_path");
@@ -154,11 +154,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         } else {
             error_log("File does not exist or path is empty: $file_path");
         }
-        
+
         $update_sql = "UPDATE credential_file SET file_path = NULL, file_name = NULL, file_type = NULL, status = 'pending' WHERE user_id = ? AND file_type = 'cgpa'";
         $stmt = $conn->prepare($update_sql);
         $stmt->bind_param("i", $user_id);
-        
+
         if ($stmt->execute()) {
             $_SESSION['success_message'] = "CGPA credential file deleted successfully.";
             error_log("Database updated: CGPA credential file record cleared for user ID: $user_id");
@@ -167,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $_SESSION['error_message'] = "Failed to update database after file deletion. Error: " . $conn->error;
             error_log("Database update failed after file deletion for user ID: $user_id. Error: " . $conn->error);
         }
-        
+
         // No redirect to allow other form processing
     }
 }
@@ -176,33 +176,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['cgpa_file']) && $_FILES['cgpa_file']['error'] == 0) {
     $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
     $max_size = 10 * 1024 * 1024;
-    
+
     if (in_array($_FILES['cgpa_file']['type'], $allowed_types) && $_FILES['cgpa_file']['size'] <= $max_size) {
         $upload_dir = 'Uploads/credentials/';
-        
+
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }
-        
+
         $filename = uniqid() . '_' . $_FILES['cgpa_file']['name'];
         $target_file = $upload_dir . $filename;
-        
+
         if (move_uploaded_file($_FILES['cgpa_file']['tmp_name'], $target_file)) {
             $check_credential = "SELECT * FROM credential_file WHERE user_id = ? AND file_type = 'cgpa'";
             $stmt = $conn->prepare($check_credential);
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
-            
+
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
                 $old_file = $row['file_path'];
-                
+
                 if (!empty($old_file) && file_exists($old_file) && $old_file != $target_file) {
                     unlink($old_file);
                     error_log("Old file deleted: $old_file");
                 }
-                
+
                 $update_credential = "UPDATE credential_file SET 
                     file_name = ?, 
                     file_path = ?, 
@@ -225,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['cgpa_file']) && $_FI
                 $stmt->bind_param("isss", $user_id, $file_name, $target_file, $file_type);
                 $credential_updated = $stmt->execute();
             }
-            
+
             if (isset($credential_updated) && $credential_updated) {
                 $user_cgpa_file = $target_file;
                 $user_cgpa_filename = $file_name;
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = trim($_POST['year']);
         $bio = trim($_POST['bio']);
         $qualifications = trim($_POST['qualifications']);
-        
+
         $phone_valid = false;
         if (!empty($phone)) {
             $phone = preg_replace('/[^0-9]/', '', $phone);
@@ -267,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else if (substr($phone, 0, 2) === '01') {
                 $phone_valid = (strlen($phone) === 10);
             }
-            
+
             if (!$phone_valid) {
                 $_SESSION['error_message'] = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
                 error_log($_SESSION['error_message']);
@@ -275,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $phone_valid = true;
         }
-        
+
         if ($phone_valid) {
             // Check phone uniqueness
             $check_phone = "SELECT user_id FROM user WHERE phone = ? AND user_id != ?";
@@ -283,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("si", $phone, $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
-            
+
             if ($result->num_rows > 0) {
                 $_SESSION['error_message'] = "Phone number already in use!";
                 error_log("Duplicate phone for user_id: $user_id: $phone");
@@ -293,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                      last_name = ?,
                                      phone = ?
                                      WHERE user_id = ?";
-                
+
                 $stmt = $conn->prepare($update_user_query);
                 if (!$stmt) {
                     $_SESSION['error_message'] = "Database Error: Failed to prepare user update statement - " . $conn->error;
@@ -307,13 +307,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $stmt->close();
                 }
-                
+
                 $check_tutor = "SELECT user_id FROM tutorprofile WHERE user_id = ?";
                 $stmt = $conn->prepare($check_tutor);
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $result = $stmt->get_result();
-                
+
                 if ($result->num_rows > 0) {
                     $update_tutor_query = "UPDATE tutorprofile SET
                                            major = ?,
@@ -327,7 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                            VALUES (?, ?, ?, ?, ?)";
                     $stmt = $conn->prepare($update_tutor_query);
                 }
-                
+
                 if (!$stmt) {
                     $_SESSION['error_message'] = "Database Error: Failed to prepare tutor update statement - " . $conn->error;
                     error_log($_SESSION['error_message']);
@@ -340,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $stmt->close();
                 }
-                
+
                 if (isset($user_updated) && $user_updated && isset($tutor_updated) && $tutor_updated) {
                     $_SESSION['success_message'] = "Profile updated successfully!";
                 }
@@ -348,73 +348,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     // Handle course addition
-else if (isset($_POST['add_subject'])) {
-    error_log("Processing add course");
-    $course_id = intval($_POST['course_id']);
-    $hourly_rate = floatval($_POST['hourly_rate']);
-    
-    error_log("User ID: $user_id, Course ID: $course_id, Hourly Rate: $hourly_rate");
-    
-    if (empty($course_id) || empty($hourly_rate)) {
-        $_SESSION['error_message'] = "请选择课程并输入每小时收费！";
-        error_log("验证失败：检测到空值");
-    } else {
-        // 检查重复课程
-        $check_query = "SELECT id FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
-        $stmt = $conn->prepare($check_query);
-        if (!$stmt) {
-            $_SESSION['error_message'] = "数据库错误：无法准备查询！";
-            error_log("准备查询失败： " . $conn->error);
+    else if (isset($_POST['add_subject'])) {
+        error_log("Processing add course");
+        $course_id = intval($_POST['course_id']);
+        $hourly_rate = floatval($_POST['hourly_rate']);
+
+        error_log("User ID: $user_id, Course ID: $course_id, Hourly Rate: $hourly_rate");
+
+        if (empty($course_id) || empty($hourly_rate)) {
+            $_SESSION['error_message'] = "请选择课程并输入每小时收费！";
+            error_log("验证失败：检测到空值");
         } else {
-            $stmt->bind_param("ii", $user_id, $course_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            error_log("查询重复课程结果： num_rows = " . $result->num_rows);
-            
-            if ($result->num_rows > 0) {
-                $_SESSION['error_message'] = "此课程已添加，请选择其他课程！";
-                error_log("检测到重复课程：tutor_id=$user_id, course_id=$course_id");
-                $stmt->close();
+            // 检查重复课程
+            $check_query = "SELECT id FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
+            $stmt = $conn->prepare($check_query);
+            if (!$stmt) {
+                $_SESSION['error_message'] = "数据库错误：无法准备查询！";
+                error_log("准备查询失败： " . $conn->error);
             } else {
-                // 验证 course_id
-                $check_course = "SELECT id FROM course WHERE id = ?";
-                $stmt = $conn->prepare($check_course);
-                if (!$stmt) {
-                    $_SESSION['error_message'] = "数据库错误：无法验证课程！";
-                    error_log("验证课程查询失败： " . $conn->error);
+                $stmt->bind_param("ii", $user_id, $course_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                error_log("查询重复课程结果： num_rows = " . $result->num_rows);
+
+                if ($result->num_rows > 0) {
+                    $_SESSION['error_message'] = "此课程已添加，请选择其他课程！";
+                    error_log("检测到重复课程：tutor_id=$user_id, course_id=$course_id");
+                    $stmt->close();
                 } else {
-                    $stmt->bind_param("i", $course_id);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $valid_course = ($result->num_rows > 0);
-                    
-                    if (!$valid_course) {
-                        $_SESSION['error_message'] = "选择的课程无效！";
-                        error_log("外键验证失败：course_id=$course_id 不存在");
+                    // 验证 course_id
+                    $check_course = "SELECT id FROM course WHERE id = ?";
+                    $stmt = $conn->prepare($check_course);
+                    if (!$stmt) {
+                        $_SESSION['error_message'] = "数据库错误：无法验证课程！";
+                        error_log("验证课程查询失败： " . $conn->error);
                     } else {
-                        $insert_query = "INSERT INTO tutorsubject (tutor_id, course_id, hourly_rate) VALUES (?, ?, ?)";
-                        $stmt = $conn->prepare($insert_query);
-                        if (!$stmt) {
-                            $_SESSION['error_message'] = "数据库错误：无法准备插入查询！";
-                            error_log("准备插入查询失败： " . $conn->error);
+                        $stmt->bind_param("i", $course_id);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $valid_course = ($result->num_rows > 0);
+
+                        if (!$valid_course) {
+                            $_SESSION['error_message'] = "选择的课程无效！";
+                            error_log("外键验证失败：course_id=$course_id 不存在");
                         } else {
-                            $stmt->bind_param("iid", $user_id, $course_id, $hourly_rate);
-                            if ($stmt->execute()) {
-                                $_SESSION['success_message'] = "课程添加成功！";
-                                error_log("课程添加成功，用户ID: $user_id, 课程ID: $course_id");
+                            $insert_query = "INSERT INTO tutorsubject (tutor_id, course_id, hourly_rate) VALUES (?, ?, ?)";
+                            $stmt = $conn->prepare($insert_query);
+                            if (!$stmt) {
+                                $_SESSION['error_message'] = "数据库错误：无法准备插入查询！";
+                                error_log("准备插入查询失败： " . $conn->error);
                             } else {
-                                $_SESSION['error_message'] = "添加课程失败。错误: " . $stmt->error;
-                                error_log("添加课程失败，用户ID: $user_id, 错误: " . $stmt->error);
+                                $stmt->bind_param("iid", $user_id, $course_id, $hourly_rate);
+                                if ($stmt->execute()) {
+                                    $_SESSION['success_message'] = "课程添加成功！";
+                                    error_log("课程添加成功，用户ID: $user_id, 课程ID: $course_id");
+                                } else {
+                                    $_SESSION['error_message'] = "添加课程失败。错误: " . $stmt->error;
+                                    error_log("添加课程失败，用户ID: $user_id, 错误: " . $stmt->error);
+                                }
                             }
                         }
                     }
+                    $stmt->close();
                 }
-                $stmt->close();
             }
         }
     }
-}
     // Refresh page to display notification
     header("Location: tutor_profile.php");
     exit();
@@ -423,7 +423,7 @@ else if (isset($_POST['add_subject'])) {
     if (isset($_POST['remove_subject'])) {
         error_log("Processing remove course");
         $course_id = intval($_POST['course_id']);
-        
+
         $delete_query = "DELETE FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
         $stmt = $conn->prepare($delete_query);
         if (!$stmt) {
@@ -446,28 +446,28 @@ else if (isset($_POST['add_subject'])) {
         error_log("Processing profile image upload");
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $max_size = 5 * 1024 * 1024;
-        
+
         if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
             $upload_dir = 'Uploads/profile_images/';
-            
+
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
-            
+
             $filename = $user_id . '_' . time() . '_' . $_FILES['profile_image']['name'];
             $target_file = $upload_dir . $filename;
-            
+
             if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
                 // Delete old profile image
                 if (!empty($profile_image) && file_exists($profile_image)) {
                     unlink($profile_image);
                     error_log("Old profile image deleted: $profile_image");
                 }
-                
+
                 $update_query = "UPDATE user SET profile_image = ? WHERE user_id = ?";
                 $stmt = $conn->prepare($update_query);
                 $stmt->bind_param("si", $target_file, $user_id);
-                
+
                 if ($stmt->execute()) {
                     $profile_image = $target_file;
                     $_SESSION['success_message'] = "Profile image updated successfully!";
@@ -492,14 +492,14 @@ else if (isset($_POST['add_subject'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
-        
+
         $check_password_query = "SELECT password FROM user WHERE user_id = ?";
         $stmt = $conn->prepare($check_password_query);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $user_data = $result->fetch_assoc();
-        
+
         if (password_verify($current_password, $user_data['password'])) {
             if ($new_password === $confirm_password) {
                 if (strlen($new_password) >= 8) {
@@ -507,7 +507,7 @@ else if (isset($_POST['add_subject'])) {
                     $update_password_query = "UPDATE user SET password = ? WHERE user_id = ?";
                     $stmt = $conn->prepare($update_password_query);
                     $stmt->bind_param("si", $hashed_password, $user_id);
-                    
+
                     if ($stmt->execute()) {
                         $_SESSION['success_message'] = "Password updated successfully!";
                         error_log("Password updated for user ID: $user_id");
@@ -567,6 +567,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -581,19 +582,19 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             --gray: #e9ecef;
             --dark-gray: #6c757d;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: var(--light-gray);
             color: #333;
         }
-        
+
         .navbar {
             background-color: var(--primary);
             color: white;
@@ -601,19 +602,19 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .logo {
             font-weight: bold;
             font-size: 1.5rem;
         }
-        
+
         .nav-links {
             display: flex;
             gap: 20px;
         }
-        
+
         .nav-links a {
             color: white;
             text-decoration: none;
@@ -621,22 +622,22 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-        
+
         .nav-links a:hover {
-            background-color: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        
+
         .nav-links a.active {
             background-color: var(--accent);
             color: white;
         }
-        
+
         .user-menu {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .user-avatar {
             width: 35px;
             height: 35px;
@@ -650,13 +651,13 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             cursor: pointer;
             overflow: hidden;
         }
-        
+
         .user-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .notification-badge {
             background-color: var(--accent);
             color: white;
@@ -670,40 +671,40 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             margin-left: -10px;
             margin-top: -10px;
         }
-        
+
         main {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
+
         .page-title {
             color: var(--primary);
             margin-bottom: 1.5rem;
             font-weight: 600;
         }
-        
+
         .profile-container {
             display: grid;
             grid-template-columns: 1fr 2fr;
             gap: 2rem;
         }
-        
+
         .profile-sidebar {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        
+
         .profile-image-container {
             position: relative;
             margin-bottom: 1.5rem;
         }
-        
+
         .profile-image {
             width: 150px;
             height: 150px;
@@ -711,7 +712,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             object-fit: cover;
             border: 3px solid var(--primary);
         }
-        
+
         .profile-image-placeholder {
             width: 150px;
             height: 150px;
@@ -725,7 +726,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             font-weight: bold;
             border: 3px solid var(--primary);
         }
-        
+
         .edit-profile-image {
             position: absolute;
             bottom: 0;
@@ -741,7 +742,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             font-size: 1.2rem;
             border: 2px solid white;
         }
-        
+
         .profile-name {
             font-size: 1.5rem;
             font-weight: 600;
@@ -749,13 +750,13 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             color: var(--primary);
             text-align: center;
         }
-        
+
         .profile-role {
             color: var(--dark-gray);
             margin-bottom: 1.5rem;
             text-align: center;
         }
-        
+
         .verified-badge {
             background-color: var(--accent);
             color: white;
@@ -765,41 +766,41 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             display: inline-block;
             margin-bottom: 1.5rem;
         }
-        
+
         .profile-info {
             width: 100%;
         }
-        
+
         .info-item {
             display: flex;
             margin-bottom: 1rem;
             align-items: center;
         }
-        
+
         .info-icon {
             width: 30px;
             color: var(--primary);
             margin-right: 10px;
             text-align: center;
         }
-        
+
         .info-text {
             flex: 1;
         }
-        
+
         .profile-content {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
-        
+
         .profile-section {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .section-title {
             color: var(--primary);
             margin-bottom: 1.5rem;
@@ -808,17 +809,17 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
         }
-        
+
         .form-control {
             width: 100%;
             padding: 0.75rem;
@@ -826,12 +827,12 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             border-radius: 4px;
             font-size: 1rem;
         }
-        
+
         textarea.form-control {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .btn {
             background-color: var(--accent);
             color: white;
@@ -842,31 +843,31 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
+
         .btn:hover {
             background-color: #b3c300;
         }
-        
+
         .btn-secondary {
             background-color: var(--secondary);
         }
-        
+
         .btn-secondary:hover {
             background-color: #0098d0;
         }
-        
+
         .btn-danger {
             background-color: #dc3545;
         }
-        
+
         .btn-danger:hover {
             background-color: #c82333;
         }
-        
+
         .subject-list {
             margin-bottom: 1.5rem;
         }
-        
+
         .subject-item {
             display: flex;
             justify-content: space-between;
@@ -876,29 +877,34 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             border-radius: 4px;
             margin-bottom: 0.5rem;
         }
-        
+
         .subject-name {
             font-weight: 500;
         }
-        
+
         .subject-rate {
             color: var(--dark-gray);
-            text-align: right; /* 右对齐内容 */
-            width: 100%; /* 确保 div 填满 td */
-            display: inline-block; /* 使 div 表现如内联块元素 */
-            
+            text-align: right;
+            /* 右对齐内容 */
+            width: 100%;
+            /* 确保 div 填满 td */
+            display: inline-block;
+            /* 使 div 表现如内联块元素 */
+
         }
 
         .hourly-rate-cell {
-            width: 120px; /* 固定列宽，确保一致性 */
-            text-align: right; /* 确保 td 内容右对齐 */
+            width: 120px;
+            /* 固定列宽，确保一致性 */
+            text-align: right;
+            /* 确保 td 内容右对齐 */
         }
-        
+
         .subject-actions {
             display: flex;
             gap: 10px;
         }
-        
+
         .subject-actions button {
             background: none;
             border: none;
@@ -906,18 +912,18 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             color: var(--dark-gray);
             transition: color 0.3s;
         }
-        
+
         .subject-actions button:hover {
             color: var(--primary);
         }
-        
+
         .add-subject-form {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 1rem;
         }
-        
+
         .add-subject-form select,
         .add-subject-form input {
             flex: 1;
@@ -927,7 +933,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             font-size: 1rem;
             min-width: 150px;
         }
-        
+
         .success-message {
             background-color: #d4edda;
             color: #155724;
@@ -935,7 +941,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             border-radius: 4px;
             margin-bottom: 1.5rem;
         }
-        
+
         .error-message {
             background-color: #f8d7da;
             color: #721c24;
@@ -943,7 +949,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             border-radius: 4px;
             margin-bottom: 1.5rem;
         }
-        
+
         footer {
             background-color: var(--primary);
             color: white;
@@ -951,12 +957,12 @@ $cgpa_file = $user['cgpa_file'] ?? '';
             padding: 1.5rem;
             margin-top: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .profile-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .nav-links {
                 display: none;
                 position: absolute;
@@ -968,30 +974,30 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                 padding: 1rem;
                 z-index: 100;
             }
-            
+
             .nav-links.show {
                 display: flex;
             }
-            
+
             .menu-toggle {
                 display: block;
                 font-size: 1.5rem;
                 cursor: pointer;
             }
         }
-        
+
         @media (min-width: 769px) {
             .menu-toggle {
                 display: none;
             }
         }
-        
+
         .custom-alert {
             display: flex;
             align-items: center;
             border-radius: 8px;
             border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 12px 15px;
         }
@@ -1031,55 +1037,28 @@ $cgpa_file = $user['cgpa_file'] ?? '';
         }
     </style>
 </head>
+
 <body>
-    <nav class="navbar">
-        <div class="logo">PeerLearn</div>
-        <div class="nav-links">
-            <a href="tutor_main_page.php">Schedule management</a>
-            <a href="tutor_profile.php" class="active">Profile</a>
-            <a href="tutor_requests.php">Appointment Requests
-                <?php if($pending_requests > 0): ?>
-                <span class="notification-badge"><?php echo $pending_requests; ?></span>
-                <?php endif; ?>
-            </a>
-            <a href="tutor_students.php">My Students</a>
-            <a href="messages.php">Messages
-                <?php if($unread_messages > 0): ?>
-                <span class="notification-badge"><?php echo $unread_messages; ?></span>
-                <?php endif; ?>
-            </a>
-        </div>
-        <div class="user-menu">
-            <div class="user-avatar">
-                <?php if($profile_image): ?>
-                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
-                <?php else: ?>
-                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
-                <?php endif; ?>
-            </div>
-            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
-        </div>
-        <div class="menu-toggle">☰</div>
-    </nav>
+    <?php include 'header/tut_head.php'; ?>
 
     <main>
         <h1 class="page-title">Profile</h1>
-        
-        <?php if(isset($success_message)): ?>
-        <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
+
+        <?php if (isset($success_message)): ?>
+            <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
         <?php endif; ?>
-        
-        <?php if(isset($error_message)): ?>
-        <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
+
+        <?php if (isset($error_message)): ?>
+            <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
         <?php endif; ?>
-        
+
         <div class="profile-container">
             <div class="profile-sidebar">
                 <div class="profile-image-container">
-                    <?php if($profile_image): ?>
-                    <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image">
+                    <?php if ($profile_image): ?>
+                        <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image">
                     <?php else: ?>
-                    <div class="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
+                        <div class="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                     <?php endif; ?>
                     <label for="profile_image_upload" class="edit-profile-image">
                         <i>📷</i>
@@ -1090,8 +1069,8 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                 </div>
                 <h2 class="profile-name"><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h2>
                 <p class="profile-role">Tutor</p>
-                <?php if($is_verified): ?>
-                <div class="verified-badge">Verified Tutor</div>
+                <?php if ($is_verified): ?>
+                    <div class="verified-badge">Verified Tutor</div>
                 <?php endif; ?>
                 <div class="profile-info">
                     <div class="info-item">
@@ -1148,8 +1127,8 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                             <label for="cgpa_file">Cgpa Credentials</label>
                             <input type="file" class="form-control" id="cgpa_file" name="cgpa_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                             <small class="form-text text-muted">Upload your Cgpa transcripts (PDF, Word, or image files)</small>
-                            
-                            <?php if(isset($user_cgpa_file) && !empty($user_cgpa_file)): ?>
+
+                            <?php if (isset($user_cgpa_file) && !empty($user_cgpa_file)): ?>
                                 <div class="mt-2 border p-2 bg-light">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -1178,7 +1157,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                 </div>
                 <div class="profile-section">
                     <h3 class="section-title">Courses Taught</h3>
-                    
+
                     <?php if (isset($_GET['success']) && $_GET['success'] == 'course_added'): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             Course added successfully!
@@ -1187,16 +1166,16 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                             </button>
                         </div>
                     <?php endif; ?>
-                    
+
                     <form action="" method="post" class="add-subject-form">
                         <input type="hidden" name="add_subject" value="1">
                         <div class="form-group">
                             <select name="course_id" id="course_select" class="form-control" required>
                                 <option value="">-- Select Course --</option>
-                                <?php foreach($all_courses as $course): ?>
-                                <option value="<?php echo $course['id']; ?>">
-                                    <?php echo htmlspecialchars( $course['course_name']); ?>
-                                </option>
+                                <?php foreach ($all_courses as $course): ?>
+                                    <option value="<?php echo $course['id']; ?>">
+                                        <?php echo htmlspecialchars($course['course_name']); ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -1207,31 +1186,31 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                             <button type="submit" class="btn btn-secondary">Add Course</button>
                         </div>
                     </form>
-                    
-                    <?php if(empty($tutor_courses)): ?>
-                    <p>You haven't added any courses yet. Please use the form above to add courses you can teach.</p>
+
+                    <?php if (empty($tutor_courses)): ?>
+                        <p>You haven't added any courses yet. Please use the form above to add courses you can teach.</p>
                     <?php else: ?>
-                    <div class="subject-list">
-                        <?php foreach($tutor_courses as $course): ?>
-                        <div class="subject-item">
-                            <div class="subject-info">
-                                <div class="course-name"><?php echo htmlspecialchars($course['course_name']); ?> </div>
-                            </div>
-                            <td class="px-6 py-4 whitespace-nowrap hourly-rate-cell">
-                                <div class="subject-rate">RM<?php echo number_format($course['hourly_rate'], 2); ?>/hour</div>
-                            </td>
-                            <div class="subject-actions">
-                                <form action="" method="post" style="display: inline;">
-                                    <input type="hidden" name="remove_subject" value="1">
-                                    <input type="hidden" name="course_id" value="<?php echo $course['course_id']; ?>">
-                                    <button type="submit" onclick="return confirm('Are you sure you want to remove this course?')">
-                                        <i>🗑️</i>
-                                    </button>
-                                </form>
-                            </div>
+                        <div class="subject-list">
+                            <?php foreach ($tutor_courses as $course): ?>
+                                <div class="subject-item">
+                                    <div class="subject-info">
+                                        <div class="course-name"><?php echo htmlspecialchars($course['course_name']); ?> </div>
+                                    </div>
+                                    <td class="px-6 py-4 whitespace-nowrap hourly-rate-cell">
+                                        <div class="subject-rate">RM<?php echo number_format($course['hourly_rate'], 2); ?>/hour</div>
+                                    </td>
+                                    <div class="subject-actions">
+                                        <form action="" method="post" style="display: inline;">
+                                            <input type="hidden" name="remove_subject" value="1">
+                                            <input type="hidden" name="course_id" value="<?php echo $course['course_id']; ?>">
+                                            <button type="submit" onclick="return confirm('Are you sure you want to remove this course?')">
+                                                <i>🗑️</i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
                     <?php endif; ?>
                 </div>
                 <div class="profile-section">
@@ -1282,4 +1261,5 @@ $cgpa_file = $user['cgpa_file'] ?? '';
         });
     </script>
 </body>
+
 </html>

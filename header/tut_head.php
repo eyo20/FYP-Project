@@ -680,10 +680,10 @@
                 PeerLearn
             </div>
             <nav class="nav-links">
-                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
-                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
-                <a href="student_messages.php"><i class="fas fa-envelope"></i> Messages</a>
+                <a href="tutor_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="tutor_requests.php"><i class="fas fa-search"></i> Appoinment</a>
+                <a href="tutor_students.php"><i class="fas fa-calendar"></i> My Student</a>
+                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
                 <div class="user-menu" onclick="toggleDropdown()">
                     <i class="fas fa-user-circle"></i>
                     <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
