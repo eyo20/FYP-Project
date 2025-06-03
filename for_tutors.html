@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,30 +12,38 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Arial', sans-serif;
             line-height: 1.6;
             color: #333;
         }
-        
+
         a {
             text-decoration: none;
             color: inherit;
         }
-        
+
         /* Color Variables */
         :root {
-            --primary-color: #2B3990;     /* Deep Blue */
-            --secondary-color: #00AEEF;   /* Light Blue */
-            --accent-color: #C4D600;      /* Yellow-Green */
-            --light-color: #F8F9FA;       /* Light Grey */
-            --dark-color: #333333;        /* Dark Grey */
-            --white: #FFFFFF;             /* White */
-            --logo-gradient-blue: #00AEEF; /* Logo Gradient Start */
-            --logo-gradient-green: #00A99D; /* Logo Gradient End */
+            --primary-color: #2B3990;
+            /* Deep Blue */
+            --secondary-color: #00AEEF;
+            /* Light Blue */
+            --accent-color: #C4D600;
+            /* Yellow-Green */
+            --light-color: #F8F9FA;
+            /* Light Grey */
+            --dark-color: #333333;
+            /* Dark Grey */
+            --white: #FFFFFF;
+            /* White */
+            --logo-gradient-blue: #00AEEF;
+            /* Logo Gradient Start */
+            --logo-gradient-green: #00A99D;
+            /* Logo Gradient End */
         }
-        
+
         /* Container Styles */
         .container {
             width: 90%;
@@ -42,7 +51,7 @@
             margin: 0 auto;
             padding: 0 15px;
         }
-        
+
         /* Button Styles */
         .btn {
             display: inline-block;
@@ -53,25 +62,25 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary {
             background-color: var(--accent-color);
             color: var(--dark-color);
         }
-        
+
         .btn-primary:hover {
             background-color: #b1c100;
         }
-        
+
         .btn-secondary {
             background-color: var(--secondary-color);
             color: var(--white);
         }
-        
+
         .btn-secondary:hover {
             background-color: #009bd5;
         }
-        
+
         /* Navigation Bar */
         .navbar {
             display: flex;
@@ -79,62 +88,62 @@
             align-items: center;
             padding: 20px 0;
             background-color: var(--white);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-        
+
         .logo {
             display: flex;
             align-items: center;
         }
-        
+
         .logo img {
             height: 70px;
         }
-        
-        .navbar > .container {
+
+        .navbar>.container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-grow: 1;
         }
-        
+
         .nav-menu {
             display: flex;
             justify-content: center;
             list-style: none;
         }
-        
+
         .nav-item {
             margin: 0 15px;
         }
-        
+
         .nav-link {
             color: var(--dark-color);
             font-weight: 500;
             transition: color 0.3s ease;
         }
-        
+
         .nav-link:hover {
             color: var(--primary-color);
         }
-        
+
         .nav-link.active {
             color: var(--primary-color);
             font-weight: 700;
         }
-        
+
         .nav-buttons {
             display: flex;
             align-items: center;
         }
-        
+
         .nav-buttons .btn {
             margin-left: 15px;
         }
-        
+
         /* Hero Section */
         .hero {
             display: flex;
@@ -145,47 +154,47 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .hero-content {
             flex: 0 0 50%;
             z-index: 2;
         }
-        
+
         .hero-title {
             font-size: 2.5rem;
             color: var(--primary-color);
             margin-bottom: 20px;
             line-height: 1.2;
         }
-        
+
         .hero-subtitle {
             font-size: 1.1rem;
             color: var(--dark-color);
             margin-bottom: 30px;
         }
-        
+
         .hero-buttons {
             margin-top: 25px;
         }
-        
+
         .hero-image {
             flex: 0 0 45%;
             position: relative;
             z-index: 1;
         }
-        
+
         .hero-image img {
             width: 100%;
             height: auto;
             border-radius: 10px;
         }
-        
+
         /* Geometric Decorations */
         .shape {
             position: absolute;
             z-index: 0;
         }
-        
+
         .shape-circle {
             width: 100px;
             height: 100px;
@@ -195,7 +204,7 @@
             top: 20%;
             right: 10%;
         }
-        
+
         .shape-triangle {
             width: 0;
             height: 0;
@@ -206,39 +215,39 @@
             bottom: 10%;
             left: 5%;
         }
-        
+
         /* Why Become a Tutor Section */
         .why-tutor {
             padding: 80px 0;
             background-color: var(--white);
         }
-        
+
         .section-title {
             text-align: center;
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 50px;
         }
-        
+
         .reasons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
         }
-        
+
         .reason-card {
             text-align: center;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease;
             background-color: var(--white);
         }
-        
+
         .reason-card:hover {
             transform: translateY(-10px);
         }
-        
+
         .reason-icon {
             width: 70px;
             height: 70px;
@@ -249,50 +258,50 @@
             background-color: var(--light-color);
             border-radius: 50%;
         }
-        
+
         .reason-icon i {
             font-size: 30px;
             color: var(--primary-color);
         }
-        
+
         .reason-title {
             font-size: 1.25rem;
             color: var(--primary-color);
             margin-bottom: 15px;
         }
-        
+
         .reason-desc {
             color: var(--dark-color);
         }
-        
+
         /* How It Works Section */
         .how-it-works {
             padding: 80px 0;
             background-color: var(--light-color);
         }
-        
+
         .steps-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             margin-top: 40px;
         }
-        
+
         .step {
             flex: 0 0 30%;
             margin-bottom: 40px;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             background-color: var(--white);
             transition: transform 0.3s ease;
             position: relative;
         }
-        
+
         .step:hover {
             transform: translateY(-10px);
         }
-        
+
         .step-number {
             position: absolute;
             top: -20px;
@@ -308,46 +317,46 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
-        
+
         .step-title {
             font-size: 1.3rem;
             color: var(--primary-color);
             margin-bottom: 15px;
             margin-top: 10px;
         }
-        
+
         .step-description {
             color: var(--dark-color);
             font-size: 1rem;
         }
-        
+
         /* Success Stories Section */
         .success-stories {
             padding: 80px 0;
             background-color: var(--white);
         }
-        
+
         .stories-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             margin-top: 40px;
         }
-        
+
         .story {
             flex: 0 0 48%;
             margin-bottom: 30px;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             background-color: var(--light-color);
         }
-        
+
         .story-content {
             position: relative;
             padding-left: 30px;
         }
-        
+
         .story-content:before {
             content: '"';
             position: absolute;
@@ -357,18 +366,18 @@
             color: var(--secondary-color);
             font-family: Georgia, serif;
         }
-        
+
         .story-text {
             font-style: italic;
             margin-bottom: 20px;
             color: var(--dark-color);
         }
-        
+
         .story-author {
             display: flex;
             align-items: center;
         }
-        
+
         .author-avatar {
             width: 50px;
             height: 50px;
@@ -381,35 +390,35 @@
             color: var(--white);
             font-weight: bold;
         }
-        
+
         .author-info h4 {
             color: var(--primary-color);
             margin-bottom: 5px;
         }
-        
+
         .author-info p {
             font-size: 0.9rem;
             color: var(--dark-color);
         }
-        
+
         /* FAQ Section */
         .faq {
             padding: 80px 0;
             background-color: var(--light-color);
         }
-        
+
         .faq-container {
             max-width: 800px;
             margin: 40px auto 0;
         }
-        
+
         .faq-item {
             margin-bottom: 20px;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .faq-question {
             padding: 20px;
             background-color: var(--white);
@@ -420,29 +429,29 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .faq-question:hover {
             background-color: #f5f5f5;
         }
-        
+
         .faq-answer {
             padding: 20px;
             background-color: var(--white);
             display: none;
         }
-        
+
         .faq-answer.active {
             display: block;
         }
-        
+
         .faq-question i {
             transition: transform 0.3s ease;
         }
-        
+
         .faq-question.active i {
             transform: rotate(180deg);
         }
-        
+
         /* CTA Section */
         .cta {
             padding: 80px 0;
@@ -450,12 +459,12 @@
             text-align: center;
             color: var(--white);
         }
-        
+
         .cta-title {
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
-        
+
         .cta-text {
             font-size: 1.1rem;
             margin-bottom: 30px;
@@ -463,69 +472,69 @@
             margin-left: auto;
             margin-right: auto;
         }
-        
+
         /* Footer */
         .footer {
             padding: 60px 0 30px;
             background-color: var(--dark-color);
             color: var(--white);
         }
-        
+
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
         }
-        
+
         .footer-logo {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .footer-logo img {
             height: 40px;
             margin-right: 10px;
         }
-        
+
         .footer-contact p {
             margin-bottom: 10px;
         }
-        
+
         .footer-links h4 {
             margin-bottom: 20px;
             color: var(--accent-color);
         }
-        
+
         .footer-links ul {
             list-style: none;
         }
-        
+
         .footer-links li {
             margin-bottom: 10px;
         }
-        
+
         .footer-links a {
             color: var(--light-color);
             transition: color 0.3s ease;
         }
-        
+
         .footer-links a:hover {
             color: var(--accent-color);
         }
-        
+
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .social-links {
             display: flex;
             margin-top: 20px;
         }
-        
+
         .social-links a {
             width: 40px;
             height: 40px;
@@ -538,11 +547,11 @@
             margin-right: 10px;
             transition: background-color 0.3s ease;
         }
-        
+
         .social-links a:hover {
             background-color: var(--accent-color);
         }
-        
+
         /* Responsive Design */
         @media (max-width: 992px) {
             .hero {
@@ -550,58 +559,60 @@
                 text-align: center;
                 padding: 40px 0;
             }
-            
-            .hero-content, .hero-image {
+
+            .hero-content,
+            .hero-image {
                 flex: 0 0 100%;
             }
-            
+
             .hero-content {
                 margin-bottom: 40px;
             }
-            
+
             .step {
                 flex: 0 0 45%;
             }
-            
+
             .story {
                 flex: 0 0 100%;
             }
         }
-        
+
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 padding: 15px 0;
             }
-            
+
             .logo {
                 margin-bottom: 15px;
             }
-            
+
             .nav-container {
                 margin-bottom: 15px;
             }
-            
+
             .nav-menu {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .nav-item {
                 margin: 5px 10px;
             }
-            
+
             .hero-title {
                 font-size: 2rem;
             }
-            
+
             .section-title {
                 font-size: 1.75rem;
             }
-            
+
             .step {
                 flex: 0 0 100%;
             }
+
             .cta-title {
                 font-size: 2rem;
             }
@@ -610,6 +621,7 @@
     <!-- Import Font Icon Library (Font Awesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
+
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
@@ -619,7 +631,7 @@
                     <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </a>
             </div>
-            
+
             <div class="nav-container">
                 <ul class="nav-menu">
                     <li class="nav-item">
@@ -636,190 +648,216 @@
                     </li>
                 </ul>
             </div>
-            
+
             <div class="nav-buttons">
                 <a href="login.php" class="btn btn-primary">LOGIN/REGISTER</a>
             </div>
         </div>
     </nav>
-    
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">Share Your Knowledge, Earn While Learning</h1>
-                <p class="hero-subtitle">Join our community of peer tutors, help fellow students succeed, build your teaching skills, and earn money while reinforcing your own understanding.</p>
+                <p class="hero-subtitle">Join our community of peer tutors, help fellow students succeed, build your
+                    teaching skills, and earn money while reinforcing your own understanding.</p>
                 <div class="hero-buttons">
                     <a href="register.php" class="btn btn-primary">Become a Tutor</a>
                     <a href="#how-it-works" class="btn btn-secondary">Learn How It Works</a>
                 </div>
             </div>
-            
+
             <div class="hero-image">
                 <img src="image/tutor_teaching.jpg" alt="Student Tutoring">
             </div>
         </div>
-        
+
         <!-- Decorative Geometric Shapes -->
         <div class="shape shape-circle"></div>
         <div class="shape shape-triangle"></div>
     </section>
-    
+
     <!-- Why Become a Tutor Section -->
     <section class="why-tutor">
         <div class="container">
             <h2 class="section-title">Why Become a Peer Tutor?</h2>
-            
+
             <div class="reasons-grid">
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <h3 class="reason-title">Earn Money</h3>
-                    <p class="reason-desc">Set your own rates and schedule. Earn money while helping others and doing something you enjoy.</p>
+                    <p class="reason-desc">Set your own rates and schedule. Earn money while helping others and doing
+                        something you enjoy.</p>
                 </div>
-                
+
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-brain"></i>
                     </div>
                     <h3 class="reason-title">Reinforce Your Knowledge</h3>
-                    <p class="reason-desc">Teaching is one of the best ways to solidify your own understanding of a subject and identify knowledge gaps.</p>
+                    <p class="reason-desc">Teaching is one of the best ways to solidify your own understanding of a
+                        subject and identify knowledge gaps.</p>
                 </div>
-                
+
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-user-tie"></i>
                     </div>
                     <h3 class="reason-title">Build Your Resume</h3>
-                    <p class="reason-desc">Gain valuable teaching experience and develop transferable skills that employers value, such as communication and leadership.</p>
+                    <p class="reason-desc">Gain valuable teaching experience and develop transferable skills that
+                        employers value, such as communication and leadership.</p>
                 </div>
-                
+
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-clock"></i>
                     </div>
                     <h3 class="reason-title">Flexible Schedule</h3>
-                    <p class="reason-desc">Choose when you want to tutor. Set your availability around your classes and other commitments.</p>
+                    <p class="reason-desc">Choose when you want to tutor. Set your availability around your classes and
+                        other commitments.</p>
                 </div>
-                
+
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <h3 class="reason-title">Grow Your Network</h3>
-                    <p class="reason-desc">Connect with students across different disciplines and build your academic and professional network.</p>
+                    <p class="reason-desc">Connect with students across different disciplines and build your academic
+                        and professional network.</p>
                 </div>
-                
+
                 <div class="reason-card">
                     <div class="reason-icon">
                         <i class="fas fa-heart"></i>
                     </div>
                     <h3 class="reason-title">Make a Difference</h3>
-                    <p class="reason-desc">Help fellow students overcome academic challenges and contribute to their success and confidence.</p>
+                    <p class="reason-desc">Help fellow students overcome academic challenges and contribute to their
+                        success and confidence.</p>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- How It Works Section -->
     <section id="how-it-works" class="how-it-works">
         <div class="container">
             <h2 class="section-title">How to Become a Tutor</h2>
-            
+
             <div class="steps-container">
                 <div class="step">
                     <div class="step-number">1</div>
                     <h3 class="step-title">Create Your Profile</h3>
-                    <p class="step-description">Sign up and create your tutor profile. Add your academic credentials, subjects you can teach, and your teaching approach.</p>
+                    <p class="step-description">Sign up and create your tutor profile. Add your academic credentials,
+                        subjects you can teach, and your teaching approach.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">2</div>
                     <h3 class="step-title">Set Your Availability</h3>
-                    <p class="step-description">Define your schedule by setting up your available hours and days for tutoring sessions.</p>
+                    <p class="step-description">Define your schedule by setting up your available hours and days for
+                        tutoring sessions.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">3</div>
                     <h3 class="step-title">Set Your Rates</h3>
-                    <p class="step-description">Determine your hourly rate based on your expertise, the subject complexity, and market rates.</p>
+                    <p class="step-description">Determine your hourly rate based on your expertise, the subject
+                        complexity, and market rates.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">4</div>
                     <h3 class="step-title">Get Verified</h3>
-                    <p class="step-description">Submit your academic transcripts and credentials for verification to build trust with potential students.</p>
+                    <p class="step-description">Submit your academic transcripts and credentials for verification to
+                        build trust with potential students.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">5</div>
                     <h3 class="step-title">Receive Booking Requests</h3>
-                    <p class="step-description">Students will browse profiles and send you booking requests based on your expertise and availability.</p>
+                    <p class="step-description">Students will browse profiles and send you booking requests based on
+                        your expertise and availability.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">6</div>
                     <h3 class="step-title">Start Tutoring</h3>
-                    <p class="step-description">Begin conducting in-person tutoring sessions, helping fellow MMU students excel in their coursework.</p>
+                    <p class="step-description">Begin conducting in-person tutoring sessions, helping fellow MMU
+                        students excel in their coursework.</p>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- Success Stories Section -->
     <section class="success-stories">
         <div class="container">
             <h2 class="section-title">Tutor Success Stories</h2>
-            
+
             <div class="stories-container">
                 <div class="story">
                     <div class="story-content">
-                        <p class="story-text">Becoming a peer tutor has been one of the best decisions I've made in college. Not only do I earn extra money, but I've also improved my own understanding of complex topics by explaining them to others. The flexible schedule allows me to balance tutoring with my own studies.</p>
+                        <p class="story-text">Becoming a peer tutor has been one of the best decisions I've made in
+                            college. Not only do I earn extra money, but I've also improved my own understanding of
+                            complex topics by explaining them to others. The flexible schedule allows me to balance
+                            tutoring with my own studies.</p>
                         <div class="story-author">
                             <div class="author-avatar">JD</div>
                             <div class="author-info">
                                 <h4>James Davis</h4>
-                                <p>Law Tutor, PhD Year</p>
+                                <p>
+                                    Computer Security, PhD Year</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="story">
                     <div class="story-content">
-                        <p class="story-text">I started tutoring to make some extra money, but it's become so much more than that. Seeing the "aha" moment when a student finally understands a concept is incredibly rewarding. Plus, teaching has helped me develop communication skills that have been valuable in job interviews.</p>
+                        <p class="story-text">I started tutoring to make some extra money, but it's become so much more
+                            than that. Seeing the "aha" moment when a student finally understands a concept is
+                            incredibly rewarding. Plus, teaching has helped me develop communication skills that have
+                            been valuable in job interviews.</p>
                         <div class="story-author">
                             <div class="author-avatar">ML</div>
                             <div class="author-info">
                                 <h4>Maria Lopez</h4>
-                                <p>Business Tutor, Degree level</p>
+                                <p>
+                                    Artificial Intelligence, Degree level</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="story">
                     <div class="story-content">
-                        <p class="story-text">As an international student, tutoring has helped me connect with peers across different departments. I've built a network that extends beyond my major, and the teaching experience has significantly improved my communication skills in English.</p>
+                        <p class="story-text">As an international student, tutoring has helped me connect with peers
+                            across different departments. I've built a network that extends beyond my major, and the
+                            teaching experience has significantly improved my communication skills in English.</p>
                         <div class="story-author">
                             <div class="author-avatar">LW</div>
                             <div class="author-info">
                                 <h4>Li Wei</h4>
-                                <p>It Tutor, Master level</p>
+                                <p>Software Engineering, Master level</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="story">
                     <div class="story-content">
-                        <p class="story-text">The platform makes it easy to manage my schedule and connect with students who need help. I've been able to earn consistent income throughout the semester, and the experience looks great on my resume. I've even had employers specifically ask about my tutoring experience in job interviews.</p>
+                        <p class="story-text">The platform makes it easy to manage my schedule and connect with students
+                            who need help. I've been able to earn consistent income throughout the semester, and the
+                            experience looks great on my resume. I've even had employers specifically ask about my
+                            tutoring experience in job interviews.</p>
                         <div class="story-author">
                             <div class="author-avatar">AJ</div>
                             <div class="author-info">
                                 <h4>Aisha Johnson</h4>
-                                <p>Engineering Tutor, Degree Year</p>
+                                <p>Computer Science, Degree Year</p>
                             </div>
                         </div>
                     </div>
@@ -827,70 +865,83 @@
             </div>
         </div>
     </section>
-    
+
     <!-- FAQ Section -->
     <section class="faq">
         <div class="container">
             <h2 class="section-title">Frequently Asked Questions</h2>
-            
+
             <div class="faq-container">
                 <div class="faq-item">
                     <div class="faq-question">
                         What qualifications do I need to become a tutor? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        To become a tutor on PeerLearn, you should have a strong academic record in the subjects you wish to teach (typically a B+ or higher). You'll need to provide transcripts or other evidence of your academic performance. Prior tutoring experience is beneficial but not required.
+                        To become a tutor on PeerLearn, you should have a strong academic record in the subjects you
+                        wish to teach (typically a B+ or higher). You'll need to provide transcripts or other evidence
+                        of your academic performance. Prior tutoring experience is beneficial but not required.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         How much can I earn as a tutor? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        Earnings vary based on your subject expertise, experience, and how many hours you choose to tutor. Most tutors charge between $15-30 per hour. Top tutors with excellent reviews and specialized knowledge can command higher rates. You set your own rates on our platform.
+                        Earnings vary based on your subject expertise, experience, and how many hours you choose to
+                        tutor. Most tutors charge between $15-30 per hour. Top tutors with excellent reviews and
+                        specialized knowledge can command higher rates. You set your own rates on our platform.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         How do I receive payment? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        Payments are processed through our secure payment system. Students pay when they book a session, and funds are released to you after the session is completed. You can withdraw your earnings to your bank account or other payment methods at any time, with payments typically processed within 3-5 business days.
+                        Payments are processed through our secure payment system. Students pay when they book a session,
+                        and funds are released to you after the session is completed. You can withdraw your earnings to
+                        your bank account or other payment methods at any time, with payments typically processed within
+                        3-5 business days.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         What if a student cancels a session? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        Our cancellation policy protects tutors from last-minute cancellations. If a student cancels less than 24 hours before a scheduled session, you'll receive a partial payment (50% of the session fee). For cancellations with more than 24 hours' notice, the session is simply removed from your schedule with no payment.
+                        Our cancellation policy protects tutors from last-minute cancellations. If a student cancels
+                        less than 24 hours before a scheduled session, you'll receive a partial payment (50% of the
+                        session fee). For cancellations with more than 24 hours' notice, the session is simply removed
+                        from your schedule with no payment.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         How many hours can I tutor per week? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        You have complete flexibility to determine your tutoring hours. Some tutors work just a few hours per week, while others choose to tutor 10-15 hours or more. You can adjust your availability at any time through your tutor dashboard.
+                        You have complete flexibility to determine your tutoring hours. Some tutors work just a few
+                        hours per week, while others choose to tutor 10-15 hours or more. You can adjust your
+                        availability at any time through your tutor dashboard.
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
             <h2 class="cta-title">Ready to Share Your Knowledge?</h2>
-            <p class="cta-text">Join our community of peer tutors today. Create your profile, set your schedule, and start helping fellow students while earning money and building valuable skills.</p>
+            <p class="cta-text">Join our community of peer tutors today. Create your profile, set your schedule, and
+                start helping fellow students while earning money and building valuable skills.</p>
             <a href="register.php" class="btn btn-primary">Become a Tutor Now</a>
         </div>
     </section>
-    
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -907,7 +958,7 @@
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
@@ -918,7 +969,7 @@
                         <li><a href="about_us.html">About Us</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-links">
                     <h4>Legal Information</h4>
                     <ul>
@@ -927,7 +978,7 @@
                         <li><a href="#">Cookie Policy</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-contact">
                     <h4>Contact Us</h4>
                     <p><i class="fas fa-envelope"></i> info@peerlearn.com</p>
@@ -935,7 +986,7 @@
                     <p><i class="fas fa-map-marker-alt"></i> Address Information</p>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>&copy; 2025 PeerLearn. All rights reserved.</p>
             </div>
@@ -948,13 +999,13 @@
             question.addEventListener('click', () => {
                 const answer = question.nextElementSibling;
                 const isActive = question.classList.contains('active');
-                
+
                 // Close all other answers
                 document.querySelectorAll('.faq-question').forEach(q => {
                     q.classList.remove('active');
                     q.nextElementSibling.style.display = 'none';
                 });
-                
+
                 // Toggle current answer
                 if (!isActive) {
                     question.classList.add('active');
@@ -964,5 +1015,5 @@
         });
     </script>
 </body>
-</html>
 
+</html>

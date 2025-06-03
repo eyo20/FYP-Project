@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,30 +12,38 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Arial', sans-serif;
             line-height: 1.6;
             color: #333;
         }
-        
+
         a {
             text-decoration: none;
             color: inherit;
         }
-        
+
         /* Color Variables */
         :root {
-            --primary-color: #2B3990;     /* Deep Blue */
-            --secondary-color: #00AEEF;   /* Light Blue */
-            --accent-color: #C4D600;      /* Yellow-Green */
-            --light-color: #F8F9FA;       /* Light Grey */
-            --dark-color: #333333;        /* Dark Grey */
-            --white: #FFFFFF;             /* White */
-            --logo-gradient-blue: #00AEEF; /* Logo Gradient Start */
-            --logo-gradient-green: #00A99D; /* Logo Gradient End */
+            --primary-color: #2B3990;
+            /* Deep Blue */
+            --secondary-color: #00AEEF;
+            /* Light Blue */
+            --accent-color: #C4D600;
+            /* Yellow-Green */
+            --light-color: #F8F9FA;
+            /* Light Grey */
+            --dark-color: #333333;
+            /* Dark Grey */
+            --white: #FFFFFF;
+            /* White */
+            --logo-gradient-blue: #00AEEF;
+            /* Logo Gradient Start */
+            --logo-gradient-green: #00A99D;
+            /* Logo Gradient End */
         }
-        
+
         /* Container Styles */
         .container {
             width: 90%;
@@ -42,7 +51,7 @@
             margin: 0 auto;
             padding: 0 15px;
         }
-        
+
         /* Button Styles */
         .btn {
             display: inline-block;
@@ -53,25 +62,25 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary {
             background-color: var(--accent-color);
             color: var(--dark-color);
         }
-        
+
         .btn-primary:hover {
             background-color: #b1c100;
         }
-        
+
         .btn-secondary {
             background-color: var(--secondary-color);
             color: var(--white);
         }
-        
+
         .btn-secondary:hover {
             background-color: #009bd5;
         }
-        
+
         /* Navigation Bar */
         .navbar {
             display: flex;
@@ -79,62 +88,62 @@
             align-items: center;
             padding: 20px 0;
             background-color: var(--white);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-        
+
         .logo {
             display: flex;
             align-items: center;
         }
-        
+
         .logo img {
             height: 70px;
         }
-        
-        .navbar > .container {
+
+        .navbar>.container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-grow: 1;
         }
-        
+
         .nav-menu {
             display: flex;
             justify-content: center;
             list-style: none;
         }
-        
+
         .nav-item {
             margin: 0 15px;
         }
-        
+
         .nav-link {
             color: var(--dark-color);
             font-weight: 500;
             transition: color 0.3s ease;
         }
-        
+
         .nav-link:hover {
             color: var(--primary-color);
         }
-        
+
         .nav-link.active {
             color: var(--primary-color);
             font-weight: 700;
         }
-        
+
         .nav-buttons {
             display: flex;
             align-items: center;
         }
-        
+
         .nav-buttons .btn {
             margin-left: 15px;
         }
-        
+
         /* Hero Section */
         .hero {
             display: flex;
@@ -145,47 +154,47 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .hero-content {
             flex: 0 0 50%;
             z-index: 2;
         }
-        
+
         .hero-title {
             font-size: 2.5rem;
             color: var(--primary-color);
             margin-bottom: 20px;
             line-height: 1.2;
         }
-        
+
         .hero-subtitle {
             font-size: 1.1rem;
             color: var(--dark-color);
             margin-bottom: 30px;
         }
-        
+
         .hero-buttons {
             margin-top: 25px;
         }
-        
+
         .hero-image {
             flex: 0 0 45%;
             position: relative;
             z-index: 1;
         }
-        
+
         .hero-image img {
             width: 100%;
             height: auto;
             border-radius: 10px;
         }
-        
+
         /* Geometric Decorations */
         .shape {
             position: absolute;
             z-index: 0;
         }
-        
+
         .shape-circle {
             width: 100px;
             height: 100px;
@@ -195,7 +204,7 @@
             top: 20%;
             right: 10%;
         }
-        
+
         .shape-triangle {
             width: 0;
             height: 0;
@@ -206,42 +215,42 @@
             bottom: 10%;
             left: 5%;
         }
-        
+
         /* How It Works Section */
         .how-it-works {
             padding: 80px 0;
             background-color: var(--white);
         }
-        
+
         .section-title {
             text-align: center;
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 50px;
         }
-        
+
         .steps-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             margin-top: 40px;
         }
-        
+
         .step {
             flex: 0 0 30%;
             margin-bottom: 40px;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             background-color: var(--white);
             transition: transform 0.3s ease;
             position: relative;
         }
-        
+
         .step:hover {
             transform: translateY(-10px);
         }
-        
+
         .step-number {
             position: absolute;
             top: -20px;
@@ -257,41 +266,41 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
-        
+
         .step-title {
             font-size: 1.3rem;
             color: var(--primary-color);
             margin-bottom: 15px;
             margin-top: 10px;
         }
-        
+
         .step-description {
             color: var(--dark-color);
             font-size: 1rem;
         }
-        
+
         /* Benefits Section */
         .benefits {
             padding: 80px 0;
             background-color: var(--light-color);
         }
-        
+
         .benefits-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
             margin-top: 40px;
         }
-        
+
         .benefit {
             display: flex;
             align-items: flex-start;
             padding: 20px;
             background-color: var(--white);
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
-        
+
         .benefit-icon {
             flex: 0 0 60px;
             height: 60px;
@@ -302,45 +311,45 @@
             justify-content: center;
             margin-right: 20px;
         }
-        
+
         .benefit-icon i {
             font-size: 24px;
             color: var(--white);
         }
-        
+
         .benefit-content {
             flex: 1;
         }
-        
+
         .benefit-title {
             font-size: 1.2rem;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
-        
+
         .benefit-description {
             color: var(--dark-color);
             font-size: 0.95rem;
         }
-        
+
         /* FAQ Section */
         .faq {
             padding: 80px 0;
             background-color: var(--white);
         }
-        
+
         .faq-container {
             max-width: 800px;
             margin: 40px auto 0;
         }
-        
+
         .faq-item {
             margin-bottom: 20px;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .faq-question {
             padding: 20px;
             background-color: var(--light-color);
@@ -351,29 +360,29 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .faq-question:hover {
             background-color: #eaeaea;
         }
-        
+
         .faq-answer {
             padding: 20px;
             background-color: var(--white);
             display: none;
         }
-        
+
         .faq-answer.active {
             display: block;
         }
-        
+
         .faq-question i {
             transition: transform 0.3s ease;
         }
-        
+
         .faq-question.active i {
             transform: rotate(180deg);
         }
-        
+
         /* CTA Section */
         .cta {
             padding: 80px 0;
@@ -381,12 +390,12 @@
             text-align: center;
             color: var(--white);
         }
-        
+
         .cta-title {
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
-        
+
         .cta-text {
             font-size: 1.1rem;
             margin-bottom: 30px;
@@ -394,69 +403,69 @@
             margin-left: auto;
             margin-right: auto;
         }
-        
+
         /* Footer */
         .footer {
             padding: 60px 0 30px;
             background-color: var(--dark-color);
             color: var(--white);
         }
-        
+
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
         }
-        
+
         .footer-logo {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .footer-logo img {
             height: 40px;
             margin-right: 10px;
         }
-        
+
         .footer-contact p {
             margin-bottom: 10px;
         }
-        
+
         .footer-links h4 {
             margin-bottom: 20px;
             color: var(--accent-color);
         }
-        
+
         .footer-links ul {
             list-style: none;
         }
-        
+
         .footer-links li {
             margin-bottom: 10px;
         }
-        
+
         .footer-links a {
             color: var(--light-color);
             transition: color 0.3s ease;
         }
-        
+
         .footer-links a:hover {
             color: var(--accent-color);
         }
-        
+
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .social-links {
             display: flex;
             margin-top: 20px;
         }
-        
+
         .social-links a {
             width: 40px;
             height: 40px;
@@ -469,11 +478,11 @@
             margin-right: 10px;
             transition: background-color 0.3s ease;
         }
-        
+
         .social-links a:hover {
             background-color: var(--accent-color);
         }
-        
+
         /* Responsive Design */
         @media (max-width: 992px) {
             .hero {
@@ -481,55 +490,56 @@
                 text-align: center;
                 padding: 40px 0;
             }
-            
-            .hero-content, .hero-image {
+
+            .hero-content,
+            .hero-image {
                 flex: 0 0 100%;
             }
-            
+
             .hero-content {
                 margin-bottom: 40px;
             }
-            
+
             .step {
                 flex: 0 0 45%;
             }
         }
-        
+
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 padding: 15px 0;
             }
-            
+
             .logo {
                 margin-bottom: 15px;
             }
-            
+
             .nav-container {
                 margin-bottom: 15px;
             }
-            
+
             .nav-menu {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .nav-item {
                 margin: 5px 10px;
             }
-            
+
             .hero-title {
                 font-size: 2rem;
             }
-            
+
             .section-title {
                 font-size: 1.75rem;
             }
-            
+
             .step {
                 flex: 0 0 100%;
             }
-            
+
             .cta-title {
                 font-size: 2rem;
             }
@@ -538,6 +548,7 @@
     <!-- Import Font Icon Library (Font Awesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
+
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
@@ -547,7 +558,7 @@
                     <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
                 </a>
             </div>
-            
+
             <div class="nav-container">
                 <ul class="nav-menu">
                     <li class="nav-item">
@@ -564,85 +575,93 @@
                     </li>
                 </ul>
             </div>
-            
+
             <div class="nav-buttons">
                 <a href="login.php" class="btn btn-primary">LOGIN/REGISTER</a>
             </div>
         </div>
     </nav>
-    
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">Find Your Perfect Tutor</h1>
-                <p class="hero-subtitle">Connect with knowledgeable peers who understand your academic challenges and can help you excel in your studies. Get personalized learning support tailored to your needs.</p>
+                <p class="hero-subtitle">Connect with knowledgeable peers who understand your academic challenges and
+                    can help you excel in your studies. Get personalized learning support tailored to your needs.</p>
                 <div class="hero-buttons">
                     <a href="register.php" class="btn btn-primary">Find a Tutor Now</a>
                     <a href="#how-it-works" class="btn btn-secondary">Learn How It Works</a>
                 </div>
             </div>
-            
+
             <div class="hero-image">
                 <img src="image/student_learning.jpg" alt="Student Learning">
             </div>
         </div>
-        
+
         <!-- Decorative Geometric Shapes -->
         <div class="shape shape-circle"></div>
         <div class="shape shape-triangle"></div>
     </section>
-    
+
     <!-- How It Works Section -->
     <section id="how-it-works" class="how-it-works">
         <div class="container">
             <h2 class="section-title">How PeerLearn Works for Students</h2>
-            
+
             <div class="steps-container">
                 <div class="step">
                     <div class="step-number">1</div>
                     <h3 class="step-title">Create Your Profile</h3>
-                    <p class="step-description">Sign up and create your student profile. Add your academic details, subjects you need help with, and your learning preferences.</p>
+                    <p class="step-description">Sign up and create your student profile. Add your academic details,
+                        subjects you need help with, and your learning preferences.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">2</div>
                     <h3 class="step-title">Search for Tutors</h3>
-                    <p class="step-description">Browse through our database of qualified peer tutors. Filter by subject, expertise level, availability, and ratings to find your perfect match.</p>
+                    <p class="step-description">Browse through our database of qualified peer tutors. Filter by subject,
+                        expertise level, availability, and ratings to find your perfect match.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">3</div>
-                    <h3 class="step-title">Book a Session</h3>
-                    <p class="step-description">Select a convenient time slot from your tutor's availability calendar and specify what you'd like to focus on during the session.</p>
+                    <h3 class="step-title">Submit a Tutoring Request </h3>
+                    <p class="step-description">Send a request to your chosen tutor, specifying the course and topics
+                        you need help with. Include your preferred time slots to streamline scheduling.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">4</div>
-                    <h3 class="step-title">Make Secure Payment</h3>
-                    <p class="step-description">Pay for your session through our secure payment system. Your payment is held until the session is completed successfully.</p>
+                    <h3 class="step-title">Arrange and Attend the Session</h3>
+                    <p class="step-description">Use PeerLearn’s messaging system to communicate with your tutor or
+                        tutee. Agree on session details (time, location, and topics), then meet for a personalized
+                        tutoring session tailored to the tutee’s IT coursework.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">5</div>
-                    <h3 class="step-title">Attend Your Session</h3>
-                    <p class="step-description">Connect with your tutor through our messaging system to discuss your learning needs and get personalized guidance.</p>
+                    <h3 class="step-title">Settle Payment Offline</h3>
+                    <p class="step-description">After the session, pay your tutor directly with cash as agreed upon.
+                        This keeps transactions straightforward and secure without the need for online payments.</p>
                 </div>
-                
+
                 <div class="step">
                     <div class="step-number">6</div>
                     <h3 class="step-title">Rate and Review</h3>
-                    <p class="step-description">After your session, provide feedback and rate your tutor to help other students make informed decisions.</p>
+                    <p class="step-description">After your session, provide feedback and rate your tutor to help other
+                        students make informed decisions.</p>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- Benefits Section -->
     <section class="benefits">
         <div class="container">
             <h2 class="section-title">Benefits for Students</h2>
-            
+
             <div class="benefits-container">
                 <div class="benefit">
                     <div class="benefit-icon">
@@ -650,126 +669,142 @@
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Peer-to-Peer Learning</h3>
-                        <p class="benefit-description">Learn from fellow students who have recently mastered the same material and understand the challenges you're facing.</p>
+                        <p class="benefit-description">Learn from fellow students who have recently mastered the same
+                            material and understand the challenges you're facing.</p>
                     </div>
                 </div>
-                
+
                 <div class="benefit">
                     <div class="benefit-icon">
                         <i class="fas fa-search"></i>
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Find the Perfect Match</h3>
-                        <p class="benefit-description">Our advanced search filters help you find tutors who match your learning style, academic needs, and schedule.</p>
+                        <p class="benefit-description">Our advanced search filters help you find tutors who match your
+                            learning style, academic needs, and schedule.</p>
                     </div>
                 </div>
-                
+
                 <div class="benefit">
                     <div class="benefit-icon">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Affordable Rates</h3>
-                        <p class="benefit-description">Peer tutoring is more affordable than professional tutoring services, making academic support accessible to all students.</p>
+                        <p class="benefit-description">Peer tutoring is more affordable than professional tutoring
+                            services, making academic support accessible to all students.</p>
                     </div>
                 </div>
-                
+
                 <div class="benefit">
                     <div class="benefit-icon">
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Flexible Scheduling</h3>
-                        <p class="benefit-description">Book sessions at times that work for you, including evenings and weekends, to fit around your busy academic schedule.</p>
+                        <p class="benefit-description">Book sessions at times that work for you, including evenings and
+                            weekends, to fit around your busy academic schedule.</p>
                     </div>
                 </div>
-                
+
                 <div class="benefit">
                     <div class="benefit-icon">
                         <i class="fas fa-star"></i>
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Verified Quality</h3>
-                        <p class="benefit-description">All tutors are verified students with proven academic excellence in their subjects. Review ratings help you choose the best.</p>
+                        <p class="benefit-description">All tutors are verified students with proven academic excellence
+                            in their subjects. Review ratings help you choose the best.</p>
                     </div>
                 </div>
-                
+
                 <div class="benefit">
                     <div class="benefit-icon">
                         <i class="fas fa-comments"></i>
                     </div>
                     <div class="benefit-content">
                         <h3 class="benefit-title">Community Support</h3>
-                        <p class="benefit-description">Join our learning community to access study resources, participate in group discussions, and connect with other students.</p>
+                        <p class="benefit-description">Join our learning community to access study resources,
+                            participate in group discussions, and connect with other students.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- FAQ Section -->
     <section class="faq">
         <div class="container">
             <h2 class="section-title">Frequently Asked Questions</h2>
-            
+
             <div class="faq-container">
                 <div class="faq-item">
                     <div class="faq-question">
                         How do I choose the right tutor? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        You can browse tutor profiles, which include their academic background, subjects they teach, ratings from other students, and their teaching approach. Use our filters to narrow down tutors by subject, availability, and rating to find someone who matches your needs.
+                        You can browse tutor profiles, which include their academic background, subjects they teach,
+                        ratings from other students, and their teaching approach. Use our filters to narrow down tutors
+                        by subject and rating to find someone who matches your needs.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         How much does tutoring cost? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        Tutoring rates are set by individual tutors and vary based on subject complexity and tutor experience. Most peer tutors charge between $15-30 per hour, which is significantly more affordable than professional tutoring services.
+                        Tutoring rates are set by individual tutors and vary based on subject complexity and tutor
+                        experience. Most peer tutors charge between RM 15-30 per hour, which is significantly more
+                        affordable than professional tutoring services.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         Can I cancel a booked session? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        Yes, you can cancel a session, but please note that cancellations must be made at least 24 hours before the scheduled time to receive a full refund. This policy ensures tutors have enough time to adjust their schedules.
+                        Yes, you can cancel a session. Please note, however, that cancellations must be communicated to
+                        the tutor at least 24 hours before the scheduled time. This policy ensures that tutors have
+                        enough time to adjust their course schedules.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         How do I communicate with my tutor? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        After booking a session, you'll have access to our messaging system where you can communicate with your tutor, share materials, and discuss your learning needs before and after the session.
+                        After booking a session, you'll have access to our messaging system where you can communicate
+                        with your tutor, share materials, and discuss your learning needs before and after the session.
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <div class="faq-question">
                         What if I'm not satisfied with my tutoring session? <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        If you're not satisfied with your session, please contact our support team within 24 hours. We take quality seriously and will work with you to resolve any issues, which may include a partial or full refund depending on the circumstances.
+                        Tutees can express dissatisfaction through ratings and official channels.
+                        Administrators mediate fairly to protect the rights and interests of both parties.
+                        Low-quality tutors are suspended to ensure service levels.
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
             <h2 class="cta-title">Ready to Boost Your Academic Performance?</h2>
-            <p class="cta-text">Join thousands of students who have improved their grades and confidence through peer tutoring. Find your perfect tutor today and take the first step toward academic success.</p>
+            <p class="cta-text">Join thousands of students who have improved their grades and confidence through peer
+                tutoring. Find your perfect tutor today and take the first step toward academic success.</p>
             <a href="register.php" class="btn btn-primary">Get Started Now</a>
         </div>
     </section>
-    
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -786,7 +821,7 @@
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
@@ -797,7 +832,7 @@
                         <li><a href="about_us.html">About Us</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-links">
                     <h4>Legal Information</h4>
                     <ul>
@@ -806,7 +841,7 @@
                         <li><a href="#">Cookie Policy</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-contact">
                     <h4>Contact Us</h4>
                     <p><i class="fas fa-envelope"></i> info@peerlearn.com</p>
@@ -814,7 +849,7 @@
                     <p><i class="fas fa-map-marker-alt"></i> Address Information</p>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>&copy; 2025 PeerLearn. All rights reserved.</p>
             </div>
@@ -827,13 +862,13 @@
             question.addEventListener('click', () => {
                 const answer = question.nextElementSibling;
                 const isActive = question.classList.contains('active');
-                
+
                 // Close all other answers
                 document.querySelectorAll('.faq-question').forEach(q => {
                     q.classList.remove('active');
                     q.nextElementSibling.style.display = 'none';
                 });
-                
+
                 // Toggle current answer
                 if (!isActive) {
                     question.classList.add('active');
@@ -843,4 +878,5 @@
         });
     </script>
 </body>
+
 </html>
