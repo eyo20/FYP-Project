@@ -829,21 +829,7 @@ $conn->close();
                             <label for="phone">Phone Number</label>
                             <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($phone); ?>">
                         </div>
-                        <div class="form-group">
-                            <label for="major">Major</label>
-                            <input type="text" class="form-control" id="major" name="major" value="<?php echo htmlspecialchars($major); ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="year">Level</label>
-                            <select class="form-control" id="year" name="year" class="form-control">
-                                <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select Level --</option>
-                                <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
-                                <option value="Diploma" <?php echo $year == 'Diploma' ? 'selected' : ''; ?>>Diploma</option>
-                                <option value="Degree" <?php echo $year == 'Degree' ? 'selected' : ''; ?>>Degree</option>
-                                <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
-                                <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
-                            </select>
-                        </div>
+
 
                         <button type="submit" class="btn" id="save-profile-btn">Save Profile</button>
                     </form>
