@@ -94,11 +94,11 @@ try {
         SELECT sr.request_id, sr.selected_date, sr.duration, sr.status, sr.notes,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
-               c.course_code, c.course_name,
+               c.course_name,
                l.location_name
         FROM session_requests sr
         JOIN user u ON sr.tutor_id = u.user_id
-        JOIN courses c ON sr.course_id = c.course_id
+        JOIN course c ON sr.course_id = c.id
         LEFT JOIN location l ON sr.location_id = l.location_id
         WHERE sr.student_id = ? AND sr.status = 'pending'
         ORDER BY sr.created_at ASC
@@ -117,12 +117,12 @@ try {
         SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
-               c.course_code, c.course_name,
+               c.course_name,
                l.location_name,
                r.rating, r.comment  
         FROM session s
         JOIN user u ON s.tutor_id = u.user_id
-        JOIN course c ON s.course_id = c.course_id
+        JOIN course c ON s.course_id = c.id
         LEFT JOIN location l ON s.location_id = l.location_id
         LEFT JOIN review r ON s.session_id = r.session_id
         WHERE s.student_id = ? AND s.start_datetime >= NOW()
@@ -142,12 +142,12 @@ try {
         SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
-               c.course_code, c.course_name,
+               c.course_name,
                l.location_name,
                r.rating, r.comment
         FROM session s
         JOIN user u ON s.tutor_id = u.user_id
-        JOIN course c ON s.course_id = c.course_id
+        JOIN course c ON s.course_id = c.id
         LEFT JOIN location l ON s.location_id = l.location_id
         LEFT JOIN review r ON s.session_id = r.session_id
         WHERE s.student_id = ? AND (s.start_datetime < NOW() OR s.status IN ('completed', 'cancelled'))
@@ -326,7 +326,7 @@ if (!empty($tutor_stats)) {
 
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
-                                    <span><?php echo htmlspecialchars($request['course_code'] . ' - ' . $request['course_name']); ?></span>
+                                    <span><?php echo htmlspecialchars($request['course_name']); ?></span>
                                 </div>
 
                                 <?php if ($request['location_name']): ?>
@@ -405,7 +405,7 @@ if (!empty($tutor_stats)) {
 
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
-                                    <span><?php echo htmlspecialchars($session['course_code'] . ' - ' . $session['course_name']); ?></span>
+                                    <span><?php echo htmlspecialchars($session['course_name']); ?></span>
                                 </div>
 
                                 <?php if ($session['location_name']): ?>
@@ -478,7 +478,7 @@ if (!empty($tutor_stats)) {
 
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
-                                    <span><?php echo htmlspecialchars($session['course_code'] . ' - ' . $session['course_name']); ?></span>
+                                    <span><?php echo htmlspecialchars($session['course_name']); ?></span>
                                 </div>
 
                                 <?php if ($session['location_name']): ?>

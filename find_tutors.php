@@ -8,19 +8,15 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Get all subjects for the filter dropdown
-$subjectQuery = "SELECT * FROM subject ORDER BY subject_name";
-$subjectResult = mysqli_query($conn, $subjectQuery);
-
 // Get all courses for the filter dropdown
-$courseQuery = "SELECT c.*, s.subject_name FROM course c 
-                JOIN subject s ON c.subject_id = s.subject_id 
-                ORDER BY s.subject_name, c.course_name";
+$courseQuery = "SELECT id, course_name FROM course ORDER BY course_name";
 $courseResult = mysqli_query($conn, $courseQuery);
+if (!$courseResult) {
+    die("Course query failed: " . mysqli_error($conn));
+}
 
 // Initialize variables for search filters
-$searchName = isset($_GET['search_name']) ? $_GET['search_name'] : '';
-$subjectFilter = isset($_GET['subject']) ? (int)$_GET['subject'] : 0;
+$searchName = isset($_GET['search_name']) ? trim($_GET['search_name']) : '';
 $courseFilter = isset($_GET['course']) ? (int)$_GET['course'] : 0;
 $ratingFilter = isset($_GET['rating']) ? (int)$_GET['rating'] : 0;
 
@@ -30,8 +26,7 @@ $tutorQuery = "SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.profile_i
                FROM user u
                JOIN tutorprofile tp ON u.user_id = tp.user_id
                LEFT JOIN tutorsubject ts ON u.user_id = ts.tutor_id
-               LEFT JOIN subject s ON ts.subject_id = s.subject_id
-               LEFT JOIN course c ON s.subject_id = c.subject_id
+               LEFT JOIN course c ON ts.course_id = c.id
                WHERE u.role = 'tutor' AND u.is_active = 1";
 
 // Apply filters if set
@@ -40,12 +35,8 @@ if (!empty($searchName)) {
     $tutorQuery .= " AND (u.first_name LIKE '%$searchName%' OR u.last_name LIKE '%$searchName%')";
 }
 
-if ($subjectFilter > 0) {
-    $tutorQuery .= " AND ts.subject_id = $subjectFilter";
-}
-
 if ($courseFilter > 0) {
-    $tutorQuery .= " AND c.course_id = $courseFilter";
+    $tutorQuery .= " AND ts.course_id = $courseFilter";
 }
 
 if ($ratingFilter > 0) {
@@ -57,20 +48,17 @@ $tutorResult = mysqli_query($conn, $tutorQuery);
 
 // Check for query execution errors
 if (!$tutorResult) {
-    die("Query failed: " . mysqli_error($conn));
+    die("Tutor query failed: " . mysqli_error($conn));
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find a Tutor - Peer Tutoring Platform</title>
     <link rel="stylesheet" href="css/find_tutor_style2.css">
-
-
     <style>
         :root {
             --primary: #2B3990;
@@ -125,7 +113,7 @@ if (!$tutorResult) {
             z-index: 1000;
         }
 
-        .navbar>.container {
+        .navbar > .container {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -150,7 +138,6 @@ if (!$tutorResult) {
             .nav-item {
                 margin: 5px 10px;
             }
-
         }
 
         .btn {
@@ -170,9 +157,9 @@ if (!$tutorResult) {
         .btn:hover {
             background-color: #b3c300;
         }
+
     </style>
 </head>
-
 <body>
     <?php include 'header/stud_head.php'; ?>
 
@@ -210,36 +197,21 @@ if (!$tutorResult) {
                 <div class="col-md-3 mb-3">
                     <label for="search_name">Tutor Name</label>
                     <input type="text" class="form-control" id="search_name" name="search_name"
-                        value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
+                           value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
                 </div>
-
-                <div class="col-md-3 mb-3">
-                    <label for="subject">Subject</label>
-                    <select class="form-control" id="subject" name="subject">
-                        <option value="0">All Subjects</option>
-                        <?php while ($subject = mysqli_fetch_assoc($subjectResult)): ?>
-                            <option value="<?php echo $subject['subject_id']; ?>"
-                                <?php echo ($subjectFilter == $subject['subject_id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($subject['subject_name']); ?>
-                            </option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-
                 <div class="col-md-3 mb-3">
                     <label for="course">Course</label>
                     <select class="form-control" id="course" name="course">
                         <option value="0">All Courses</option>
                         <?php mysqli_data_seek($courseResult, 0); ?>
                         <?php while ($course = mysqli_fetch_assoc($courseResult)): ?>
-                            <option value="<?php echo $course['course_id']; ?>"
-                                <?php echo ($courseFilter == $course['course_id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?>
+                            <option value="<?php echo $course['id']; ?>"
+                                    <?php echo ($courseFilter == $course['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($course['course_name']); ?>
                             </option>
                         <?php endwhile; ?>
                     </select>
                 </div>
-
                 <div class="col-md-2 mb-3">
                     <label for="rating">Minimum Rating</label>
                     <select class="form-control" id="rating" name="rating">
@@ -250,7 +222,6 @@ if (!$tutorResult) {
                         <option value="2" <?php echo ($ratingFilter == 2) ? 'selected' : ''; ?>>2+ Stars</option>
                     </select>
                 </div>
-
                 <div class="col-md-1 mb-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary btn-block">Filter</button>
                 </div>
@@ -269,7 +240,7 @@ if (!$tutorResult) {
                                         <?php if (!empty($tutor['profile_image']) && file_exists($tutor['profile_image'])): ?>
                                             <img src="<?php echo htmlspecialchars($tutor['profile_image']); ?>" alt="Profile" class="profile-img">
                                         <?php else: ?>
-                                            <img src="uploads/profile_images/default.jpg" alt="Default Profile" class="profile-img">
+                                            <img src="Uploads/profile_images/default.jpg" alt="Default Profile" class="profile-img">
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-md-8">
@@ -297,26 +268,36 @@ if (!$tutorResult) {
                                         </div>
 
                                         <?php
-                                        // Get tutor's subjects and courses
+                                        // Get tutor's courses
                                         $tutorId = $tutor['user_id'];
-                                        $subjectsQuery = "SELECT s.subject_name, ts.hourly_rate 
-                                                         FROM tutorsubject ts 
-                                                         JOIN subject s ON ts.subject_id = s.subject_id 
-                                                         WHERE ts.tutor_id = $tutorId";
-                                        $subjectsResult = mysqli_query($conn, $subjectsQuery);
+                                        $coursesQuery = "SELECT c.course_name, ts.hourly_rate 
+                                                        FROM tutorsubject ts 
+                                                        JOIN course c ON ts.course_id = c.id 
+                                                        WHERE ts.tutor_id = ?";
+                                        $stmt = $conn->prepare($coursesQuery);
+                                        if ($stmt) {
+                                            $stmt->bind_param("i", $tutorId);
+                                            $stmt->execute();
+                                            $coursesResult = $stmt->get_result();
 
-                                        if (mysqli_num_rows($subjectsResult) > 0):
+                                            if ($coursesResult->num_rows > 0):
                                         ?>
-                                            <p class="card-text"><strong>Subjects:</strong>
+                                            <p class="card-text"><strong>Courses:</strong>
                                                 <?php
-                                                $subjects = [];
-                                                while ($subject = mysqli_fetch_assoc($subjectsResult)) {
-                                                    $subjects[] = $subject['subject_name'] . ' ($' . number_format($subject['hourly_rate'], 2) . '/hr)';
+                                                $courses = [];
+                                                while ($course = $coursesResult->fetch_assoc()) {
+                                                    $courses[] = $course['course_name'] . ' (RM' . number_format($course['hourly_rate'], 2) . '/hr)';
                                                 }
-                                                echo implode(', ', $subjects);
+                                                echo implode(', ', $courses);
                                                 ?>
                                             </p>
-                                        <?php endif; ?>
+                                        <?php
+                                            endif;
+                                            $stmt->close();
+                                        } else {
+                                            echo '<p class="card-text text-danger">Error fetching courses: ' . htmlspecialchars($conn->error) . '</p>';
+                                        }
+                                        ?>
 
                                         <?php if (!empty($tutor['bio'])): ?>
                                             <p class="card-text text-truncate"><?php echo htmlspecialchars($tutor['bio']); ?></p>
@@ -326,7 +307,6 @@ if (!$tutorResult) {
                                             <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
                                             <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -343,7 +323,7 @@ if (!$tutorResult) {
         </div>
     </div>
 
-    <footer>
+    <footerx`> 
         <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
     </footer>
 
@@ -351,32 +331,10 @@ if (!$tutorResult) {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        //toggle dropdown in header
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
-
-        // Dynamic course filtering based on subject selection
-        $(document).ready(function() {
-            $('#subject').change(function() {
-                const subjectId = $(this).val();
-                if (subjectId > 0) {
-                    // Filter courses by subject
-                    $('#course option').each(function() {
-                        const courseOption = $(this);
-                        if (courseOption.val() == 0) return; // Skip "All Courses" option
-
-                        // You would need to add a data attribute to course options with their subject_id
-                        // For now, we'll reload the page with the subject filter
-                    });
-                } else {
-                    // Show all courses
-                    $('#course option').show();
-                }
-            });
-        });
     </script>
 </body>
-
 </html>
