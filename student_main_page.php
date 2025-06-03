@@ -643,7 +643,7 @@ $conn->close();
                 <div class="stat-card">
                     <div class="stat-icon">📝</div>
                     <div class="stat-value"><?php echo $subjects_count; ?></div>
-                    <div class="stat-label">Subjects Learned</div>
+                    <div class="stat-label">Courses Learned</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">🎯</div>
