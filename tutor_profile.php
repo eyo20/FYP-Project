@@ -1117,8 +1117,7 @@ $cgpa_file = $user['cgpa_file'] ?? '';
                             <label for="year">Level</label>
                             <select class="form-control" id="year" name="year">
                                 <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select level --</option>
-                                <option value="Diploma first year" <?php echo $year == 'Diploma first year' ? 'selected' : ''; ?>>Diploma first year</option>
-                                <option value="Diploma second year" <?php echo $year == 'Diploma second year' ? 'selected' : ''; ?>>Diploma second year</option>
+
                                 <option value="Degree first year" <?php echo $year == 'Degree first year' ? 'selected' : ''; ?>>Degree first year</option>
                                 <option value="Degree second year" <?php echo $year == 'Degree second year' ? 'selected' : ''; ?>>Degree second year</option>
                             </select>
