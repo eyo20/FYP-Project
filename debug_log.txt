@@ -182,3 +182,45 @@ Received POST data: Array
 
 Errors: Invalid student ID. Please ensure you are logged in as a valid student.
 
+2025-06-03 18:04:37
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [availability_id] => 
+    [course_id] => 1
+    [duration] => 2
+    [location_id] => 1
+    [notes] => 
+)
+
+Errors: Course is not selected.; Study venue is not selected.
+
+2025-06-03 18:04:45
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [availability_id] => 
+    [course_id] => 1
+    [duration] => 2
+    [location_id] => 1
+    [notes] => 
+)
+
+Errors: Course is not selected.; Study venue is not selected.
+
+2025-06-03 20:00:16
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [availability_id] => 
+    [course_id] => 1
+    [duration] => 2
+    [location_id] => 3
+    [notes] => 
+)
+
+Errors: Course is not selected.; Study venue is not selected.
+
