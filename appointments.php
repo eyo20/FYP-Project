@@ -396,31 +396,6 @@ $today = date('Y-m-d');
 <body>
     <?php include 'header/stud_head.php'; ?>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-                Peer Tutoring Platform
-            </div>
-            <nav class="nav-links">
-                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
-                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
-                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
-                <div class="user-menu" onclick="toggleDropdown()">
-                    <i class="fas fa-user-circle"></i>
-                    <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
-                    <i class="fas fa-chevron-down"></i>
-                    <div class="dropdown" id="userDropdown">
-                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
-                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
-
     <div class="container">
         <h2>Book a study partner</h2>
 
@@ -467,7 +442,7 @@ $today = date('Y-m-d');
                     </p>
                 </div>
 
-                
+
 
                 <div class="tutor-bio">
                     <h4>Personal Profile</h4>
@@ -487,7 +462,7 @@ $today = date('Y-m-d');
                             <option value="">Please Select A Course</option>
                             <?php foreach ($courses as $course): ?>
                                 <option value="<?php echo htmlspecialchars($course['id']); ?>">
-                                    <?php echo htmlspecialchars( $course['course_name']); ?>
+                                    <?php echo htmlspecialchars($course['course_name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -544,7 +519,7 @@ $today = date('Y-m-d');
                         </div>
                     </div>
 
-                    
+
 
                     <div class="form-group">
                         <label for="duration">Tutor duration</label>

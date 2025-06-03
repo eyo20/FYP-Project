@@ -37,16 +37,21 @@ try {
         GROUP BY other_user_id, u.first_name, u.last_name, u.profile_image
         ORDER BY last_message_time DESC
     ";
-    
+
     $stmt = $pdo->prepare($conversations_query);
     $stmt->execute([
-        $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], 
-        $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']
+        $_SESSION['user_id'],
+        $_SESSION['user_id'],
+        $_SESSION['user_id'],
+        $_SESSION['user_id'],
+        $_SESSION['user_id'],
+        $_SESSION['user_id'],
+        $_SESSION['user_id']
     ]);
     $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // If tutor_id is specified and no existing conversation, add tutor info
-    if ($tutor_id && !array_filter($conversations, function($conv) use ($tutor_id) {
+    if ($tutor_id && !array_filter($conversations, function ($conv) use ($tutor_id) {
         return $conv['other_user_id'] == $tutor_id;
     })) {
         $stmt = $pdo->prepare("
@@ -56,7 +61,7 @@ try {
         ");
         $stmt->execute([$tutor_id]);
         $tutor_info = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($tutor_info) {
             $tutor_info['last_message_time'] = null;
             $tutor_info['last_message'] = null;
@@ -64,7 +69,6 @@ try {
             array_unshift($conversations, $tutor_info);
         }
     }
-
 } catch (PDOException $e) {
     error_log("Database error: " . $e->getMessage());
     $conversations = [];
@@ -105,7 +109,6 @@ if ($current_conversation_id) {
             WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
         ");
         $stmt->execute([$current_conversation_id, $_SESSION['user_id']]);
-
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
     }
@@ -123,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 VALUES (?, ?, ?, NOW(), 0)
             ");
             $stmt->execute([$_SESSION['user_id'], $receiver_id, $content]);
-            
+
             // Redirect to refresh the page
             header("Location: student_messages.php?tutor_id=" . $receiver_id);
             exit();
@@ -137,6 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -171,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 1rem 0;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -237,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             right: 0;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             padding: 0.5rem 0;
             min-width: 150px;
             display: none;
@@ -270,7 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
         }
 
@@ -377,7 +381,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -419,7 +423,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             color: var(--dark-gray);
             font-size: 0.9rem;
         }
-                .messages-container {
+
+        .messages-container {
             flex: 1;
             padding: 1.5rem;
             overflow-y: auto;
@@ -623,31 +628,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         }
     </style>
 </head>
+
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-                Peer Tutoring Platform
-            </div>
-            <nav class="nav-links">
-                <a href="student_dashboard.php"><i class="fas fa-home"></i> <span>Dashboard</span></a>
-                <a href="find_tutors.php"><i class="fas fa-search"></i> <span>Find Tutors</span></a>
-                <a href="student_sessions.php"><i class="fas fa-calendar"></i> <span>My Sessions</span></a>
-                <a href="student_messages.php" class="active"><i class="fas fa-envelope"></i> <span>Messages</span></a>
-                <div class="user-menu" onclick="toggleDropdown()">
-                    <i class="fas fa-user-circle"></i>
-                    <?php echo htmlspecialchars($_SESSION['first_name']); ?>
-                    <i class="fas fa-chevron-down"></i>
-                    <div class="dropdown" id="userDropdown">
-                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
-                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <?php include 'header/stud_head.php'; ?>
 
     <!-- Main Content -->
     <main class="main">
@@ -665,17 +648,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 </div>
             <?php else: ?>
                 <?php foreach ($conversations as $conversation): ?>
-                    <a href="student_messages.php?tutor_id=<?php echo $conversation['other_user_id']; ?>" 
-                       class="conversation-item <?php echo $current_conversation_id == $conversation['other_user_id'] ? 'active' : ''; ?>">
+                    <a href="student_messages.php?tutor_id=<?php echo $conversation['other_user_id']; ?>"
+                        class="conversation-item <?php echo $current_conversation_id == $conversation['other_user_id'] ? 'active' : ''; ?>">
                         <div class="conversation-avatar">
                             <?php if ($conversation['profile_image']): ?>
-                                <img src="<?php echo htmlspecialchars($conversation['profile_image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($conversation['first_name']); ?>">
+                                <img src="<?php echo htmlspecialchars($conversation['profile_image']); ?>"
+                                    alt="<?php echo htmlspecialchars($conversation['first_name']); ?>">
                             <?php else: ?>
                                 <?php echo strtoupper(substr($conversation['first_name'], 0, 1)); ?>
                             <?php endif; ?>
                         </div>
-                        
+
                         <div class="conversation-info">
                             <div class="conversation-name">
                                 <?php echo htmlspecialchars($conversation['first_name'] . ' ' . $conversation['last_name']); ?>
@@ -688,7 +671,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                                 <div class="conversation-preview">Start a conversation...</div>
                             <?php endif; ?>
                         </div>
-                        
+
                         <div class="conversation-meta">
                             <?php if ($conversation['last_message_time']): ?>
                                 <div class="conversation-time">
@@ -711,8 +694,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 <div class="chat-header">
                     <div class="chat-avatar">
                         <?php if ($selected_user['profile_image']): ?>
-                            <img src="<?php echo htmlspecialchars($selected_user['profile_image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($selected_user['first_name']); ?>">
+                            <img src="<?php echo htmlspecialchars($selected_user['profile_image']); ?>"
+                                alt="<?php echo htmlspecialchars($selected_user['first_name']); ?>">
                         <?php else: ?>
                             <?php echo strtoupper(substr($selected_user['first_name'], 0, 1)); ?>
                         <?php endif; ?>
@@ -739,8 +722,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                                         <?php echo strtoupper(substr($_SESSION['first_name'], 0, 1)); ?>
                                     <?php else: ?>
                                         <?php if ($selected_user['profile_image']): ?>
-                                            <img src="<?php echo htmlspecialchars($selected_user['profile_image']); ?>" 
-                                                 alt="<?php echo htmlspecialchars($selected_user['first_name']); ?>">
+                                            <img src="<?php echo htmlspecialchars($selected_user['profile_image']); ?>"
+                                                alt="<?php echo htmlspecialchars($selected_user['first_name']); ?>">
                                         <?php else: ?>
                                             <?php echo strtoupper(substr($selected_user['first_name'], 0, 1)); ?>
                                         <?php endif; ?>
@@ -759,8 +742,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                 <form class="message-form" method="POST" action="" onsubmit="return validateMessage()">
                     <input type="hidden" name="receiver_id" value="<?php echo $selected_user['user_id']; ?>">
                     <input type="hidden" name="send_message" value="1">
-                    <textarea name="content" class="message-input" placeholder="Type your message..." 
-                              rows="1" id="messageInput" required></textarea>
+                    <textarea name="content" class="message-input" placeholder="Type your message..."
+                        rows="1" id="messageInput" required></textarea>
                     <button type="submit" class="send-btn" id="sendBtn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -801,7 +784,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         document.addEventListener('click', function(event) {
             const userMenu = document.querySelector('.user-menu');
             const dropdown = document.getElementById('userDropdown');
-            
+
             if (!userMenu.contains(event.target)) {
                 dropdown.style.display = 'none';
             }
@@ -830,11 +813,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         function validateMessage() {
             const input = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
-            
-                        if (!input.value.trim()) {
+
+            if (!input.value.trim()) {
                 return false;
             }
-            
+
             sendBtn.disabled = true;
             sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             return true;
@@ -876,8 +859,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
                         const doc = parser.parseFromString(html, 'text/html');
                         const newMessages = doc.getElementById('messagesContainer');
                         const currentMessages = document.getElementById('messagesContainer');
-                        
-                        if (newMessages && currentMessages && 
+
+                        if (newMessages && currentMessages &&
                             newMessages.innerHTML !== currentMessages.innerHTML) {
                             currentMessages.innerHTML = newMessages.innerHTML;
                             scrollToBottom();
@@ -890,4 +873,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         }, 30000);
     </script>
 </body>
+
 </html>

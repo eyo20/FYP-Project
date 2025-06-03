@@ -54,6 +54,7 @@ if (!$tutorResult) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,7 +114,7 @@ if (!$tutorResult) {
             z-index: 1000;
         }
 
-        .navbar > .container {
+        .navbar>.container {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -157,36 +158,13 @@ if (!$tutorResult) {
         .btn:hover {
             background-color: #b3c300;
         }
-
     </style>
 </head>
+
 <body>
     <?php include 'header/stud_head.php'; ?>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-                Peer Tutoring Platform
-            </div>
-            <nav class="nav-links">
-                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
-                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
-                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
-                <div class="user-menu" onclick="toggleDropdown()">
-                    <i class="fas fa-user-circle"></i>
-                    <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
-                    <i class="fas fa-chevron-down"></i>
-                    <div class="dropdown" id="userDropdown">
-                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
-                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
+
 
     <div class="container mt-4">
         <h1 class="mb-4">Find a Tutor</h1>
@@ -197,7 +175,7 @@ if (!$tutorResult) {
                 <div class="col-md-3 mb-3">
                     <label for="search_name">Tutor Name</label>
                     <input type="text" class="form-control" id="search_name" name="search_name"
-                           value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
+                        value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="course">Course</label>
@@ -206,7 +184,7 @@ if (!$tutorResult) {
                         <?php mysqli_data_seek($courseResult, 0); ?>
                         <?php while ($course = mysqli_fetch_assoc($courseResult)): ?>
                             <option value="<?php echo $course['id']; ?>"
-                                    <?php echo ($courseFilter == $course['id']) ? 'selected' : ''; ?>>
+                                <?php echo ($courseFilter == $course['id']) ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($course['course_name']); ?>
                             </option>
                         <?php endwhile; ?>
@@ -282,15 +260,15 @@ if (!$tutorResult) {
 
                                             if ($coursesResult->num_rows > 0):
                                         ?>
-                                            <p class="card-text"><strong>Courses:</strong>
-                                                <?php
-                                                $courses = [];
-                                                while ($course = $coursesResult->fetch_assoc()) {
-                                                    $courses[] = $course['course_name'] . ' (RM' . number_format($course['hourly_rate'], 2) . '/hr)';
-                                                }
-                                                echo implode(', ', $courses);
-                                                ?>
-                                            </p>
+                                                <p class="card-text"><strong>Courses:</strong>
+                                                    <?php
+                                                    $courses = [];
+                                                    while ($course = $coursesResult->fetch_assoc()) {
+                                                        $courses[] = $course['course_name'] . ' (RM' . number_format($course['hourly_rate'], 2) . '/hr)';
+                                                    }
+                                                    echo implode(', ', $courses);
+                                                    ?>
+                                                </p>
                                         <?php
                                             endif;
                                             $stmt->close();
@@ -323,18 +301,19 @@ if (!$tutorResult) {
         </div>
     </div>
 
-    <footerx`> 
+    <footerx`>
         <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
-    </footer>
+        </footer>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        function toggleDropdown() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-    </script>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            function toggleDropdown() {
+                const dropdown = document.getElementById('userDropdown');
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            }
+        </script>
 </body>
+
 </html>

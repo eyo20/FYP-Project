@@ -83,9 +83,8 @@
         }
 
         .nav-links {
-
             display: flex;
-            gap: 1rem;
+            gap: 5rem;
             align-items: center;
         }
 
@@ -94,7 +93,7 @@
             text-decoration: none;
             font-size: 1rem;
             font-weight: 500;
-            padding: 0.5rem 3.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
             transition: background 0.3s, opacity 0.3s;
             display: flex;
@@ -118,7 +117,6 @@
             padding: 0.5rem 1rem;
             border-radius: 6px;
             transition: background 0.3s;
-
         }
 
         .user-menu:hover {
@@ -699,7 +697,13 @@
         </div>
     </header>
 
-
+    <script>
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    </script>
 
 </body>
 
