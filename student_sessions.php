@@ -27,10 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                 WHERE s.session_id = ? AND s.student_id = ? AND s.status = 'scheduled'
                 AND s.start_datetime > DATE_ADD(NOW(), INTERVAL 24 HOUR)
             ");
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $conn->error);
+            }
             $stmt->bind_param("ii", $session_id, $student_id);
             $stmt->execute();
             $session_result = $stmt->get_result();
             $session = $session_result->fetch_assoc();
+            $stmt->close();
 
             if ($session) {
                 $stmt = $conn->prepare("
@@ -40,16 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                         cancelled_by = ?
                     WHERE session_id = ?
                 ");
+                if (!$stmt) {
+                    throw new Exception("Prepare failed: " . $conn->error);
+                }
                 $stmt->bind_param("sii", $cancellation_reason, $student_id, $session_id);
                 $stmt->execute();
-
-                $stmt = $conn->prepare("
-                    UPDATE availability 
-                    SET status = 'open' 
-                    WHERE availability_id = ?
-                ");
-                $stmt->bind_param("i", $session['availability_id']);
-                $stmt->execute();
+                $stmt->close();
 
                 $success_message = "Session cancelled successfully.";
             } else {
@@ -62,10 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                 JOIN user u ON sr.tutor_id = u.user_id
                 WHERE sr.request_id = ? AND sr.student_id = ? AND sr.status = 'pending'
             ");
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $conn->error);
+            }
             $stmt->bind_param("ii", $session_id, $student_id);
             $stmt->execute();
             $request_result = $stmt->get_result();
             $request = $request_result->fetch_assoc();
+            $stmt->close();
 
             if ($request) {
                 $stmt = $conn->prepare("
@@ -74,8 +78,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                         notes = CONCAT(IFNULL(notes, ''), '\nCancellation reason: ', ?)
                     WHERE request_id = ?
                 ");
+                if (!$stmt) {
+                    throw new Exception("Prepare failed: " . $conn->error);
+                }
                 $stmt->bind_param("si", $cancellation_reason, $session_id);
                 $stmt->execute();
+                $stmt->close();
 
                 $success_message = "Session request cancelled successfully.";
             } else {
@@ -83,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
             }
         }
     } catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
+        error_log("Cancellation error: " . $e->getMessage());
         $error_message = "An error occurred while cancelling the session.";
     }
 }
@@ -103,12 +111,18 @@ try {
         WHERE sr.student_id = ? AND sr.status = 'pending'
         ORDER BY sr.created_at ASC
     ");
+    if (!$stmt) {
+        error_log("Pending requests prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to fetch pending requests.");
+    }
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
     $pending_requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 } catch (Exception $e) {
-    error_log("Database error: " . $e->getMessage());
+    error_log("Pending requests error: " . $e->getMessage());
     $pending_requests = [];
+    $error_message = $error_message ?: "Failed to load pending requests.";
 }
 
 // Get current/upcoming sessions
@@ -128,12 +142,18 @@ try {
         WHERE s.student_id = ? AND s.start_datetime >= NOW()
         ORDER BY s.start_datetime ASC
     ");
+    if (!$stmt) {
+        error_log("Current sessions prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to fetch current sessions.");
+    }
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
     $current_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 } catch (Exception $e) {
-    error_log("Database error: " . $e->getMessage());
+    error_log("Current sessions error: " . $e->getMessage());
     $current_sessions = [];
+    $error_message = $error_message ?: "Failed to load current sessions.";
 }
 
 // Get session history (past sessions)
@@ -153,12 +173,18 @@ try {
         WHERE s.student_id = ? AND (s.start_datetime < NOW() OR s.status IN ('completed', 'cancelled'))
         ORDER BY s.start_datetime DESC
     ");
+    if (!$stmt) {
+        error_log("Past sessions prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to fetch past sessions.");
+    }
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
     $past_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 } catch (Exception $e) {
-    error_log("Database error: " . $e->getMessage());
+    error_log("Past sessions error: " . $e->getMessage());
     $past_sessions = [];
+    $error_message = $error_message ?: "Failed to load past sessions.";
 }
 
 // Get tutor statistics
@@ -175,16 +201,21 @@ try {
         GROUP BY u.user_id, u.first_name, u.last_name, u.profile_image
         ORDER BY last_session_date DESC
     ");
+    if (!$stmt) {
+        error_log("Tutor stats prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to fetch tutor statistics.");
+    }
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
     $tutor_stats_raw = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 
     $tutor_stats = [];
     foreach ($tutor_stats_raw as $tutor) {
         $tutor_stats[$tutor['user_id']] = $tutor;
     }
 } catch (Exception $e) {
-    error_log("Database error: " . $e->getMessage());
+    error_log("Tutor stats error: " . $e->getMessage());
     $tutor_stats = [];
 }
 
@@ -199,22 +230,26 @@ if (!empty($tutor_stats)) {
             FROM tutor_profile
             WHERE user_id IN ($placeholders)
         ");
+        if (!$stmt) {
+            error_log("Tutor details prepare failed: " . $conn->error);
+            throw new Exception("Database error: Unable to fetch tutor details.");
+        }
         $stmt->bind_param(str_repeat('i', count($tutor_ids)), ...$tutor_ids);
         $stmt->execute();
         $tutor_details_raw = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
 
         foreach ($tutor_details_raw as $detail) {
             $tutor_details[$detail['user_id']] = $detail;
         }
     } catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
+        error_log("Tutor details error: " . $e->getMessage());
     }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,7 +257,6 @@ if (!empty($tutor_stats)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/stud_session.css">
 </head>
-
 <body>
     <?php include 'header/stud_head.php'; ?>
 
@@ -315,47 +349,38 @@ if (!empty($tutor_stats)) {
                                     <?php endif; ?>
                                 </div>
                             </div>
-
                             <div class="session-details">
                                 <h3><?php echo htmlspecialchars($request['tutor_first_name'] . ' ' . $request['tutor_last_name']); ?></h3>
-
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
                                     <span><?php echo date('M j, Y', strtotime($request['selected_date'])); ?> (<?php echo htmlspecialchars($request['duration']); ?> hours)</span>
                                 </div>
-
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
                                     <span><?php echo htmlspecialchars($request['course_name']); ?></span>
                                 </div>
-
                                 <?php if ($request['location_name']): ?>
                                     <div class="session-location">
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span><?php echo htmlspecialchars($request['location_name']); ?></span>
                                     </div>
                                 <?php endif; ?>
-
                                 <?php if ($request['notes']): ?>
                                     <p><strong>Notes:</strong> <?php echo htmlspecialchars($request['notes']); ?></p>
                                 <?php endif; ?>
-
                                 <span class="status-badge status-<?php echo $request['status']; ?>">
                                     <?php echo ucfirst($request['status']); ?>
                                 </span>
                             </div>
-
                             <div class="session-actions">
                                 <button class="btn btn-outline" onclick="viewTutorDetails(<?php echo $request['tutor_id']; ?>)">
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-
                                 <button class="btn btn-danger" onclick="cancelSession(<?php echo $request['request_id']; ?>, 'request')">
                                     <i class="fas fa-times"></i>
                                     Cancel
                                 </button>
-
                                 <a href="messages.php?tutor_id=<?php echo $request['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -393,46 +418,38 @@ if (!empty($tutor_stats)) {
                                     <?php endif; ?>
                                 </div>
                             </div>
-
                             <div class="session-details">
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
-
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
-
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
                                     <span><?php echo htmlspecialchars($session['course_name']); ?></span>
                                 </div>
-
                                 <?php if ($session['location_name']): ?>
                                     <div class="session-location">
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span><?php echo htmlspecialchars($session['location_name']); ?></span>
                                     </div>
                                 <?php endif; ?>
-
                                 <span class="status-badge status-<?php echo $session['status']; ?>">
                                     <?php echo ucfirst($session['status']); ?>
                                 </span>
                             </div>
-
                             <div class="session-actions">
                                 <button class="btn btn-outline" onclick="viewTutorDetails(<?php echo $session['tutor_id']; ?>)">
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-
                                 <?php if ($session['status'] === 'scheduled' && strtotime($session['start_datetime']) > strtotime('+24 hours')): ?>
                                     <button class="btn btn-danger" onclick="cancelSession(<?php echo $session['session_id']; ?>, 'session')">
                                         <i class="fas fa-times"></i>
                                         Cancel
                                     </button>
                                 <?php endif; ?>
-
                                 <a href="messages.php?tutor_id=<?php echo $session['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -466,32 +483,26 @@ if (!empty($tutor_stats)) {
                                     <?php endif; ?>
                                 </div>
                             </div>
-
                             <div class="session-details">
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
-
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
-
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
                                     <span><?php echo htmlspecialchars($session['course_name']); ?></span>
                                 </div>
-
                                 <?php if ($session['location_name']): ?>
                                     <div class="session-location">
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span><?php echo htmlspecialchars($session['location_name']); ?></span>
                                     </div>
                                 <?php endif; ?>
-
                                 <span class="status-badge status-<?php echo $session['status']; ?>">
                                     <?php echo ucfirst($session['status']); ?>
                                 </span>
-
                                 <?php if ($session['rating']): ?>
                                     <div class="rating">
                                         <?php for ($i = 1; $i <= 5; $i++): ?>
@@ -499,25 +510,21 @@ if (!empty($tutor_stats)) {
                                         <?php endfor; ?>
                                     </div>
                                 <?php endif; ?>
-
                                 <?php if ($session['cancellation_reason']): ?>
                                     <p><strong>Cancellation reason:</strong> <?php echo htmlspecialchars($session['cancellation_reason']); ?></p>
                                 <?php endif; ?>
                             </div>
-
                             <div class="session-actions">
                                 <button class="btn btn-outline" onclick="viewTutorDetails(<?php echo $session['tutor_id']; ?>)">
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-
                                 <?php if ($session['status'] === 'completed' && !$session['rating']): ?>
                                     <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
                                         <i class="fas fa-star"></i>
                                         Rate Session
                                     </button>
                                 <?php endif; ?>
-
                                 <a href="messages.php?tutor_id=<?php echo $session['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -540,13 +547,11 @@ if (!empty($tutor_stats)) {
                     <input type="hidden" id="cancel_session_id" name="session_id">
                     <input type="hidden" id="cancel_type" name="type">
                     <input type="hidden" name="cancel_session" value="1">
-
                     <div class="form-group">
                         <label for="cancellation_reason">Reason for cancellation:</label>
                         <textarea id="cancellation_reason" name="cancellation_reason" class="form-control"
                             placeholder="Please provide a reason for cancelling this session..." required></textarea>
                     </div>
-
                     <div class="modal-actions">
                         <button type="button" class="btn btn-outline" onclick="closeCancelModal()">
                             <i class="fas fa-times"></i>
@@ -571,7 +576,6 @@ if (!empty($tutor_stats)) {
                 <form id="rateForm" method="POST" action="submit_review.php">
                     <input type="hidden" id="rate_session_id" name="session_id">
                     <input type="hidden" id="rate_tutor_id" name="tutor_id">
-
                     <div class="form-group">
                         <label>Rating:</label>
                         <div class="rating-input">
@@ -587,13 +591,11 @@ if (!empty($tutor_stats)) {
                             <label for="star1" class="star-label">★</label>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="review_comment">Comment (optional):</label>
                         <textarea id="review_comment" name="comment" class="form-control"
                             placeholder="Share your experience with this tutor..."></textarea>
                     </div>
-
                     <div class="modal-actions">
                         <button type="button" class="btn btn-outline" onclick="closeRateModal()">
                             <i class="fas fa-times"></i>
@@ -622,38 +624,26 @@ if (!empty($tutor_stats)) {
         </div>
 
         <script>
-            // Tab functionality
             function showTab(tabName) {
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
                 document.getElementById(tabName + '-tab').classList.add('active');
-
                 event.target.classList.add('active');
             }
 
-            // Dropdown functionality
             function toggleDropdown() {
                 const dropdown = document.getElementById('userDropdown');
                 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
             }
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 const userMenu = document.querySelector('.user-menu');
                 const dropdown = document.getElementById('userDropdown');
-
                 if (!userMenu.contains(event.target)) {
                     dropdown.style.display = 'none';
                 }
             });
 
-            // Cancel session functionality
             function cancelSession(sessionId, type) {
                 document.getElementById('cancel_session_id').value = sessionId;
                 document.getElementById('cancel_type').value = type;
@@ -665,7 +655,6 @@ if (!empty($tutor_stats)) {
                 document.getElementById('cancellation_reason').value = '';
             }
 
-            // Rate session functionality
             function rateSession(sessionId, tutorId) {
                 document.getElementById('rate_session_id').value = sessionId;
                 document.getElementById('rate_tutor_id').value = tutorId;
@@ -677,46 +666,35 @@ if (!empty($tutor_stats)) {
                 document.getElementById('rateForm').reset();
             }
 
-            // View tutor details
             function viewTutorDetails(tutorId) {
                 document.getElementById('tutorModal').classList.add('show');
                 document.getElementById('tutorDetails').innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-
                 fetch('get_tutor_details.php?id=' + tutorId)
                     .then(response => response.text())
-                    .then(data => {
-                        document.getElementById('tutorDetails').innerHTML = data;
-                    })
-                    .catch(error => {
-                        document.getElementById('tutorDetails').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Error loading tutor details</div>';
-                    });
+                    .then(data => document.getElementById('tutorDetails').innerHTML = data)
+                    .catch(error => document.getElementById('tutorDetails').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Error loading tutor details</div>');
             }
 
             function closeTutorModal() {
                 document.getElementById('tutorModal').classList.remove('show');
             }
 
-            // Close modals when clicking outside
             document.addEventListener('click', function(event) {
                 if (event.target.classList.contains('modal')) {
                     event.target.classList.remove('show');
                 }
             });
 
-            // Auto-hide alerts after 5 seconds
             document.addEventListener('DOMContentLoaded', function() {
                 const alerts = document.querySelectorAll('.alert');
                 alerts.forEach(alert => {
                     setTimeout(() => {
                         alert.style.opacity = '0';
-                        setTimeout(() => {
-                            alert.remove();
-                        }, 300);
+                        setTimeout(() => alert.remove(), 300);
                     }, 5000);
                 });
             });
         </script>
 </body>
-
 </html>
 <?php $conn->close(); ?>
