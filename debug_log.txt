@@ -154,3 +154,31 @@ Received POST data: Array
 )
 
 Errors: Invalid student ID. Please ensure you are logged in as a valid student.
+2025-06-03 13:46:10
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [availability_id] => 
+    [course] => 2
+    [duration] => 2
+    [location] => 3
+    [notes] => 
+)
+
+Errors: Invalid student ID. Please ensure you are logged in as a valid student.
+
+2025-06-03 13:46:19
+Received POST data: Array
+(
+    [tutor_id] => 16
+    [selected_date] => 2025-06-03
+    [availability_id] => 
+    [course] => 1
+    [duration] => 2
+    [location] => 1
+    [notes] => 
+)
+
+Errors: Invalid student ID. Please ensure you are logged in as a valid student.
+

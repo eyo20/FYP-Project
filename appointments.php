@@ -27,8 +27,8 @@ $tutor_result = $stmt->get_result();
 $tutor = $tutor_result->fetch_assoc();
 
 // Fetch courses that the tutor teaches with their hourly rates
-$courses_query = "SELECT c.*, ts.hourly_rate FROM courses c 
-                 JOIN tutorsubject ts ON c.course_id = ts.course_id 
+$courses_query = "SELECT c.*, ts.hourly_rate FROM course c 
+                 JOIN tutorsubject ts ON c.id = ts.course_id 
                  WHERE ts.tutor_id = ?";
 $stmt = $conn->prepare($courses_query);
 $stmt->bind_param("i", $tutor_id);
@@ -39,16 +39,7 @@ while ($row = $courses_result->fetch_assoc()) {
     $courses[] = $row;
 }
 
-// Fetch available time slots
-$time_slots_query = "SELECT * FROM availability WHERE tutor_id = ? AND status = 'open'";
-$stmt = $conn->prepare($time_slots_query);
-$stmt->bind_param("i", $tutor_id);
-$stmt->execute();
-$time_slots_result = $stmt->get_result();
-$time_slots = [];
-while ($row = $time_slots_result->fetch_assoc()) {
-    $time_slots[] = $row;
-}
+
 
 // Fetch locations
 $locations_query = "SELECT * FROM location";
@@ -476,10 +467,7 @@ $today = date('Y-m-d');
                     </p>
                 </div>
 
-                <div class="tutor-pricing">
-                    <h4>Tutoring Price</h4>
-                    <p id="tutor-price">Please select a course</p>
-                </div>
+                
 
                 <div class="tutor-bio">
                     <h4>Personal Profile</h4>
@@ -498,8 +486,8 @@ $today = date('Y-m-d');
                         <select id="course" name="course" required>
                             <option value="">Please Select A Course</option>
                             <?php foreach ($courses as $course): ?>
-                                <option value="<?php echo htmlspecialchars($course['course_id']); ?>">
-                                    <?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?>
+                                <option value="<?php echo htmlspecialchars($course['id']); ?>">
+                                    <?php echo htmlspecialchars( $course['course_name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -556,19 +544,7 @@ $today = date('Y-m-d');
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Select Time-Slot</label>
-                        <div class="time-slots">
-                            <?php foreach ($time_slots as $slot): ?>
-                                <div class="time-slot" data-id="<?php echo $slot['availability_id']; ?>">
-                                    <?php
-                                    echo date('H:i', strtotime($slot['start_datetime'])) . '-' .
-                                        date('H:i', strtotime($slot['end_datetime']));
-                                    ?>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
+                    
 
                     <div class="form-group">
                         <label for="duration">Tutor duration</label>
