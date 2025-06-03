@@ -78,7 +78,7 @@ $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
 // Handling form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST'){
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
         // Update basic information
         $first_name = $_POST['first_name'] ?? '';
@@ -87,13 +87,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $major = $_POST['major'] ?? '';
         $year = $_POST['year'] ?? '';
         $school = $_POST['school'] ?? '';
-        
+
         // Verify Malaysia Phone Number
         $phone_valid = false;
         if (!empty($phone)) {
             // Remove all non-numeric characters
             $phone = preg_replace('/[^0-9]/', '', $phone);
-            
+
             // Check phone number format
             if (substr($phone, 0, 3) === '011') {
                 // 011The number at the beginning must be 11 digits
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                 // Other numbers starting with 01x must be 10 digits.
                 $phone_valid = (strlen($phone) === 10);
             }
-            
+
             if (!$phone_valid) {
                 $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
                 error_log($error_message);
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
             // If the phone number is empty, it is considered valid (optional field)
             $phone_valid = true;
         }
-        
+
         // Continue only if the phone number is valid
         if ($phone_valid) {
             // Update user basic information
@@ -130,134 +130,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                 $stmt->close();
             }
 
-        
-        // Check if the user ID exists in the user table
-        $check_user = "SELECT user_id FROM user WHERE user_id = ?";
-        $user_stmt = $conn->prepare($check_user);
-        if (!$user_stmt) {
-            $error_message = "Database Error: Failed to prepare user check statement - " . $conn->error;
-            error_log($error_message);
-        } else {
-            $user_stmt->bind_param("i", $user_id);
-            $user_stmt->execute();
-            $user_result = $user_stmt->get_result();
-            
-            if ($user_result->num_rows == 0) {
-                $error_message = "Error: User ID does not exist in user table";
-                error_log($error_message);
-            }
-            $user_stmt->close();
-        }
-        
-        // Continue only if there are no errors
-        if (!isset($error_message)) {
-            // Check if the student data exists
-            $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
-            $stmt = $conn->prepare($check_profile);
-            if (!$stmt) {
-                $error_message = "Database Error: Failed to prepare profile check statement - " . $conn->error;
+
+            // Check if the user ID exists in the user table
+            $check_user = "SELECT user_id FROM user WHERE user_id = ?";
+            $user_stmt = $conn->prepare($check_user);
+            if (!$user_stmt) {
+                $error_message = "Database Error: Failed to prepare user check statement - " . $conn->error;
                 error_log($error_message);
             } else {
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $profile_result = $stmt->get_result();
-                $profile_exists = ($profile_result->num_rows > 0);
-                $stmt->close();
-                
-                $profile_updated = false;
-                
-                if ($profile_exists) {
-                    // Update student information
-                    $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
-                    $stmt = $conn->prepare($update_profile);
-                    if (!$stmt) {
-                        $error_message = "Database Error: Failed to prepare profile update statement - " . $conn->error;
-                        error_log($error_message);
-                    } else {
-                        $stmt->bind_param("sssi", $major, $year, $school, $user_id);
-                        $profile_updated = $stmt->execute();
-                        if (!$profile_updated) {
-                            $error_message = "Database Error: Failed to update student profile - " . $stmt->error;
-                            error_log($error_message);
-                        }
-                        $stmt->close();
-                    }
+                $user_stmt->bind_param("i", $user_id);
+                $user_stmt->execute();
+                $user_result = $user_stmt->get_result();
+
+                if ($user_result->num_rows == 0) {
+                    $error_message = "Error: User ID does not exist in user table";
+                    error_log($error_message);
+                }
+                $user_stmt->close();
+            }
+
+            // Continue only if there are no errors
+            if (!isset($error_message)) {
+                // Check if the student data exists
+                $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
+                $stmt = $conn->prepare($check_profile);
+                if (!$stmt) {
+                    $error_message = "Database Error: Failed to prepare profile check statement - " . $conn->error;
+                    error_log($error_message);
                 } else {
-                    // Checklist Structure
-                    $table_check = "DESCRIBE studentprofile";
-                    $table_result = $conn->query($table_check);
-                    if (!$table_result) {
-                        $error_message = "Database Error: Failed to check table structure - " . $conn->error;
-                        error_log($error_message);
-                    } else {
-                        $table_info = "Table structure: ";
-                        while ($row = $table_result->fetch_assoc()) {
-                            $table_info .= $row['Field'] . " (" . $row['Type'] . "), ";
-                        }
-                        error_log($table_info);
-                    }
-                    
-                    // Create a student profile
-                    $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
-                    $stmt = $conn->prepare($create_profile);
-                    
-                    if (!$stmt) {
-                        $error_message = "Database Error: Failed to prepare profile create statement - " . $conn->error;
-                        error_log($error_message);
-                    } else {
-                        // The value to be inserted into the record
-                        $debug_info = "Attempting to insert: user_id=$user_id, major='$major', year='$year', school='$school'";
-                        error_log($debug_info);
-                        
-                        $stmt->bind_param("isss", $user_id, $major, $year, $school);
-                        $profile_updated = $stmt->execute();
-                        
-                        if (!$profile_updated) {
-                            $error_message = "Database Error: Failed to create student profile - " . $stmt->error;
+                    $stmt->bind_param("i", $user_id);
+                    $stmt->execute();
+                    $profile_result = $stmt->get_result();
+                    $profile_exists = ($profile_result->num_rows > 0);
+                    $stmt->close();
+
+                    $profile_updated = false;
+
+                    if ($profile_exists) {
+                        // Update student information
+                        $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
+                        $stmt = $conn->prepare($update_profile);
+                        if (!$stmt) {
+                            $error_message = "Database Error: Failed to prepare profile update statement - " . $conn->error;
                             error_log($error_message);
-                            
-                            // Try using a simple SQL statement
-                            $simple_sql = "INSERT INTO studentprofile (user_id, major, year, school) VALUES ($user_id, '$major', '$year', '$school')";
-                            error_log("Trying simple SQL: " . $simple_sql);
-                            
-                            if ($conn->query($simple_sql)) {
-                                $profile_updated = true;
-                                error_log("Simple SQL succeeded");
-                            } else {
-                                $error_message = "Database Error (simple SQL): " . $conn->error;
+                        } else {
+                            $stmt->bind_param("sssi", $major, $year, $school, $user_id);
+                            $profile_updated = $stmt->execute();
+                            if (!$profile_updated) {
+                                $error_message = "Database Error: Failed to update student profile - " . $stmt->error;
                                 error_log($error_message);
                             }
+                            $stmt->close();
                         }
-                        
-                        $stmt->close();
+                    } else {
+                        // Checklist Structure
+                        $table_check = "DESCRIBE studentprofile";
+                        $table_result = $conn->query($table_check);
+                        if (!$table_result) {
+                            $error_message = "Database Error: Failed to check table structure - " . $conn->error;
+                            error_log($error_message);
+                        } else {
+                            $table_info = "Table structure: ";
+                            while ($row = $table_result->fetch_assoc()) {
+                                $table_info .= $row['Field'] . " (" . $row['Type'] . "), ";
+                            }
+                            error_log($table_info);
+                        }
+
+                        // Create a student profile
+                        $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
+                        $stmt = $conn->prepare($create_profile);
+
+                        if (!$stmt) {
+                            $error_message = "Database Error: Failed to prepare profile create statement - " . $conn->error;
+                            error_log($error_message);
+                        } else {
+                            // The value to be inserted into the record
+                            $debug_info = "Attempting to insert: user_id=$user_id, major='$major', year='$year', school='$school'";
+                            error_log($debug_info);
+
+                            $stmt->bind_param("isss", $user_id, $major, $year, $school);
+                            $profile_updated = $stmt->execute();
+
+                            if (!$profile_updated) {
+                                $error_message = "Database Error: Failed to create student profile - " . $stmt->error;
+                                error_log($error_message);
+
+                                // Try using a simple SQL statement
+                                $simple_sql = "INSERT INTO studentprofile (user_id, major, year, school) VALUES ($user_id, '$major', '$year', '$school')";
+                                error_log("Trying simple SQL: " . $simple_sql);
+
+                                if ($conn->query($simple_sql)) {
+                                    $profile_updated = true;
+                                    error_log("Simple SQL succeeded");
+                                } else {
+                                    $error_message = "Database Error (simple SQL): " . $conn->error;
+                                    error_log($error_message);
+                                }
+                            }
+
+                            $stmt->close();
+                        }
                     }
-                }
-                
-                if (isset($user_updated) && $user_updated && isset($profile_updated) && $profile_updated) {
-                    $success_message = "Profile updated successfully！";
-                } else {
-                    if (!isset($error_message)) {
-                        $error_message = "An error occurred while updating your profile. Please try again.！";
-                        if (isset($user_updated) && !$user_updated) {
-                            $error_message .= " (User information update failed)";
-                        }
-                        if (isset($profile_updated) && !$profile_updated) {
-                            $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
+
+                    if (isset($user_updated) && $user_updated && isset($profile_updated) && $profile_updated) {
+                        $success_message = "Profile updated successfully！";
+                    } else {
+                        if (!isset($error_message)) {
+                            $error_message = "An error occurred while updating your profile. Please try again.！";
+                            if (isset($user_updated) && !$user_updated) {
+                                $error_message .= " (User information update failed)";
+                            }
+                            if (isset($profile_updated) && !$profile_updated) {
+                                $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
-    
+
     // Handling password changes
     if (isset($_POST['change_password'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
         $password_error = '';
-        
+
         // Verify current password
         $password_query = "SELECT password FROM user WHERE user_id = ?";
         $stmt = $conn->prepare($password_query);
@@ -266,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
         $stmt->close();
-        
+
         if (!password_verify($current_password, $user['password'])) {
             $password_error = "The current password is incorrect";
         } elseif (strlen($new_password) < 8) {
@@ -285,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
             $update_password = "UPDATE user SET password = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_password);
             $stmt->bind_param("si", $hashed_password, $user_id);
-            
+
             if ($stmt->execute()) {
                 $success_message = "Password updated successfully！";
             } else {
@@ -293,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
             }
             $stmt->close();
         }
-        
+
         if (!empty($password_error)) {
             $error_message = $password_error;
         }
@@ -304,25 +304,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
     $max_size = 5 * 1024 * 1024; // 5MB
-    
+
     if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
         $upload_dir = 'uploads/profile_images/';
-        
+
         // Create the upload directory if it does not exist）
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
-        
+
         $filename = uniqid() . '_' . $_FILES['profile_image']['name'];
         $target_file = $upload_dir . $filename;
-        
+
         if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
             // Update the avatar path in the database
             $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_image);
             $stmt->bind_param("si", $target_file, $user_id);
             $image_updated = $stmt->execute();
-            
+
             if ($image_updated) {
                 $profile_image = $target_file;
                 $success_message = "Avatar updated successfully！";
@@ -342,6 +342,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -355,19 +356,19 @@ $conn->close();
             --gray: #e9ecef;
             --dark-gray: #6c757d;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: var(--light-gray);
             color: #333;
         }
-        
+
         .navbar {
             background-color: var(--primary);
             color: white;
@@ -375,19 +376,19 @@ $conn->close();
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .logo {
             font-weight: bold;
             font-size: 1.5rem;
         }
-        
+
         .nav-links {
             display: flex;
             gap: 20px;
         }
-        
+
         .nav-links a {
             color: white;
             text-decoration: none;
@@ -395,22 +396,22 @@ $conn->close();
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-        
+
         .nav-links a:hover {
-            background-color: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        
+
         .nav-links a.active {
             background-color: var(--accent);
             color: white;
         }
-        
+
         .user-menu {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .user-avatar {
             width: 35px;
             height: 35px;
@@ -424,13 +425,13 @@ $conn->close();
             cursor: pointer;
             overflow: hidden;
         }
-        
+
         .user-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .notification-badge {
             background-color: var(--accent);
             color: white;
@@ -444,40 +445,40 @@ $conn->close();
             margin-left: -10px;
             margin-top: -10px;
         }
-        
+
         main {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
+
         .page-title {
             color: var(--primary);
             margin-bottom: 1.5rem;
             font-weight: 600;
         }
-        
+
         .profile-container {
             display: grid;
             grid-template-columns: 1fr 2fr;
             gap: 2rem;
         }
-        
+
         .profile-sidebar {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        
+
         .profile-image-container {
             position: relative;
             margin-bottom: 1.5rem;
         }
-        
+
         .profile-image {
             width: 150px;
             height: 150px;
@@ -485,7 +486,7 @@ $conn->close();
             object-fit: cover;
             border: 3px solid var(--primary);
         }
-        
+
         .profile-image-placeholder {
             width: 150px;
             height: 150px;
@@ -498,7 +499,7 @@ $conn->close();
             font-size: 3rem;
             border: 3px solid var(--primary);
         }
-        
+
         .edit-profile-image {
             position: absolute;
             bottom: 0;
@@ -515,7 +516,7 @@ $conn->close();
             font-size: 1.2rem;
             border: 2px solid white;
         }
-        
+
         .profile-name {
             font-size: 1.5rem;
             font-weight: 600;
@@ -523,47 +524,47 @@ $conn->close();
             color: var(--primary);
             text-align: center;
         }
-        
+
         .profile-role {
             color: var(--dark-gray);
             margin-bottom: 1.5rem;
             text-align: center;
         }
-        
+
         .profile-info {
             width: 100%;
         }
-        
+
         .info-item {
             display: flex;
             margin-bottom: 1rem;
             align-items: center;
         }
-        
+
         .info-icon {
             width: 30px;
             color: var(--primary);
             margin-right: 10px;
             text-align: center;
         }
-        
+
         .info-text {
             flex: 1;
         }
-        
+
         .profile-content {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
-        
+
         .profile-section {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .section-title {
             color: var(--primary);
             margin-bottom: 1.5rem;
@@ -572,17 +573,17 @@ $conn->close();
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
         }
-        
+
         .form-control {
             width: 100%;
             padding: 0.75rem;
@@ -590,12 +591,12 @@ $conn->close();
             border-radius: 4px;
             font-size: 1rem;
         }
-        
+
         textarea.form-control {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .btn {
             background-color: var(--accent);
             color: white;
@@ -606,19 +607,19 @@ $conn->close();
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
+
         .btn:hover {
             background-color: #b3c300;
         }
-        
+
         .btn-secondary {
             background-color: var(--secondary);
         }
-        
+
         .btn-secondary:hover {
             background-color: #0098d0;
         }
-        
+
         .success-message {
             background-color: #d4edda;
             color: #155724;
@@ -626,7 +627,7 @@ $conn->close();
             border-radius: 4px;
             margin-bottom: 1.5rem;
         }
-        
+
         .error-message {
             background-color: #f8d7da;
             color: #721c24;
@@ -634,7 +635,7 @@ $conn->close();
             border-radius: 4px;
             margin-bottom: 1.5rem;
         }
-        
+
         footer {
             background-color: var(--primary);
             color: white;
@@ -642,13 +643,13 @@ $conn->close();
             padding: 1.5rem;
             margin-top: 2rem;
         }
-        
+
         .form-text {
             font-size: 0.875rem;
             color: var(--dark-gray);
             margin-top: 0.25rem;
         }
-        
+
         .danger-zone {
             background-color: #f8d7da;
             border: 1px solid #f5c6cb;
@@ -656,26 +657,26 @@ $conn->close();
             padding: 1.5rem;
             margin-top: 1rem;
         }
-        
+
         .danger-zone h4 {
             color: #721c24;
             margin-bottom: 0.5rem;
         }
-        
+
         .btn-danger {
             background-color: #dc3545;
         }
-        
+
         .btn-danger:hover {
             background-color: #c82333;
         }
-        
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .profile-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .nav-links {
                 display: none;
                 position: absolute;
@@ -687,37 +688,39 @@ $conn->close();
                 padding: 1rem;
                 z-index: 100;
             }
-            
+
             .nav-links.show {
                 display: flex;
             }
-            
+
             .menu-toggle {
                 display: block;
                 font-size: 1.5rem;
                 cursor: pointer;
             }
         }
-        
+
         @media (max-width: 576px) {
-            .profile-image, .profile-image-placeholder {
+
+            .profile-image,
+            .profile-image-placeholder {
                 width: 120px;
                 height: 120px;
             }
-            
+
             .profile-name {
                 font-size: 1.2rem;
             }
-            
+
             .profile-section {
                 padding: 1.5rem;
             }
-            
+
             .btn {
                 width: 100%;
             }
         }
-        
+
         @media (min-width: 769px) {
             .menu-toggle {
                 display: none;
@@ -725,50 +728,54 @@ $conn->close();
         }
     </style>
 </head>
+
 <body>
-    <nav class="navbar">
-        <div class="logo">PeerLearn</div>
-        <div class="nav-links">
-            <a href="find_tutors.php">Find Tutors</a>
-            <a href="student_sessions.php">My Sessions</a>
-            <a href="student_profile.php" class="active">Profile</a>
-            <a href="messages.php">Messages
-                <?php if($unread_messages > 0): ?>
-                <span class="notification-badge"><?php echo $unread_messages; ?></span>
-                <?php endif; ?>
-            </a>
-        </div>
-        <div class="user-menu">
-            <div class="user-avatar">
-                <?php if($profile_image): ?>
-                <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
-                <?php else: ?>
-                <?php echo strtoupper(substr($first_name, 0, 1)); ?>
-                <?php endif; ?>
+
+    <?php include 'header/stud_head.php'; ?>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Peer Tutoring Platform
             </div>
-            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
+            <nav class="nav-links">
+                <a href="student_main_page.php"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="find_tutors.php"><i class="fas fa-search"></i> Find Tutors</a>
+                <a href="student_sessions.php"><i class="fas fa-calendar"></i> My Sessions</a>
+                <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
+                <div class="user-menu" onclick="toggleDropdown()">
+                    <i class="fas fa-user-circle"></i>
+                    <?php echo htmlspecialchars(isset($_SESSION['first_name']) ? $_SESSION['first_name'] : 'User'); ?>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="student_profile.php"><i class="fas fa-user"></i> Profile</a>
+                        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </nav>
         </div>
-        <div class="menu-toggle">☰</div>
-    </nav>
+    </header>
 
     <main>
         <h1 class="page-title">Profile</h1>
-        
-        <?php if(isset($success_message)): ?>
-        <div class="success-message"><?php echo $success_message; ?></div>
+
+        <?php if (isset($success_message)): ?>
+            <div class="success-message"><?php echo $success_message; ?></div>
         <?php endif; ?>
-        
-        <?php if(isset($error_message)): ?>
-        <div class="error-message"><?php echo $error_message; ?></div>
+
+        <?php if (isset($error_message)): ?>
+            <div class="error-message"><?php echo $error_message; ?></div>
         <?php endif; ?>
-        
+
         <div class="profile-container">
             <div class="profile-sidebar">
                 <div class="profile-image-container">
-                    <?php if($profile_image): ?>
-                    <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image" id="profile-image-preview">
+                    <?php if ($profile_image): ?>
+                        <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image" id="profile-image-preview">
                     <?php else: ?>
-                    <div class="profile-image-placeholder" id="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
+                        <div class="profile-image-placeholder" id="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                     <?php endif; ?>
                     <label for="profile_image_upload" class="edit-profile-image">
                         <i>📷</i>
@@ -779,7 +786,7 @@ $conn->close();
                 </div>
                 <h2 class="profile-name"><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h2>
                 <p class="profile-role">Student</p>
-                
+
                 <div class="profile-info">
                     <div class="info-item">
                         <div class="info-icon">📧</div>
@@ -797,14 +804,14 @@ $conn->close();
                         <div class="info-icon">📅</div>
                         <div class="info-text"><?php echo $year ? htmlspecialchars($year) : 'Not Set'; ?></div>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-icon">🕒</div>
                         <div class="info-text">Last login: <?php echo $last_login != 'Never' ? date('M d, Y H:i', strtotime($last_login)) : 'Never'; ?></div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="profile-content">
                 <div class="profile-section">
                     <h3 class="section-title">Personal Information</h3>
@@ -829,19 +836,19 @@ $conn->close();
                         <div class="form-group">
                             <label for="year">Level</label>
                             <select class="form-control" id="year" name="year" class="form-control">
-                            <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select Level --</option>
-                            <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
-                            <option value="Diploma" <?php echo $year == 'Diploma' ? 'selected' : ''; ?>>Diploma</option>
-                            <option value="Degree" <?php echo $year == 'Degree' ? 'selected' : ''; ?>>Degree</option>
-                            <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
-                            <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
+                                <option value="" <?php echo $year == '' ? 'selected' : ''; ?>>-- Select Level --</option>
+                                <option value="Foundation" <?php echo $year == 'Foundation' ? 'selected' : ''; ?>>Foundation</option>
+                                <option value="Diploma" <?php echo $year == 'Diploma' ? 'selected' : ''; ?>>Diploma</option>
+                                <option value="Degree" <?php echo $year == 'Degree' ? 'selected' : ''; ?>>Degree</option>
+                                <option value="Master" <?php echo $year == 'Master' ? 'selected' : ''; ?>>Master</option>
+                                <option value="PhD" <?php echo $year == 'PhD' ? 'selected' : ''; ?>>PhD</option>
                             </select>
                         </div>
-                        
+
                         <button type="submit" class="btn" id="save-profile-btn">Save Profile</button>
                     </form>
                 </div>
-                
+
                 <div class="profile-section">
                     <h3 class="section-title">Security Settings</h3>
                     <form action="" method="post" name="password_form" id="password-form">
@@ -865,7 +872,7 @@ $conn->close();
                         <a href="forgot_password.php">Forgot your password?</a>
                     </p>
                 </div>
-                
+
                 <div class="profile-section">
                     <h3 class="section-title">Account Settings</h3>
                     <div class="danger-zone">
@@ -884,11 +891,17 @@ $conn->close();
     </footer>
 
     <script>
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
         // Mobile menu toggle
         document.querySelector('.menu-toggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('show');
         });
-        
+
         // Avatar upload preview and automatic submission
         document.getElementById('profile_image_upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -897,12 +910,12 @@ $conn->close();
                 reader.onload = function(e) {
                     const previewElement = document.getElementById('profile-image-preview');
                     const placeholderElement = document.getElementById('profile-image-placeholder');
-                    
+
                     if (previewElement) {
                         // If it is already an image, update src
-                          previewElement.src = e.target.result;
+                        previewElement.src = e.target.result;
                     } else if (placeholderElement) {
-                       // If it is a placeholder, replace it with an image element
+                        // If it is a placeholder, replace it with an image element
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.alt = "Profile";
@@ -910,96 +923,96 @@ $conn->close();
                         img.id = "profile-image-preview";
                         placeholderElement.parentNode.replaceChild(img, placeholderElement);
                     }
-                    
+
                     // Automatically submit forms
                     document.getElementById('image-upload-form').submit();
                 }
                 reader.readAsDataURL(file);
             }
         });
-        
+
         // Profile form validation
         document.getElementById('profile-form').addEventListener('submit', function(e) {
             const firstName = document.getElementById('first_name').value.trim();
             const lastName = document.getElementById('last_name').value.trim();
             const phone = document.getElementById('phone').value.trim();
-            
+
             if (!firstName) {
                 alert('Please enter your name');
                 e.preventDefault();
                 return;
             }
-            
+
             if (!lastName) {
                 alert('Please enter your last name');
                 e.preventDefault();
                 return;
             }
-            
+
             if (phone && !/^\d{10,15}$/.test(phone)) {
                 alert('Please enter a valid phone number');
                 e.preventDefault();
                 return;
             }
         });
-        
+
         // Password form validation
         document.getElementById('password-form').addEventListener('submit', function(e) {
             const currentPassword = document.getElementById('current_password').value;
             const newPassword = document.getElementById('new_password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
-            
+
             if (!currentPassword) {
                 alert('Please enter your current password');
                 e.preventDefault();
                 return;
             }
-            
+
             if (newPassword.length < 8) {
                 alert('New password must be at least 8 characters');
                 e.preventDefault();
                 return;
             }
-            
+
             if (!/[A-Z]/.test(newPassword)) {
                 alert('New password must contain at least one uppercase letter');
                 e.preventDefault();
                 return;
             }
-            
+
             if (!/[0-9]/.test(newPassword)) {
                 alert('New password must contain at least one number');
                 e.preventDefault();
                 return;
             }
-            
+
             if (!/[^A-Za-z0-9]/.test(newPassword)) {
                 alert('New password must contain at least one special character');
                 e.preventDefault();
                 return;
             }
-            
+
             if (newPassword !== confirmPassword) {
                 alert('The new passwords you entered twice do not match');
                 e.preventDefault();
                 return;
             }
         });
-        
+
         // Save personal information confirmation
         document.getElementById('save-profile-btn').addEventListener('click', function(e) {
             if (!confirm('Are you sure you want to save your profile changes？')) {
                 e.preventDefault();
             }
         });
-        
+
         // Change password confirmation
         document.getElementById('change-password-btn').addEventListener('click', function(e) {
             if (!confirm('Are you sure you want to change your password？')) {
                 e.preventDefault();
             }
         });
-        
+
         // Deletion Account Confirmation
         document.getElementById('delete-account-btn').addEventListener('click', function() {
             if (confirm('Are you sure you want to delete your account? This action cannot be undone and all data will be permanently deleted.')) {
@@ -1010,4 +1023,5 @@ $conn->close();
         });
     </script>
 </body>
+
 </html>
