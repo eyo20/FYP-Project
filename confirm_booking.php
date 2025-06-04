@@ -1,14 +1,14 @@
 <?php
 session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "peer_tutoring_platform";
+require_once 'db_connection.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if user is logged in and is a student
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+    header('Location: login.php');
+    exit();
 }
+
+$page_title = "Booking Confirmation - PeerLearn";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tutor_id = intval($_POST['tutor_id']);
@@ -40,6 +40,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Fetch course name
+    $course_query = "SELECT course_name FROM course WHERE id = ?";
+    $stmt = $conn->prepare($course_query);
+    $stmt->bind_param("i", $course_id);
+    $stmt->execute();
+    $course_result = $stmt->get_result();
+    $course = $course_result->fetch_assoc();
+
+    // Fetch location name
+    $location_query = "SELECT location_name FROM location WHERE location_id = ?";
+    $stmt = $conn->prepare($location_query);
+    $stmt->bind_param("i", $location_id);
+    $stmt->execute();
+    $location_result = $stmt->get_result();
+    $location = $location_result->fetch_assoc();
+
+    // Fetch hourly rate
+    $rate_query = "SELECT hourly_rate FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
+    $stmt = $conn->prepare($rate_query);
+    $stmt->bind_param("ii", $tutor_id, $course_id);
+    $stmt->execute();
+    $rate_result = $stmt->get_result();
+    $rate = $rate_result->fetch_assoc();
+    $hourly_rate = $rate['hourly_rate'] ?? 0;
+
     // Insert into session_requests
     $insert_query = "INSERT INTO session_requests (tutor_id, student_id, course_id, location_id, duration, selected_date, notes, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
@@ -47,10 +72,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iiiidss", $tutor_id, $student_id, $course_id, $location_id, $duration, $selected_date, $notes);
 
     if ($stmt->execute()) {
-        header("Location: student_sessions.php?success=Booking request submitted");
+        // Render confirmation page
+?>
+        <?php include 'header/stud_head.php'; ?>
+        <div class="main">
+            <div class="container" style="max-width: 600px; margin: 0 auto; padding: 2rem; text-align: center;">
+                <h1 style="color: var(--primary-color);">Booking Request Submitted</h1>
+                <div class="confirmation" style="background-color: var(--light-gray); padding: 1.5rem; border-radius: 8px;">
+                    <p>Your booking is awaiting peer tutor confirmation.</p>
+                    <div class="details" style="text-align: left; margin: 1rem 0;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Booking Details</h3>
+                        <p style="margin: 0.5rem 0;"><strong>Course:</strong> <?php echo htmlspecialchars($course['course_name']); ?></p>
+                        <p style="margin: 0.5rem 0;"><strong>Date:</strong> <?php echo htmlspecialchars($selected_date); ?></p>
+                        <p style="margin: 0.5rem 0;"><strong>Duration:</strong> <?php echo htmlspecialchars($duration); ?> hours</p>
+                        <p style="margin: 0.5rem 0;"><strong>Study Venue:</strong> <?php echo htmlspecialchars($location['location_name']); ?></p>
+                        <p style="margin: 0.5rem 0;"><strong>Notes:</strong> <?php echo empty($notes) ? "None" : htmlspecialchars($notes); ?></p>
+                        <p style="margin: 0.5rem 0;"><strong>Hourly Rate:</strong> RM <?php echo number_format($hourly_rate, 2); ?></p>
+                    </div>
+                </div>
+                <a href="student_main_page.php" class="btn" style="background-color: var(--accent-color); padding: 0.8rem 1.5rem; text-decoration: none; color: var(--dark-gray); border-radius: 4px; display: inline-block; margin-top: 1rem;">Back to Main Page</a>
+            </div>
+        </div>
+        </body>
+
+        </html>
+<?php
+        exit;
     } else {
         header("Location: appointments.php?tutor_id=$tutor_id&error=Failed to submit booking");
+        exit;
     }
 }
 
 $conn->close();
+?>

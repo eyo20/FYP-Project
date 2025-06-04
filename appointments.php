@@ -1,14 +1,21 @@
 <?php
 session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "peer_tutoring_platform";
+require_once 'db_connection.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if user is logged in and is a student
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+    header('Location: login.php');
+    exit();
 }
+// $servername = "localhost";
+// $username = "root";
+// $password = "";
+// $dbname = "peer_tutoring_platform";
+
+// $conn = new mysqli($servername, $username, $password, $dbname);
+// if ($conn->connect_error) {
+//     die("Connection failed: " . $conn->connect_error);
+// }
 
 $tutor_id = isset($_GET['tutor_id']) ? intval($_GET['tutor_id']) : 16;
 
@@ -217,7 +224,7 @@ $page_title = "Book a Study Partner - PeerLearn";
                         <span id="tutor-fee">RM0.00</span>
                     </div>
                     <div class="price-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Platform Charge</span>
+                        <span></span>
                         <span id="platform-fee">RM0.00</span>
                     </div>
                     <hr>
@@ -251,11 +258,11 @@ $page_title = "Book a Study Partner - PeerLearn";
             const duration = parseFloat(durationSelect.value) || 0;
             const hourlyRate = courseId && hourlyRates[courseId] ? parseFloat(hourlyRates[courseId]) : 0;
             const tutorFee = hourlyRate * duration;
-            const platformFee = Math.ceil(tutorFee * 0.05);
+
             const totalFee = tutorFee;
 
             document.getElementById('tutor-fee').innerHTML = `RM${tutorFee.toFixed(2)}`;
-            document.getElementById('platform-fee').innerHTML = `RM${platformFee.toFixed(2)}`;
+
             document.getElementById('total-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
         }
 
