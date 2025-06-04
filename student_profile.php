@@ -773,14 +773,6 @@ $conn->close();
                         <div class="info-icon">📱</div>
                         <div class="info-text"><?php echo $phone ? htmlspecialchars($phone) : 'Not Set'; ?></div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-icon">🎓</div>
-                        <div class="info-text"><?php echo $major ? htmlspecialchars($major) : 'Not Set'; ?></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-icon">📅</div>
-                        <div class="info-text"><?php echo $year ? htmlspecialchars($year) : 'Not Set'; ?></div>
-                    </div>
 
                     <div class="info-item">
                         <div class="info-icon">🕒</div>
