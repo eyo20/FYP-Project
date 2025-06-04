@@ -63,7 +63,7 @@ $current_sessions_query = "SELECT s.session_id, s.start_datetime, s.end_datetime
                           JOIN user u ON s.student_id = u.user_id
                           JOIN course c ON s.course_id = c.id
                           LEFT JOIN location l ON s.location_id = l.location_id
-                          WHERE s.tutor_id = ? AND s.status = 'scheduled'
+                          WHERE s.tutor_id = ? AND s.status = 'comfirmed'
                           ORDER BY s.start_datetime ASC";
 $stmt = $conn->prepare($current_sessions_query);
 $stmt->bind_param("i", $user_id);

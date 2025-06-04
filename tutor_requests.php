@@ -543,28 +543,7 @@ $conn->close();
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo"><span>PeerLearn</span></div>
-        <div class="nav-links">
-            <a href="tutor_main_page.php">Main</a>
-            <a href="tutor_profile.php">Profile</a>
-            <a href="tutor_requests.php" class="active">Requests<?php if ($pending_count > 0): ?>
-                <span class="notification-badge"><?php echo $pending_count; ?></span><?php endif; ?></a>
-            <a href="tutor_students.php">My students</a>
-            <a href="message.php">Messages<?php if ($unread_messages > 0): ?>
-                <span class="notification-badge"><?php echo $unread_messages; ?></span><?php endif; ?></a>
-        </div>
-        <div class="user-menu">
-            <div class="user-avatar">
-                <?php if ($profile_image): ?>
-                    <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image">
-                <?php else: ?>
-                    <?php echo htmlspecialchars(substr($first_name, 0, 1) . substr($last_name, 0, 1)); ?>
-                <?php endif; ?>
-            </div>
-            <a href="logout.php" style="color: white; text-decoration: none;">Logout</a>
-        </div>
-    </nav>
+    <?php include 'header/tut_head.php'; ?>
 
     <main>
         <h1 class="page-title">Tutoring Requests</h1>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-06-03 22:49:38
+-- 生成日期： 2025-06-04 01:13:00
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.0.30
 
@@ -161,7 +161,10 @@ CREATE TABLE `notification` (
 INSERT INTO `notification` (`notification_id`, `user_id`, `title`, `message`, `type`, `related_id`, `is_read`, `created_at`) VALUES
 (1, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 9, 0, '2025-06-03 19:08:31'),
 (2, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 10, 0, '2025-06-03 19:25:39'),
-(3, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 11, 0, '2025-06-03 20:20:42');
+(3, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 11, 0, '2025-06-03 20:20:42'),
+(4, 23, 'Request Rejected', 'Your tutoring request has been rejected.', 'session', 12, 0, '2025-06-03 22:40:01'),
+(5, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 13, 0, '2025-06-03 22:56:28'),
+(6, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 14, 0, '2025-06-03 23:11:32');
 
 -- --------------------------------------------------------
 
@@ -272,8 +275,10 @@ CREATE TABLE `session` (
 
 INSERT INTO `session` (`session_id`, `tutor_id`, `student_id`, `course_id`, `location_id`, `status`, `start_datetime`, `end_datetime`, `cancellation_reason`, `cancelled_by`, `created_at`) VALUES
 (2, 16, 23, 2, 2, '', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:08:31'),
-(3, 16, 23, 3, 1, '', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:25:39'),
-(4, 16, 23, 2, 2, '', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-03 20:20:42');
+(3, 16, 23, 3, 1, 'confirmed', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:25:39'),
+(4, 16, 23, 2, 2, 'confirmed', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-03 20:20:42'),
+(5, 16, 23, 2, 1, 'rejected', '2025-06-04 09:00:00', '2025-06-04 11:00:00', NULL, NULL, '2025-06-03 22:40:01'),
+(6, 16, 23, 6, 3, 'confirmed', '2025-06-05 09:00:00', '2025-06-05 11:00:00', NULL, NULL, '2025-06-03 22:56:28');
 
 -- --------------------------------------------------------
 
@@ -301,7 +306,9 @@ CREATE TABLE `session_requests` (
 INSERT INTO `session_requests` (`request_id`, `tutor_id`, `student_id`, `course_id`, `location_id`, `duration`, `selected_date`, `notes`, `status`, `created_at`) VALUES
 (10, 16, 23, 3, 1, 2.00, '2025-06-03', '', 'confirmed', '2025-06-04 03:25:27'),
 (11, 16, 23, 2, 2, 2.00, '2025-06-06', '', 'confirmed', '2025-06-04 03:46:06'),
-(12, 16, 23, 2, 1, 2.00, '2025-06-04', '', 'pending', '2025-06-04 04:21:29');
+(12, 16, 23, 2, 1, 2.00, '2025-06-04', '', 'rejected', '2025-06-04 04:21:29'),
+(13, 16, 23, 6, 3, 2.00, '2025-06-05', '', 'confirmed', '2025-06-04 06:55:50'),
+(14, 16, 23, 1, 3, 2.00, '2025-06-04', '', 'confirmed', '2025-06-04 07:11:24');
 
 -- --------------------------------------------------------
 
@@ -675,7 +682,7 @@ ALTER TABLE `message`
 -- 使用表AUTO_INCREMENT `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用表AUTO_INCREMENT `password_reset`
@@ -699,13 +706,13 @@ ALTER TABLE `review`
 -- 使用表AUTO_INCREMENT `session`
 --
 ALTER TABLE `session`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用表AUTO_INCREMENT `session_requests`
 --
 ALTER TABLE `session_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- 使用表AUTO_INCREMENT `students`
