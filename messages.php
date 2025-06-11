@@ -16,6 +16,15 @@ if (!isset($_SESSION['user_id'])) {
 // Get current user ID from session
 $current_user_id = (int)$_SESSION['user_id'];
 
+// Get current user's role
+$current_user_role_query = "SELECT role FROM user WHERE user_id = ?";
+$stmt = $conn->prepare($current_user_role_query);
+$stmt->bind_param("i", $current_user_id);
+$stmt->execute();
+$current_user_role_result = $stmt->get_result();
+$current_user_role = $current_user_role_result->fetch_assoc()['role'];
+$stmt->close();
+
 // Get other user ID from URL with proper validation
 if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
     header("Location: messages_list.php");
@@ -24,26 +33,13 @@ if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
 
 $other_user_id = (int)$_GET['user_id'];
 
+// Validate other user ID
 if ($other_user_id <= 0) {
     die("<div style='padding:20px; font-family:Arial;'>
             <h2>Invalid User</h2>
             <p>The user you're trying to message doesn't exist.</p>
             <p><a href='messages_list.php'>Back to messages</a></p>
          </div>");
-}
-
-// Get current user data
-$current_user_query = "SELECT user_id, username, email, first_name, last_name, phone, profile_image, role 
-                      FROM user WHERE user_id = ?";
-$stmt = $conn->prepare($current_user_query);
-$stmt->bind_param("i", $current_user_id);
-$stmt->execute();
-$current_user_result = $stmt->get_result();
-$current_user_data = $current_user_result->fetch_assoc();
-$stmt->close();
-
-if (!$current_user_data) {
-    die("Error: Current user not found in database");
 }
 
 // Get other user data
@@ -60,12 +56,12 @@ if (!$other_user_data) {
     die("Error: The user you're trying to message doesn't exist");
 }
 
-// Get messages between these users - USING CORRECT COLUMN NAMES FROM YOUR TABLE
+// Get messages between these users
 $message_query = "SELECT message_id, sender_id, receiver_id, content, sent_datetime, is_read 
                   FROM message 
                   WHERE (sender_id = ? AND receiver_id = ?)
                   OR (sender_id = ? AND receiver_id = ?)
-                  ORDER BY sent_datetime ASC";  // Changed to sent_datetime
+                  ORDER BY sent_datetime ASC";
 $stmt = $conn->prepare($message_query);
 $stmt->bind_param("iiii", $current_user_id, $other_user_id, $other_user_id, $current_user_id);
 $stmt->execute();
@@ -79,6 +75,11 @@ $stmt = $conn->prepare($mark_read_query);
 $stmt->bind_param("ii", $current_user_id, $other_user_id);
 $stmt->execute();
 $stmt->close();
+
+// Function to determine profile page based on role
+function getProfilePage($role) {
+    return $role === 'tutor' ? 'tutor_profile.php' : 'student_profile.php';
+}
 ?>
 
 <!DOCTYPE html>
@@ -109,7 +110,9 @@ $stmt->close();
     <div class="wrapper">
         <section class="chat-area">
             <header>
-                <a href="student_profile.php" class="back-icon"><i class="fas fa-arrow-left"></i></a>
+                <a href="<?php echo getProfilePage($current_user_role); ?>" class="back-icon">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
                 <img src="<?php echo htmlspecialchars($other_user_data['profile_image'] ?: 'images/default_profile.jpg'); ?>" alt="Profile" class="profile-img">
                 <div class="details">
                     <span><?php echo htmlspecialchars($other_user_data['first_name'] . ' ' . $other_user_data['last_name']); ?></span>
