@@ -331,7 +331,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($request['tutor_first_name'] . ' ' . $request['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y', strtotime($request['selected_date'])); ?> (<?php echo htmlspecialchars($request['time_slot']); ?> )</span>
+                                    <span><?php echo date('M j, Y', strtotime($request['selected_date'])); ?> (<?php echo htmlspecialchars($request['time_slot']); ?>)</span>
                                 </div>
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
