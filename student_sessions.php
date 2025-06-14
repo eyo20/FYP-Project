@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
 // Get pending session requests
 try {
     $stmt = $conn->prepare("
-        SELECT sr.request_id, sr.selected_date, sr.duration, sr.status, sr.notes,
+        SELECT sr.request_id, sr.selected_date, sr.time_slot, sr.status, sr.notes,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
                c.course_name,
@@ -331,7 +331,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($request['tutor_first_name'] . ' ' . $request['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y', strtotime($request['selected_date'])); ?> (<?php echo htmlspecialchars($request['duration']); ?> hours)</span>
+                                    <span><?php echo date('M j, Y', strtotime($request['selected_date'])); ?> (<?php echo htmlspecialchars($request['time_slot']); ?> hours)</span>
                                 </div>
                                 <div class="session-course">
                                     <i class="fas fa-book"></i>
