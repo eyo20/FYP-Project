@@ -181,10 +181,10 @@ if ($stmt) {
 // Fetch recommended tutors (expertise match)
 $recommended_tutors = [];
 $recommended_tutors_query = "
-    SELECT t.tutor_id, u.username, t.expertise AS subject, t.availability
-    FROM tutor t
+    SELECT t.user_id, u.username, t.major AS subject
+    FROM tutorprofile t
     JOIN user u ON t.user_id = u.user_id
-    WHERE t.expertise LIKE ?
+    WHERE t.major LIKE ?
     LIMIT 3";
 $major_search = !empty($major) && $major !== 'Not set' ? "%$major%" : "%";
 $stmt = $conn->prepare($recommended_tutors_query);
@@ -235,6 +235,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -629,6 +630,7 @@ $conn->close();
         }
     </style>
 </head>
+
 <body>
     <?php include 'header/stud_head.php'; ?>
 
@@ -644,7 +646,7 @@ $conn->close();
             <div class="welcome-content">
                 <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($display_name); ?>!</h1>
                 <p>
-                    You are a <?php echo htmlspecialchars($major); ?> major in Year <?php echo htmlspecialchars($year); ?>.
+
                     <?php if (count($upcoming_sessions) > 0): ?>
                         You have <?php echo count($upcoming_sessions); ?> upcoming tutoring session<?php echo count($upcoming_sessions) > 1 ? 's' : ''; ?>. Keep it up!
                     <?php else: ?>
@@ -721,9 +723,8 @@ $conn->close();
                         $session_date = new DateTime($session['session_date']);
                         $today = new DateTime('today');
                         $tomorrow = new DateTime('tomorrow');
-                        $date_display = $session_date->format('Y-m-d') === $today->format('Y-m-d') ? "Today" :
-                                        ($session_date->format('Y-m-d') === $tomorrow->format('Y-m-d') ? "Tomorrow" :
-                                        $session_date->format('M d'));
+                        $date_display = $session_date->format('Y-m-d') === $today->format('Y-m-d') ? "Today" : ($session_date->format('Y-m-d') === $tomorrow->format('Y-m-d') ? "Tomorrow" :
+                            $session_date->format('M d'));
                         ?>
                         <div class="session-item">
                             <div class="session-time">
@@ -762,10 +763,8 @@ $conn->close();
                             <div class="action-title"><?php echo htmlspecialchars($tutor['username']); ?></div>
                         </div>
                         <p class="action-description"><?php echo htmlspecialchars($tutor['subjects'] ?? $tutor['subject']); ?></p>
-                        <?php if (isset($tutor['availability'])): ?>
-                            <p class="action-description">Availability: <?php echo htmlspecialchars($tutor['availability']); ?></p>
-                        <?php endif; ?>
-                        <a href="tutor_profile.php?id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
+
+                        <a href="appointments.php?id=<?php echo $tutor['user_id']; ?>" class="btn">View Profile</a>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -813,4 +812,5 @@ $conn->close();
         }
     </script>
 </body>
+
 </html>
