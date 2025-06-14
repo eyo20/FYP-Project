@@ -1,0 +1,527 @@
+[08-Jun-2025 19:21:03 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 19:21:03 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpA673.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[08-Jun-2025 19:21:03 Europe/Berlin] POST request received at 2025-06-08 19:21:03 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpA673.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[08-Jun-2025 19:21:03 Europe/Berlin] Failed to insert CGPA credential file for user_id: 16. Error: Duplicate entry '16' for key 'PRIMARY'
+[08-Jun-2025 19:21:03 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 19:21:03 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 19:21:03 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[08-Jun-2025 19:21:14 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 19:21:14 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 19:21:14 Europe/Berlin] POST request received at 2025-06-08 19:21:14 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 19:21:14 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 19:21:14 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 19:21:14 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[08-Jun-2025 19:21:19 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 19:21:19 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpE552.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[08-Jun-2025 19:21:19 Europe/Berlin] POST request received at 2025-06-08 19:21:19 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpE552.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[08-Jun-2025 19:21:19 Europe/Berlin] Failed to insert CGPA credential file for user_id: 16. Error: Duplicate entry '16' for key 'PRIMARY'
+[08-Jun-2025 19:21:19 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 19:21:19 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 19:21:19 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[08-Jun-2025 19:31:12 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 19:31:12 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpF0E0.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:31:12 Europe/Berlin] POST request received at 2025-06-08 19:31:12 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpF0E0.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:31:12 Europe/Berlin] CGPA credential file inserted for user ID: 16, file: Uploads/credentials/6845c8e0bc387_Picture1.png, file_id: 16_1749403872
+[08-Jun-2025 19:31:12 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 19:31:12 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 19:31:12 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[08-Jun-2025 19:37:36 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [action] => delete_cgpa_file
+)
+
+[08-Jun-2025 19:37:36 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpCA12.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:37:36 Europe/Berlin] POST request received at 2025-06-08 19:37:36 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [action] => delete_cgpa_file
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpCA12.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:37:36 Europe/Berlin] File successfully deleted from filesystem: Uploads/credentials/6845c8e0bc387_Picture1.png
+[08-Jun-2025 19:37:36 Europe/Berlin] Database updated: CGPA credential file record cleared for user ID: 16
+[08-Jun-2025 19:37:36 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/6845ca600f048_Picture1.png
+[08-Jun-2025 19:37:36 Europe/Berlin] Redirecting after CGPA upload for user_id: 16
+[08-Jun-2025 19:37:47 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [action] => delete_cgpa_file
+)
+
+[08-Jun-2025 19:37:47 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1726411605225.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpF828.tmp
+            [error] => 0
+            [size] => 4098
+        )
+
+)
+
+[08-Jun-2025 19:37:47 Europe/Berlin] POST request received at 2025-06-08 19:37:47 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [action] => delete_cgpa_file
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1726411605225.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpF828.tmp
+            [error] => 0
+            [size] => 4098
+        )
+
+)
+
+[08-Jun-2025 19:37:47 Europe/Berlin] File successfully deleted from filesystem: Uploads/credentials/6845ca600f048_Picture1.png
+[08-Jun-2025 19:37:47 Europe/Berlin] Database updated: CGPA credential file record cleared for user ID: 16
+[08-Jun-2025 19:37:47 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/6845ca6bcec8e_screenshot-1726411605225.png
+[08-Jun-2025 19:37:47 Europe/Berlin] Redirecting after CGPA upload for user_id: 16
+[08-Jun-2025 19:55:04 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [delete_cgpa] => 1
+)
+
+[08-Jun-2025 19:55:04 Europe/Berlin] FILES data received: Array
+(
+)
+
+[08-Jun-2025 19:55:04 Europe/Berlin] POST request received at 2025-06-08 19:55:04 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[08-Jun-2025 19:55:04 Europe/Berlin] Delete CGPA requested for user_id: 16
+[08-Jun-2025 19:55:04 Europe/Berlin] File deleted: Uploads/credentials/6845ca6bcec8e_screenshot-1726411605225.png
+[08-Jun-2025 19:55:04 Europe/Berlin] CGPA deleted for user_id: 16
+[08-Jun-2025 19:55:12 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [save_cgpa] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 19:55:12 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpE9A5.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:55:12 Europe/Berlin] POST request received at 2025-06-08 19:55:12 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [save_cgpa] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpE9A5.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[08-Jun-2025 19:55:12 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file uploaded successfully. It will be reviewed.
+[08-Jun-2025 20:02:23 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gana
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [delete_cgpa] => 1
+)
+
+[08-Jun-2025 20:02:23 Europe/Berlin] FILES data received: Array
+(
+)
+
+[08-Jun-2025 20:02:23 Europe/Berlin] POST request received at 2025-06-08 20:02:23 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gana
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[08-Jun-2025 20:02:23 Europe/Berlin] Delete CGPA requested for user_id: 16
+[08-Jun-2025 20:02:23 Europe/Berlin] File deleted: Uploads/credentials/6845ce80ad01d_Picture1.png
+[08-Jun-2025 20:02:23 Europe/Berlin] CGPA deleted for user_id: 16
+[08-Jun-2025 20:02:25 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 20:02:25 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 20:02:25 Europe/Berlin] POST request received at 2025-06-08 20:02:25 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 20:02:25 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 20:02:25 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 20:02:25 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[08-Jun-2025 20:02:26 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+
+[08-Jun-2025 20:02:26 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 20:02:26 Europe/Berlin] POST request received at 2025-06-08 20:02:26 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => 
+    [qualifications] => 1233
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[08-Jun-2025 20:02:26 Europe/Berlin] Processing profile update for user_id: 16
+[08-Jun-2025 20:02:26 Europe/Berlin] Profile updated for user_id: 16
+[08-Jun-2025 20:02:26 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16

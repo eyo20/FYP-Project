@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-06-04 01:13:00
+-- 生成日期： 2025-06-14 11:07:25
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.0.30
 
@@ -72,7 +72,8 @@ INSERT INTO `course` (`id`, `course_name`, `details`, `status`, `created_at`, `u
 (6, 'Computer Architecture', NULL, 'active', '2025-06-02 15:51:07', '2025-06-02 15:51:07'),
 (7, 'Mathematical & Statistical Techniques', NULL, 'active', '2025-06-02 15:51:07', '2025-06-02 15:51:07'),
 (8, 'Discrete Structures & Probability', NULL, 'active', '2025-06-02 15:51:07', '2025-06-02 15:51:07'),
-(9, 'Database Systems', NULL, 'active', '2025-06-02 15:51:07', '2025-06-02 15:51:07');
+(9, 'Database Systems', NULL, 'active', '2025-06-02 15:51:07', '2025-06-02 15:51:07'),
+(16, 'Ethic', NULL, 'active', '2025-06-04 06:22:43', '2025-06-04 06:22:43');
 
 -- --------------------------------------------------------
 
@@ -99,8 +100,8 @@ CREATE TABLE `credential_file` (
 --
 
 INSERT INTO `credential_file` (`file_id`, `file_name`, `file_path`, `file_type`, `upload_date`, `is_verified`, `verified_by`, `verification_date`, `status`, `rejection_reason`, `user_id`) VALUES
-(0, '1231203070_TER_LAB5.pdf', 'Uploads/credentials/683ecb2abab79_1231203070_TER_LAB5.pdf', 'application/pdf', '2025-06-03 10:15:06', 0, NULL, NULL, 'pending', NULL, 16),
-(1, '', 'uploads/credentials/682dac69a78cd_OIP.jpg', '', '2025-05-20 18:40:42', 0, NULL, NULL, 'pending', NULL, 16);
+(16, '', '', '', '2025-06-08 17:31:12', 0, NULL, NULL, 'pending', NULL, 16),
+(17, '', '', '', '2025-06-08 17:37:36', 0, NULL, NULL, 'pending', NULL, 16);
 
 -- --------------------------------------------------------
 
@@ -164,7 +165,10 @@ INSERT INTO `notification` (`notification_id`, `user_id`, `title`, `message`, `t
 (3, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 11, 0, '2025-06-03 20:20:42'),
 (4, 23, 'Request Rejected', 'Your tutoring request has been rejected.', 'session', 12, 0, '2025-06-03 22:40:01'),
 (5, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 13, 0, '2025-06-03 22:56:28'),
-(6, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 14, 0, '2025-06-03 23:11:32');
+(6, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 14, 0, '2025-06-03 23:11:32'),
+(7, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 19, 0, '2025-06-04 05:52:58'),
+(8, 23, 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', 'session', 20, 0, '2025-06-04 06:10:42'),
+(9, 23, 'Request Rejected', 'Your tutoring request has been rejected.', 'session', 21, 0, '2025-06-04 06:10:43');
 
 -- --------------------------------------------------------
 
@@ -278,7 +282,13 @@ INSERT INTO `session` (`session_id`, `tutor_id`, `student_id`, `course_id`, `loc
 (3, 16, 23, 3, 1, 'confirmed', '2025-06-03 09:00:00', '2025-06-03 11:00:00', NULL, NULL, '2025-06-03 19:25:39'),
 (4, 16, 23, 2, 2, 'confirmed', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-03 20:20:42'),
 (5, 16, 23, 2, 1, 'rejected', '2025-06-04 09:00:00', '2025-06-04 11:00:00', NULL, NULL, '2025-06-03 22:40:01'),
-(6, 16, 23, 6, 3, 'confirmed', '2025-06-05 09:00:00', '2025-06-05 11:00:00', NULL, NULL, '2025-06-03 22:56:28');
+(6, 16, 23, 6, 3, 'confirmed', '2025-06-05 09:00:00', '2025-06-05 11:00:00', NULL, NULL, '2025-06-03 22:56:28'),
+(7, 16, 23, 3, 2, '', '2025-06-04 09:00:00', '2025-06-04 11:00:00', NULL, NULL, '2025-06-04 05:31:12'),
+(8, 16, 23, 2, 3, '', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-04 05:31:57'),
+(9, 16, 23, 6, 2, '', '2025-06-05 09:00:00', '2025-06-05 11:00:00', NULL, NULL, '2025-06-04 05:40:24'),
+(10, 16, 23, 6, 1, '', '2025-06-06 09:00:00', '2025-06-06 11:00:00', NULL, NULL, '2025-06-04 05:49:27'),
+(11, 16, 23, 6, 1, '', '2025-06-05 09:00:00', '2025-06-05 11:00:00', NULL, NULL, '2025-06-04 05:52:58'),
+(12, 16, 23, 6, 2, '', '2025-06-07 09:00:00', '2025-06-07 10:00:00', NULL, NULL, '2025-06-04 06:10:42');
 
 -- --------------------------------------------------------
 
@@ -308,7 +318,14 @@ INSERT INTO `session_requests` (`request_id`, `tutor_id`, `student_id`, `course_
 (11, 16, 23, 2, 2, 2.00, '2025-06-06', '', 'confirmed', '2025-06-04 03:46:06'),
 (12, 16, 23, 2, 1, 2.00, '2025-06-04', '', 'rejected', '2025-06-04 04:21:29'),
 (13, 16, 23, 6, 3, 2.00, '2025-06-05', '', 'confirmed', '2025-06-04 06:55:50'),
-(14, 16, 23, 1, 3, 2.00, '2025-06-04', '', 'confirmed', '2025-06-04 07:11:24');
+(14, 16, 23, 1, 3, 2.00, '2025-06-04', '', 'confirmed', '2025-06-04 07:11:24'),
+(15, 16, 23, 3, 2, 2.00, '2025-06-04', '', 'confirmed', '2025-06-04 07:21:17'),
+(16, 16, 23, 2, 3, 2.00, '2025-06-06', '', 'confirmed', '2025-06-04 13:31:29'),
+(17, 16, 23, 6, 2, 2.00, '2025-06-05', '', 'confirmed', '2025-06-04 13:38:57'),
+(18, 16, 23, 6, 1, 2.00, '2025-06-06', '', 'confirmed', '2025-06-04 13:49:11'),
+(19, 16, 23, 6, 1, 2.00, '2025-06-05', '', 'confirmed', '2025-06-04 13:52:19'),
+(20, 16, 23, 6, 2, 1.50, '2025-06-07', '', 'confirmed', '2025-06-04 14:02:52'),
+(21, 16, 23, 2, 2, 2.00, '2025-06-07', '', 'rejected', '2025-06-04 14:09:08');
 
 -- --------------------------------------------------------
 
@@ -328,8 +345,8 @@ CREATE TABLE `studentprofile` (
 --
 
 INSERT INTO `studentprofile` (`user_id`, `major`, `year`, `school`) VALUES
-(12, 'Computer Science', 'Master', ''),
-(23, 'Computer Science', 'Foundation', '');
+(12, 'Computer Science', 'Master', NULL),
+(23, '', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -401,7 +418,7 @@ CREATE TABLE `tutorprofile` (
 --
 
 INSERT INTO `tutorprofile` (`user_id`, `major`, `year`, `bio`, `qualifications`, `is_verified`, `rating`, `total_sessions`) VALUES
-(16, 'Computer Science', 'Diploma first year', 'hello', '1', 0, 0.00, 0),
+(16, 'Computer Science', '', '', '1233', 0, 0.00, 0),
 (19, '1', 'Master', '1', '1', 0, 0.00, 0);
 
 -- --------------------------------------------------------
@@ -453,7 +470,6 @@ CREATE TABLE `tutorsubject` (
 --
 
 INSERT INTO `tutorsubject` (`id`, `tutor_id`, `course_id`, `hourly_rate`) VALUES
-(4, 16, 2, 30.00),
 (5, 16, 1, 20.00),
 (6, 16, 6, 30.00),
 (7, 16, 3, 50.00);
@@ -501,7 +517,7 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `role`, `first_name`, `last_name`, `phone`, `profile_image`, `is_active`, `created_at`, `last_login`) VALUES
 (12, 'david', '$2y$10$UOLIV9n8GVuRyn4fShLouu76Tg5Tb0dHnYwxJwuHZCoU3Y189TBgu', 'davidchong1121@gmail.com', 'student', 'davidd', 'chongg', '0127770231', 'uploads/profile_images/6814809581a48_xukun.png', 1, '2025-04-22 22:11:05', NULL),
 (15, 'enyong', '$2y$10$5rNBEN5/5eDAzLx4IoExNOfk365fgb.TTiBhChzjA/hDZm.4zBLG6', 'enyong123@gmail.com', 'student', 'enyong', 'ong', NULL, NULL, 1, '2025-04-22 22:21:31', NULL),
-(16, 'mingwen', '$2y$10$9BtLg9AS1waXzlUC7YArjeiRhxLax9jZFSa5pLbcv5oKgLAzlXb/i', 'mingwen123@gmail.com', 'tutor', 'mingweng', 'gan', '0123456789', 'uploads/profile_images/6809e5c4739bb_OIP.jpg 1.jpg', 1, '2025-04-23 17:15:45', NULL),
+(16, 'mingwen', '$2y$10$9BtLg9AS1waXzlUC7YArjeiRhxLax9jZFSa5pLbcv5oKgLAzlXb/i', 'mingwen123@gmail.com', 'tutor', 'mingwengg', 'gan', '0123456789', 'Uploads/profile_images/16_1749401252_OIP.png', 1, '2025-04-23 17:15:45', NULL),
 (17, 'admin', '$2y$10$ZD1r0AWEtPwMnxPDwN2kvOLrSMtdxtVf3wqOPBuY6UIqY1Toj57OW', 'admin123@gmail.com', 'admin', '', '', NULL, NULL, 1, '2025-04-24 06:46:09', NULL),
 (18, 'new', '$2y$10$GHqTNyYHQk5mZ.010TO6QO9QTcxSoW8XIYoB8Ayq2urX1OExGzUC.', 'davidchong11@gmail.com', 'student', 'david', 'chong', 'abcd', NULL, 1, '2025-04-24 08:35:12', NULL),
 (19, 'jieixnbeauty', '$2y$10$r7iJmcKR/MKf7Uq8eZIVtumFi0VnpTfnpxIX/krA22686RQuBpoYC', 'jiexin123@gmail.com', 'tutor', 'jiexin', 'chong', '1', 'uploads/profile_images/680bc925a94d7_screenshot-1717507504216.png', 1, '2025-04-25 17:32:35', NULL),
@@ -664,7 +680,13 @@ ALTER TABLE `admin`
 -- 使用表AUTO_INCREMENT `course`
 --
 ALTER TABLE `course`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- 使用表AUTO_INCREMENT `credential_file`
+--
+ALTER TABLE `credential_file`
+  MODIFY `file_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- 使用表AUTO_INCREMENT `location`
@@ -682,7 +704,7 @@ ALTER TABLE `message`
 -- 使用表AUTO_INCREMENT `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- 使用表AUTO_INCREMENT `password_reset`
@@ -706,13 +728,13 @@ ALTER TABLE `review`
 -- 使用表AUTO_INCREMENT `session`
 --
 ALTER TABLE `session`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- 使用表AUTO_INCREMENT `session_requests`
 --
 ALTER TABLE `session_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- 使用表AUTO_INCREMENT `students`
@@ -796,25 +818,3 @@ ALTER TABLE `session_requests`
   ADD CONSTRAINT `session_requests_ibfk_4` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`) ON DELETE CASCADE;
 
 --
--- 限制表 `studentprofile`
---
-ALTER TABLE `studentprofile`
-  ADD CONSTRAINT `fk_student_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
-
---
--- 限制表 `tutorprofile`
---
-ALTER TABLE `tutorprofile`
-  ADD CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
-
---
--- 限制表 `tutorsubject`
---
-ALTER TABLE `tutorsubject`
-  ADD CONSTRAINT `fk_tutor_subject_course` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_tutor_subject_tutor` FOREIGN KEY (`tutor_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

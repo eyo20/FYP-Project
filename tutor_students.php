@@ -11,16 +11,19 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // 获取用户信息
-$user_query = "SELECT username, email, role, first_name, last_name, phone, profile_image, created_at FROM user WHERE user_id = ?";
-$stmt = $conn->prepare($user_query);
+$stmt = $conn->prepare("SELECT username, email, role, first_name, last_name, phone, profile_image, created_at FROM user WHERE user_id = ?");
+if (!$stmt) {
+    error_log("Error preparing user query: " . $conn->error);
+    die("Error preparing user query: " . $conn->error);
+}
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$user_result = $stmt->get_result();
-$user_data = $user_result->fetch_assoc();
+$result = $stmt->get_result();
+$user_data = $result->fetch_assoc();
 
 // 检查用户是否为导师
 if (!$user_data || $user_data['role'] != 'tutor') {
-    header("Location: login.php");
+    header("Location: error.php?error_message=Access denied. You must be a tutor to view this page.");
     exit();
 }
 
@@ -34,49 +37,54 @@ $created_at = $user_data['created_at'];
 $stmt->close();
 
 // 获取未读消息数量
-$unread_messages_query = "SELECT COUNT(*) as unread_count FROM message WHERE receiver_id = ? AND is_read = 0";
-$stmt = $conn->prepare($unread_messages_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$messages_result = $stmt->get_result();
-$messages_data = $messages_result->fetch_assoc();
-$unread_messages = $messages_data['unread_count'];
-$stmt->close();
+$unread_messages = 0;
+$stmt = $conn->prepare("SELECT COUNT(*) as count FROM message WHERE receiver_id = ? AND is_read = 0");
+if ($stmt) {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $unread_messages = $result->fetch_assoc()['count'];
+    $stmt->close();
+}
 
 // 获取待处理的预约请求数量
-$pending_requests_query = "SELECT COUNT(*) as pending_count 
-                          FROM session_requests 
-                          WHERE tutor_id = ? AND status = 'pending'";
-$stmt = $conn->prepare($pending_requests_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$pending_result = $stmt->get_result();
-$pending_data = $pending_result->fetch_assoc();
-$pending_requests = $pending_data['pending_count'];
-$stmt->close();
-
-// 获取当前预约的学生列表（状态为scheduled）
-$current_sessions_query = "SELECT s.session_id, s.start_datetime, s.end_datetime, s.status,
-                          u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
-                          c.course_name, l.location_name
-                          FROM session s
-                          JOIN user u ON s.student_id = u.user_id
-                          JOIN course c ON s.course_id = c.id
-                          LEFT JOIN location l ON s.location_id = l.location_id
-                          WHERE s.tutor_id = ? AND s.status = 'comfirmed'
-                          ORDER BY s.start_datetime ASC";
-$stmt = $conn->prepare($current_sessions_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$current_sessions_result = $stmt->get_result();
-$current_sessions = [];
-while ($row = $current_sessions_result->fetch_assoc()) {
-    $current_sessions[] = $row;
+$pending_requests = 0;
+$stmt = $conn->prepare("SELECT COUNT(*) as pending_count FROM session_requests WHERE tutor_id = ? AND status = 'pending'");
+if ($stmt) {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $pending_requests = $result->fetch_assoc()['pending_count'];
+    $stmt->close();
 }
-$stmt->close();
 
-// 获取历史预约的学生列表（状态为completed或cancelled）
-$past_sessions_query = "SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
+// 获取当前预约的学生列表（状态为 confirmed）
+$current_sessions = [];
+$stmt = $conn->prepare("SELECT s.session_id, s.start_datetime, s.end_datetime, s.status,
+                        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
+                        c.course_name, l.location_name
+                        FROM session s
+                        JOIN user u ON s.student_id = u.user_id
+                        JOIN course c ON s.course_id = c.id
+                        LEFT JOIN location l ON s.location_id = l.location_id
+                        WHERE s.tutor_id = ? AND s.status = 'confirmed'
+                        ORDER BY s.start_datetime ASC");
+if (!$stmt) {
+    error_log("Error preparing current sessions query: " . $conn->error);
+    $error_message = "Error preparing current sessions query: " . $conn->error;
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $current_sessions[] = $row;
+    }
+    $stmt->close();
+}
+
+// 获取历史预约的学生列表（状态为 completed 或 cancelled）
+$past_sessions = [];
+$stmt = $conn->prepare("SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
                         u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
                         c.course_name, l.location_name,
                         r.rating, r.comment
@@ -86,19 +94,23 @@ $past_sessions_query = "SELECT s.session_id, s.start_datetime, s.end_datetime, s
                         LEFT JOIN location l ON s.location_id = l.location_id
                         LEFT JOIN review r ON s.session_id = r.session_id AND r.tutor_id = s.tutor_id
                         WHERE s.tutor_id = ? AND (s.status = 'completed' OR s.status = 'cancelled')
-                        ORDER BY s.start_datetime DESC";
-$stmt = $conn->prepare($past_sessions_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$past_sessions_result = $stmt->get_result();
-$past_sessions = [];
-while ($row = $past_sessions_result->fetch_assoc()) {
-    $past_sessions[] = $row;
+                        ORDER BY s.start_datetime DESC");
+if (!$stmt) {
+    error_log("Error preparing past sessions query: " . $conn->error);
+    $error_message = "Error preparing past sessions query: " . $conn->error;
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $past_sessions[] = $row;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 // 获取所有学生的统计信息
-$student_stats_query = "SELECT 
+$student_stats = [];
+$stmt = $conn->prepare("SELECT 
                         s.student_id,
                         u.first_name,
                         u.last_name,
@@ -111,634 +123,450 @@ $student_stats_query = "SELECT
                         JOIN user u ON s.student_id = u.user_id
                         WHERE s.tutor_id = ?
                         GROUP BY s.student_id
-                        ORDER BY total_sessions DESC";
-$stmt = $conn->prepare($student_stats_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$student_stats_result = $stmt->get_result();
-$student_stats = [];
-while ($row = $student_stats_result->fetch_assoc()) {
-    $student_stats[$row['student_id']] = $row;
+                        ORDER BY total_sessions DESC");
+if (!$stmt) {
+    error_log("Error preparing student stats query: " . $conn->error);
+    $error_message = "Error preparing student stats query: " . $conn->error;
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $student_stats[$row['student_id']] = $row;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 // 获取学生详细信息
-$student_details_query = "SELECT 
-                          u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, u.created_at,
-                          sp.major, sp.year, sp.school
-                          FROM user u
-                          LEFT JOIN studentprofile sp ON u.user_id = sp.user_id
-                          WHERE u.user_id IN (
-                              SELECT DISTINCT student_id FROM session WHERE tutor_id = ?
-                          )";
-$stmt = $conn->prepare($student_details_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$student_details_result = $stmt->get_result();
 $student_details = [];
-while ($row = $student_details_result->fetch_assoc()) {
-    $student_details[$row['user_id']] = $row;
+$stmt = $conn->prepare("SELECT 
+                        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, u.created_at,
+                        sp.major, sp.year, sp.school
+                        FROM user u
+                        LEFT JOIN studentprofile sp ON u.user_id = sp.user_id
+                        WHERE u.user_id IN (
+                            SELECT DISTINCT student_id FROM session WHERE tutor_id = ?
+                        )");
+if (!$stmt) {
+    error_log("Error preparing student details query: " . $conn->error);
+    $error_message = "Error preparing student details query: " . $conn->error;
+} else {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $student_details[$row['user_id']] = $row;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 $conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Students - Peer Tutoring Platform</title>
-    <style>
-        :root {
-            --primary: #2B3990;
-            --secondary: #00AEEF;
-            --accent: #C4D600;
-            --light-gray: #f5f7fa;
-            --gray: #e9ecef;
-            --dark-gray: #6c757d;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--light-gray);
-            color: #333;
-        }
-
-        .navbar {
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-            font-weight: bold;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-links a.active {
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .notification-badge {
-            background-color: var(--accent);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            position: absolute;
-            top: -5px;
-            right: -5px;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            background-color: var(--secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .page-title {
-            margin-bottom: 2rem;
-            color: var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--gray);
-        }
-
-        .tab {
-            padding: 1rem 2rem;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            border-bottom-color: var(--accent);
-            color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .student-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .student-card {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-
-        .student-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .student-header {
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border-bottom: 1px solid var(--gray);
-        }
-
-        .student-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            overflow: hidden;
-        }
-
-        .student-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .student-info h3 {
-            margin-bottom: 0.25rem;
-            color: var(--primary);
-        }
-
-        .student-info p {
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-        }
-
-        .student-stats {
-            padding: 1.5rem;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--dark-gray);
-        }
-
-        .session-list {
-            margin-top: 2rem;
-        }
-
-        .session-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .session-student {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .session-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            overflow: hidden;
-        }
-
-        .session-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .session-details {
-            flex: 2;
-            min-width: 300px;
-        }
-
-        .session-time {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .session-time i {
-            color: var(--dark-gray);
-        }
-
-        .session-course {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .session-course i {
-            color: var(--dark-gray);
-        }
-
-        .session-location {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .session-location i {
-            color: var(--dark-gray);
-        }
-
-        .session-actions {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #232e73;
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #0095cc;
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-scheduled {
-            background-color: #e3f2fd;
-            color: #0d47a1;
-        }
-
-        .status-completed {
-            background-color: #e8f5e9;
-            color: #1b5e20;
-        }
-
-        .status-cancelled {
-            background-color: #ffebee;
-            color: #b71c1c;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .empty-state h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .empty-state p {
-            color: var(--dark-gray);
-            margin-bottom: 1.5rem;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 2rem;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--dark-gray);
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--gray);
-        }
-
-        .student-profile {
-            display: flex;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .profile-image {
-            width: 150px;
-            height: 150px;
-            border-radius: 8px;
-            overflow: hidden;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3rem;
-            font-weight: bold;
-        }
-
-        .profile-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-details {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .profile-details h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .detail-item {
-            display: flex;
-            margin-bottom: 0.75rem;
-        }
-
-        .detail-label {
-            width: 120px;
-            font-weight: 600;
-            color: var(--dark-gray);
-        }
-
-        .detail-value {
-            flex: 1;
-        }
-
-        .session-history {
-            margin-top: 2rem;
-        }
-
-        .session-history h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .history-table th,
-        .history-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--gray);
-        }
-
-        .history-table th {
-            background-color: var(--light-gray);
-            font-weight: 600;
-            color: var(--dark-gray);
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
-            gap: 0.5rem;
-        }
-
-        .page-item {
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .page-item:hover {
-            background-color: var(--gray);
-        }
-
-        .page-item.active {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem;
-            }
-
-            .logo {
-                font-size: 1.2rem;
-            }
-
-            .nav-links {
-                gap: 10px;
-            }
-
-            .student-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .session-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .session-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-
-            .modal-content {
-                width: 95%;
-                margin: 5% auto;
-                padding: 1.5rem;
-            }
-
-            .profile-image {
-                width: 100px;
-                height: 100px;
-                font-size: 2rem;
-            }
-        }
-    </style>
+    <title>My Students - PeerLearn</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+    <style>
+    :root {
+        --primary: #2B3990;
+        --secondary: #00AEEF;
+        --accent: #C4D600;
+        --gray: #e0e0e0;
+        --light-gray: #f5f5f5;
+        --dark-gray: #777;
+    }
 
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        background-color: var(--light-gray);
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--primary);
+        color: white;
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .nav-links a:hover {
+        color: var(--accent);
+    }
+
+    .nav-links a.active {
+        color: var(--accent);
+    }
+
+    main {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 0 3rem;
+    }
+
+    .page-title {
+        margin-bottom: 2rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-success {
+        background-color: rgba(196, 214, 0, 0.1);
+        border-left: 4px solid var(--accent);
+        color: #5a6400;
+    }
+
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+        color: #dc3545;
+    }
+
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--gray);
+        margin-bottom: 2.5rem;
+    }
+
+    .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        color: var(--dark-gray);
+    }
+
+    .tab.active {
+        border-bottom-color: var(--accent);
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .tab:hover {
+        background-color: rgba(0, 174, 239, 0.05);
+        color: var(--primary);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .session-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        padding: 2.5rem 0;
+    }
+
+    .request-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 350px;
+    }
+
+    .request-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-shrink: 0;
+    }
+
+    .student-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+    }
+
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .request-info {
+        flex: 1;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .request-subject {
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .request-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        background-color: rgba(0, 174, 239, 0.03);
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 3px solid var(--secondary);
+        overflow: hidden;
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .detail-label {
+        width: 100px;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .detail-value {
+        flex: 1;
+        font-weight: 500;
+        color: var(--primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        line-height: 1.2;
+        max-width: 200px;
+    }
+
+    .request-actions {
+        margin-top: auto;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        min-width: 120px;
+        justify-content: center;
+        transition: background-color 0.3s;
+        background-color: var(--accent); /* 确保按钮有颜色 */
+        color: white;
+    }
+
+    .btn-profile {
+        background-color: var(--accent);
+    }
+
+    .btn-profile:hover {
+        background-color: #b1c100;
+    }
+
+    .btn-message {
+        background-color: var(--secondary);
+    }
+
+    .btn-message:hover {
+        background-color: #0099cc;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: auto;
+        background-color: rgba(196, 214, 0, 0.1);
+        color: var(--accent);
+    }
+
+    .status-confirmed {
+        background-color: rgba(196, 214, 0, 0.1);
+        color: var(--accent);
+    }
+
+    .status-completed {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+
+    .status-cancelled {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-text {
+        color: var(--dark-gray);
+        margin-bottom: 1.5rem;
+    }
+
+    /* 模态框样式 */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 1rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        max-height: 80vh;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--dark-gray);
+    }
+
+    .modal-body {
+        padding: 2rem 1rem 1rem;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: var(--secondary);
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+    }
+
+    .profile-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-major-year {
+        color: var(--dark-gray);
+        margin-bottom: 1rem;
+    }
+
+    .profile-detail {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: var(--dark-gray);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-detail i {
+        color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+        main { padding: 0 1.5rem; }
+        .session-list { grid-template-columns: 1fr; }
+        .request-actions { flex-direction: column; }
+        .btn { width: 100%; justify-content: center; }
+        .modal-content { margin: 10% auto; }
+    }
+</style></head>
 <body>
     <?php include 'header/tut_head.php'; ?>
 
     <main>
-        <div class="page-title">
-            <h1>My Students</h1>
-        </div>
+        <h1 class="page-title">My Students</h1>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
+        <?php endif; ?>
+        <?php if (isset($_GET['error'])): ?>
+            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['error']); ?></div>
+        <?php endif; ?>
 
         <div class="tabs">
             <div class="tab active" data-tab="current-sessions">Current Sessions</div>
@@ -751,52 +579,58 @@ $conn->close();
             <?php if (count($current_sessions) > 0): ?>
                 <div class="session-list">
                     <?php foreach ($current_sessions as $session): ?>
-                        <div class="session-card">
-                            <div class="session-student">
-                                <div class="session-avatar">
+                        <div class="request-card">
+                            <div class="request-header">
+                                <div class="student-avatar">
                                     <?php if ($session['profile_image']): ?>
-                                        <img src="<?php echo $session['profile_image']; ?>" alt="Student Image">
+                                        <img src="<?php echo htmlspecialchars($session['profile_image']); ?>" alt="Student" class="profile-image">
                                     <?php else: ?>
-                                        <?php echo strtoupper(substr($session['first_name'], 0, 1) . substr($session['last_name'], 0, 1)); ?>
+                                        <?php echo htmlspecialchars(substr($session['first_name'] ?? '', 0, 1) . substr($session['last_name'] ?? '', 0, 1)); ?>
                                     <?php endif; ?>
                                 </div>
-                                <div>
-                                    <h3><?php echo $session['first_name'] . ' ' . $session['last_name']; ?></h3>
-                                    <p><?php echo $session['email']; ?></p>
+                                <div class="request-info">
+                                    <div class="student-name"><?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?></div>
+                                    <div class="request-subject"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
+                                </div>
+                                <span class="status-badge status-confirmed">Confirmed</span>
+                            </div>
+                            <div class="request-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Course:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Date:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($session['start_datetime']) 
+                                            ? date('M d, Y', strtotime($session['start_datetime'])) 
+                                            : 'Not specified'; ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Location:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($session['location_name'] ?? 'Not specified'); ?></div>
                                 </div>
                             </div>
-                            <div class="session-details">
-                                <div class="session-time">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span>
-                                        <?php
-                                        $start = new DateTime($session['start_datetime']);
-                                        $end = new DateTime($session['end_datetime']);
-                                        echo $start->format('M j, Y') . ' | ' . $start->format('g:i A') . ' - ' . $end->format('g:i A');
-                                        ?>
-                                    </span>
-                                </div>
-                                <div class="session-course">
-                                    <i class="fas fa-book"></i>
-                                    <span><?php echo $session['course_code'] . ' - ' . $session['course_name']; ?></span>
-                                </div>
-                                <div class="session-location">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span><?php echo $session['location_name'] ?: 'Not specified'; ?></span>
-                                </div>
-                            </div>
-                            <div class="session-actions">
-                                <button class="btn btn-primary view-student" data-id="<?php echo $session['user_id']; ?>">View Profile</button>
-                                <a href="tutor_messages.php?student_id=<?php echo $session['user_id']; ?>" class="btn btn-outline">Message</a>
+                            <div class="request-actions">
+                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" 
+                                        data-name="<?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?>"
+                                        data-major="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['major']) ? $student_details[$session['user_id']]['major'] : 'Not specified'); ?>"
+                                        data-year="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['year']) ? $student_details[$session['user_id']]['year'] : 'Not specified'); ?>"
+                                        data-email="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['email']) ? $student_details[$session['user_id']]['email'] : 'Not specified'); ?>"
+                                        data-phone="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['phone']) ? $student_details[$session['user_id']]['phone'] : 'Not specified'); ?>">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </button>
+                                <a href="messages.php?student_id=<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-calendar-alt"></i></div>
                     <h3>No Current Sessions</h3>
-                    <p>You don't have any upcoming sessions with students.</p>
-                    <a href="tutor_availability.php" class="btn btn-primary">Set Your Availability</a>
+                    <p class="empty-text">You currently have no sessions with students.</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -806,68 +640,76 @@ $conn->close();
             <?php if (count($past_sessions) > 0): ?>
                 <div class="session-list">
                     <?php foreach ($past_sessions as $session): ?>
-                        <div class="session-card">
-                            <div class="session-student">
-                                <div class="session-avatar">
+                        <div class="request-card">
+                            <div class="request-header">
+                                <div class="student-avatar">
                                     <?php if ($session['profile_image']): ?>
-                                        <img src="<?php echo $session['profile_image']; ?>" alt="Student Image">
+                                        <img src="<?php echo htmlspecialchars($session['profile_image']); ?>" alt="Student" class="profile-image">
                                     <?php else: ?>
-                                        <?php echo strtoupper(substr($session['first_name'], 0, 1) . substr($session['last_name'], 0, 1)); ?>
+                                        <?php echo htmlspecialchars(substr($session['first_name'] ?? '', 0, 1) . substr($session['last_name'] ?? '', 0, 1)); ?>
                                     <?php endif; ?>
                                 </div>
-                                <div>
-                                    <h3><?php echo $session['first_name'] . ' ' . $session['last_name']; ?></h3>
-                                    <p><?php echo $session['email']; ?></p>
+                                <div class="request-info">
+                                    <div class="student-name"><?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?></div>
+                                    <div class="request-subject"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
                                 </div>
+                                <span class="status-badge <?php echo $session['status'] == 'cancelled' ? 'status-cancelled' : 'status-completed'; ?>">
+                                    <?php echo ucfirst($session['status'] ?? 'Unknown'); ?>
+                                </span>
                             </div>
-                            <div class="session-details">
-                                <div class="session-time">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span>
-                                        <?php
-                                        $start = new DateTime($session['start_datetime']);
-                                        $end = new DateTime($session['end_datetime']);
-                                        echo $start->format('M j, Y') . ' | ' . $start->format('g:i A') . ' - ' . $end->format('g:i A');
-                                        ?>
-                                    </span>
+                            <div class="request-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Course:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
                                 </div>
-                                <div class="session-course">
-                                    <i class="fas fa-book"></i>
-                                    <span><?php echo $session['course_code'] . ' - ' . $session['course_name']; ?></span>
+                                <div class="detail-item">
+                                    <div class="detail-label">Date:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($session['start_datetime']) 
+                                            ? date('M d, Y', strtotime($session['start_datetime'])) 
+                                            : 'Not specified'; ?>
+                                    </div>
                                 </div>
-                                <div class="session-location">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span><?php echo $session['location_name'] ?: 'Not specified'; ?></span>
+                                <div class="detail-item">
+                                    <div class="detail-label">Location:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($session['location_name'] ?? 'Not specified'); ?></div>
                                 </div>
-                                <div class="mt-2">
-                                    <span class="status-badge status-<?php echo strtolower($session['status']); ?>">
-                                        <?php echo $session['status']; ?>
-                                    </span>
-                                    <?php if ($session['status'] == 'cancelled' && $session['cancellation_reason']): ?>
-                                        <span class="ml-2 text-muted">Reason: <?php echo $session['cancellation_reason']; ?></span>
-                                    <?php endif; ?>
-                                </div>
+                                <?php if ($session['status'] == 'cancelled' && $session['cancellation_reason']): ?>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Reason:</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars($session['cancellation_reason'] ?? 'Not specified'); ?></div>
+                                    </div>
+                                <?php endif; ?>
                                 <?php if ($session['rating']): ?>
-                                    <div class="mt-2">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <span>Rating: <?php echo $session['rating']; ?>/5</span>
-                                        <?php if ($session['comment']): ?>
-                                            <p class="text-muted mt-1">"<?php echo $session['comment']; ?>"</p>
-                                        <?php endif; ?>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Rating:</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars($session['rating']); ?>/5
+                                            <?php if ($session['comment']): ?>
+                                                <span class="text-muted">"<?php echo htmlspecialchars($session['comment']); ?>"</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="session-actions">
-                                <button class="btn btn-primary view-student" data-id="<?php echo $session['user_id']; ?>">View Profile</button>
-                                <a href="tutor_messages.php?student_id=<?php echo $session['user_id']; ?>" class="btn btn-outline">Message</a>
+                            <div class="request-actions">
+                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" 
+                                        data-name="<?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?>"
+                                        data-major="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['major']) ? $student_details[$session['user_id']]['major'] : 'Not specified'); ?>"
+                                        data-year="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['year']) ? $student_details[$session['user_id']]['year'] : 'Not specified'); ?>"
+                                        data-email="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['email']) ? $student_details[$session['user_id']]['email'] : 'Not specified'); ?>"
+                                        data-phone="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['phone']) ? $student_details[$session['user_id']]['phone'] : 'Not specified'); ?>">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </button>
+                                <a href="messages.php?student_id=<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-history"></i></div>
                     <h3>No Past Sessions</h3>
-                    <p>You haven't completed any sessions with students yet.</p>
+                    <p class="empty-text">You haven't completed any sessions yet.</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -875,268 +717,140 @@ $conn->close();
         <!-- All Students Tab -->
         <div class="tab-content" id="all-students">
             <?php if (count($student_stats) > 0): ?>
-                <div class="student-grid">
+                <div class="session-list">
                     <?php foreach ($student_stats as $student_id => $student): ?>
-                        <div class="student-card view-student" data-id="<?php echo $student_id; ?>">
-                            <div class="student-header">
+                        <div class="request-card view-student" data-id="<?php echo htmlspecialchars($student_id); ?>">
+                            <div class="request-header">
                                 <div class="student-avatar">
-                                    <?php if ($student['profile_image']): ?>
-                                        <img src="<?php echo $student['profile_image']; ?>" alt="Student Image">
+                                    <?php if (isset($student_details[$student_id]['profile_image'])): ?>
+                                        <img src="<?php echo htmlspecialchars($student_details[$student_id]['profile_image']); ?>" alt="Student" class="profile-image">
                                     <?php else: ?>
-                                        <?php echo strtoupper(substr($student['first_name'], 0, 1) . substr($student['last_name'], 0, 1)); ?>
+                                        <?php echo htmlspecialchars(substr($student['first_name'] ?? '', 0, 1) . substr($student['last_name'] ?? '', 0, 1)); ?>
                                     <?php endif; ?>
                                 </div>
-                                <div class="student-info">
-                                    <h3><?php echo $student['first_name'] . ' ' . $student['last_name']; ?></h3>
-                                    <p>
+                                <div class="request-info">
+                                    <div class="student-name"><?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?></div>
+                                    <div class="request-subject">
                                         <?php
-                                        if (isset($student_details[$student_id]) && $student_details[$student_id]['major']) {
-                                            echo $student_details[$student_id]['major'];
-                                            if ($student_details[$student_id]['year']) {
-                                                echo ' - ' . $student_details[$student_id]['year'];
+                                        if (isset($student_details[$student_id]) && !empty($student_details[$student_id]['major'])) {
+                                            echo htmlspecialchars($student_details[$student_id]['major']);
+                                            if (!empty($student_details[$student_id]['year'])) {
+                                                echo ' - ' . htmlspecialchars($student_details[$student_id]['year']);
                                             }
                                         } else {
                                             echo 'Student';
                                         }
                                         ?>
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="student-stats">
-                                <div class="stat-item">
-                                    <div class="stat-value"><?php echo $student['total_sessions']; ?></div>
-                                    <div class="stat-label">Total Sessions</div>
+                            <div class="request-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Total Sessions:</div>
+                                    <div class="detail-value"><?php echo $student['total_sessions']; ?></div>
                                 </div>
-                                <div class="stat-item">
-                                    <div class="stat-value"><?php echo $student['completed_sessions']; ?></div>
-                                    <div class="stat-label">Completed</div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Completed:</div>
+                                    <div class="detail-value"><?php echo $student['completed_sessions']; ?></div>
                                 </div>
-                                <div class="stat-item">
-                                    <div class="stat-value"><?php echo $student['cancelled_sessions']; ?></div>
-                                    <div class="stat-label">Cancelled</div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Cancelled:</div>
+                                    <div class="detail-value"><?php echo $student['cancelled_sessions']; ?></div>
                                 </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">
+                                <div class="detail-item">
+                                    <div class="detail-label">Last Session:</div>
+                                    <div class="detail-value">
                                         <?php
                                         if ($student['last_session_date']) {
-                                            $last_date = new DateTime($student['last_session_date']);
-                                            echo $last_date->format('M j');
+                                            echo date('M d', strtotime($student['last_session_date']));
                                         } else {
                                             echo '-';
                                         }
                                         ?>
                                     </div>
-                                    <div class="stat-label">Last Session</div>
                                 </div>
+                            </div>
+                            <div class="request-actions">
+                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($student_id); ?>" 
+                                        data-name="<?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?>"
+                                        data-major="<?php echo htmlspecialchars($student_details[$student_id]['major'] ?? 'Not specified'); ?>"
+                                        data-year="<?php echo htmlspecialchars($student_details[$student_id]['year'] ?? 'Not specified'); ?>"
+                                        data-email="<?php echo htmlspecialchars($student_details[$student_id]['email'] ?? 'Not specified'); ?>"
+                                        data-phone="<?php echo htmlspecialchars($student_details[$student_id]['phone'] ?? 'Not specified'); ?>">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </button>
+                                <a href="messages.php?student_id=<?php echo htmlspecialchars($student_id); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
-                    <h3>No Students Yet</h3>
-                    <p>You haven't had any sessions with students yet.</p>
-                    <a href="tutor_availability.php" class="btn btn-primary">Set Your Availability</a>
+                    <div class="empty-icon"><i class="fas fa-users"></i></div>
+                    <h3>No Students</h3>
+                    <p class="empty-text">You haven't had any sessions with students yet.</p>
+                    <a href="tutor_availability.php" class="btn btn-success">Set Your Availability</a>
                 </div>
             <?php endif; ?>
         </div>
-    </main>
 
-    <!-- Student Details Modal -->
-    <div class="modal" id="student-modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <div class="modal-header">
-                <h2>Student Profile</h2>
-            </div>
-            <div class="student-profile">
-                <div class="profile-image" id="modal-profile-image">
-                    <!-- Profile image will be inserted here -->
+        <!-- 模态框用于显示学生资料 -->
+        <div id="profile-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">×</span>
+                <div class="modal-body">
+                    <div class="profile-avatar"></div>
+                    <div class="profile-name" id="modal-name"></div>
+                    <div class="profile-major-year" id="modal-major-year"></div>
+                    <div class="profile-detail"><i class="fas fa-envelope"></i> <span id="modal-email"></span></div>
+                    <div class="profile-detail"><i class="fas fa-phone"></i> <span id="modal-phone"></span></div>
                 </div>
-                <div class="profile-details">
-                    <h3 id="modal-student-name"><!-- Student name will be inserted here --></h3>
-                    <div class="detail-item">
-                        <div class="detail-label">Email:</div>
-                        <div class="detail-value" id="modal-student-email"><!-- Email will be inserted here --></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Phone:</div>
-                        <div class="detail-value" id="modal-student-phone"><!-- Phone will be inserted here --></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Major:</div>
-                        <div class="detail-value" id="modal-student-major"><!-- Major will be inserted here --></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Year:</div>
-                        <div class="detail-value" id="modal-student-year"><!-- Year will be inserted here --></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">School:</div>
-                        <div class="detail-value" id="modal-student-school"><!-- School will be inserted here --></div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Member Since:</div>
-                        <div class="detail-value" id="modal-student-joined"><!-- Join date will be inserted here --></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="session-history">
-                <h3>Session History</h3>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Course</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-session-history">
-                        <!-- Session history will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="modal-footer mt-4">
-                <a href="#" id="message-student-link" class="btn btn-primary">Send Message</a>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        // Tab switching functionality
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
-
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-
-                // Remove active class from all tabs and contents
                 tabs.forEach(t => t.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
-
-                // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
+                document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
             });
         });
 
-        // Student modal functionality
-        const modal = document.getElementById('student-modal');
+        // 模态框逻辑
+        const modal = document.getElementById('profile-modal');
         const closeModal = document.querySelector('.close-modal');
-        const viewStudentButtons = document.querySelectorAll('.view-student');
 
-        // Student details data
-        const studentDetails = <?php echo json_encode($student_details); ?>;
+        document.querySelectorAll('.view-student').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-name');
+                const major = e.target.getAttribute('data-major');
+                const year = e.target.getAttribute('data-year');
+                const email = e.target.getAttribute('data-email');
+                const phone = e.target.getAttribute('data-phone');
 
-        // Current sessions data
-        const currentSessions = <?php echo json_encode($current_sessions); ?>;
+                document.getElementById('modal-name').textContent = name || 'Not specified';
+                document.getElementById('modal-major-year').textContent = `${major} ${year !== 'Not specified' ? year : ''}`.trim() || 'Not specified';
+                document.getElementById('modal-email').textContent = email || 'Not specified';
+                document.getElementById('modal-phone').textContent = phone || 'Not specified';
 
-        // Past sessions data
-        const pastSessions = <?php echo json_encode($past_sessions); ?>;
+                modal.style.display = 'block';
+            });
+        });
 
-        // Close modal when clicking the X
         closeModal.addEventListener('click', () => {
             modal.style.display = 'none';
         });
 
-        // Close modal when clicking outside the modal content
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
                 modal.style.display = 'none';
-            }
-        });
-
-        // Open modal with student details when clicking view button
-        viewStudentButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const studentId = button.getAttribute('data-id');
-                const student = studentDetails[studentId];
-
-                if (student) {
-                    // Set student details in modal
-                    document.getElementById('modal-student-name').textContent = student.first_name + ' ' + student.last_name;
-                    document.getElementById('modal-student-email').textContent = student.email;
-                    document.getElementById('modal-student-phone').textContent = student.phone || 'Not provided';
-                    document.getElementById('modal-student-major').textContent = student.major || 'Not specified';
-                    document.getElementById('modal-student-year').textContent = student.year || 'Not specified';
-                    document.getElementById('modal-student-school').textContent = student.school || 'Not specified';
-
-                    // Format join date
-                    const joinDate = new Date(student.created_at);
-                    document.getElementById('modal-student-joined').textContent = joinDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-
-                    // Set profile image
-                    const profileImageContainer = document.getElementById('modal-profile-image');
-                    if (student.profile_image) {
-                        profileImageContainer.innerHTML = `<img src="${student.profile_image}" alt="Profile Image">`;
-                    } else {
-                        const initials = student.first_name.charAt(0).toUpperCase() + student.last_name.charAt(0).toUpperCase();
-                        profileImageContainer.innerHTML = initials;
-                    }
-
-                    // Set message link
-                    document.getElementById('message-student-link').href = `tutor_messages.php?student_id=${studentId}`;
-
-                    // Populate session history
-                    const sessionHistoryContainer = document.getElementById('modal-session-history');
-                    sessionHistoryContainer.innerHTML = '';
-
-                    // Combine current and past sessions for this student
-                    const allSessions = [...currentSessions, ...pastSessions].filter(session => session.user_id == studentId);
-
-                    if (allSessions.length > 0) {
-                        allSessions.forEach(session => {
-                            const startDate = new Date(session.start_datetime);
-                            const endDate = new Date(session.end_datetime);
-
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                    <td>${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                                    <td>${startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</td>
-                                    <td>${session.course_code} - ${session.course_name}</td>
-                                    <td>${session.location_name || 'Not specified'}</td>
-                                    <td><span class="status-badge status-${session.status.toLowerCase()}">${session.status}</span></td>
-                                `;
-                            sessionHistoryContainer.appendChild(row);
-                        });
-                    } else {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                                <td colspan="5" class="text-center">No session history available</td>
-                            `;
-                        sessionHistoryContainer.appendChild(row);
-                    }
-
-                    // Show modal
-                    modal.style.display = 'block';
-                }
-            });
-        });
-
-        // User menu dropdown toggle
-        const userAvatar = document.querySelector('.user-avatar');
-        const dropdown = document.querySelector('.dropdown');
-
-        userAvatar.addEventListener('click', () => {
-            dropdown.classList.toggle('active');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!event.target.closest('.user-menu')) {
-                dropdown.classList.remove('active');
             }
         });
     </script>
 </body>
-
 </html>

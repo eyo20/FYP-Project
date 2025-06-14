@@ -14,6 +14,7 @@ $user_id = $_SESSION['user_id'];
 // 检查用户是否是导师
 $stmt = $conn->prepare("SELECT role FROM user WHERE user_id = ?");
 if (!$stmt) {
+    error_log("Error preparing user query: " . $conn->error);
     die("Error preparing user query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -27,6 +28,7 @@ if ($result->num_rows === 0 || $result->fetch_assoc()['role'] !== 'tutor') {
 // 获取用户基本信息
 $stmt = $conn->prepare("SELECT first_name, last_name, profile_image FROM user WHERE user_id = ?");
 if (!$stmt) {
+    error_log("Error preparing user info query: " . $conn->error);
     die("Error preparing user info query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -52,12 +54,12 @@ if (isset($_GET['error'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['request_id'])) {
     $action = $_POST['action'];
     $request_id = (int)$_POST['request_id'];
-   }
 
     // 验证请求
     $stmt = $conn->prepare("SELECT student_id, course_id FROM session_requests WHERE request_id = ? AND tutor_id = ?");
     if (!$stmt) {
         $error_message = "Error preparing request validation: " . $conn->error;
+        error_log($error_message);
         header("Location: tutor_requests.php?error=" . urlencode($error_message));
         exit();
     }
@@ -68,74 +70,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
     if ($result->num_rows > 0) {
         $request = $result->fetch_assoc();
 
-    if ($action === 'accept') {
-        // 接受请求
-        $stmt = $conn->prepare("UPDATE session_requests SET status = 'confirmed' WHERE request_id = ?");
-        if (!$stmt) {
-            $error_message = "Error preparing update request: " . $conn->error;
-        } else {
-            $stmt->bind_param("i", $request_id);
-            if ($stmt->execute()) {
-                // 插入 session 表
-                $stmt = $conn->prepare("INSERT INTO session (tutor_id, student_id, course_id, location_id, status, start_datetime, end_datetime, created_at)
-                                        VALUES (?, ?, ?, ?, 'scheduled', ?, ?, NOW())");
-                if (!$stmt) {
-                    $error_message = "Error preparing session insert: " . $conn->error;
-                } else {
-                    // 获取 session_requests 数据
-                    $request_stmt = $conn->prepare("SELECT selected_date, duration, location_id FROM session_requests WHERE request_id = ?");
-                    $request_stmt->bind_param("i", $request_id);
-                    $request_stmt->execute();
-                    $request_result = $request_stmt->get_result();
-                    $request_data = $request_result->fetch_assoc();
-                    $request_stmt->close();
-
-                    // 计算开始和结束时间
-                    $start_datetime = $request_data['selected_date'] . ' 09:00:00'; // 默认 9 点开始
-                    $duration = (int)$request_data['duration'];
-                    $end_datetime = date('Y-m-d H:i:s', strtotime($start_datetime . " + $duration hours"));
-                    $location_id = (int)$request_data['location_id']; // 确保是整数
-
-                    // 修正 bind_param，匹配 6 个变量
-                    $stmt->bind_param("iiiiss", $user_id, $request['student_id'], $request['course_id'], $location_id, $start_datetime, $end_datetime);
-                    if ($stmt->execute()) {
-                        $success_message = 'Request accepted successfully! Please discuss timing with the student via messages.';
-                        // 发送通知
-                        $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
-                                                VALUES (?, 'session', 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', ?, NOW())");
-                        if ($stmt) {
-                            $stmt->bind_param("ii", $request['student_id'], $request_id);
-                            $stmt->execute();
-                        }
+        if ($action === 'accept') {
+            // 接受请求
+            $stmt = $conn->prepare("UPDATE session_requests SET status = 'confirmed' WHERE request_id = ?");
+            if (!$stmt) {
+                $error_message = "Error preparing update request: " . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("i", $request_id);
+                if ($stmt->execute()) {
+                    // 插入 session 表
+                    $stmt = $conn->prepare("INSERT INTO session (tutor_id, student_id, course_id, location_id, status, start_datetime, end_datetime, created_at)
+                                            VALUES (?, ?, ?, ?, 'confirmed', ?, ?, NOW())");
+                    if (!$stmt) {
+                        $error_message = "Error preparing session insert: " . $conn->error;
+                        error_log($error_message);
                     } else {
-                        $error_message = 'Failed to create session: ' . $conn->error;
+                        // 获取 session_requests 数据
+                        $request_stmt = $conn->prepare("SELECT selected_date, duration, location_id FROM session_requests WHERE request_id = ?");
+                        $request_stmt->bind_param("i", $request_id);
+                        $request_stmt->execute();
+                        $request_result = $request_stmt->get_result();
+                        $request_data = $request_result->fetch_assoc();
+                        $request_stmt->close();
+
+                        // 计算开始和结束时间
+                        $start_datetime = $request_data['selected_date'] . ' 09:00:00'; // 默认 9 点开始
+                        $duration = (int)$request_data['duration'];
+                        $end_datetime = date('Y-m-d H:i:s', strtotime($start_datetime . " + $duration hours"));
+                        $location_id = (int)$request_data['location_id'];
+
+                        $stmt->bind_param("iiiiss", $user_id, $request['student_id'], $request['course_id'], $location_id, $start_datetime, $end_datetime);
+                        if ($stmt->execute()) {
+                            $success_message = 'Request accepted successfully! Please discuss timing with the student via messages.';
+                            // 发送通知
+                            $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
+                                                    VALUES (?, 'session', 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', ?, NOW())");
+                            if ($stmt) {
+                                $stmt->bind_param("ii", $request['student_id'], $request_id);
+                                $stmt->execute();
+                            }
+                        } else {
+                            $error_message = 'Failed to create session: ' . $conn->error;
+                            error_log($error_message);
+                        }
                     }
+                } else {
+                    $error_message = 'Failed to update request: ' . $conn->error;
+                    error_log($error_message);
                 }
-            } else {
-                $error_message = 'Failed to update request: ' . $conn->error;
             }
-        }
-    } elseif ($action === 'reject') {
-        $stmt = $conn->prepare("UPDATE session_requests SET status = 'rejected' WHERE request_id = ?");
-        if (!$stmt) {
-            $error_message = 'Error preparing reject: ' . $conn->error;
+        } elseif ($action === 'reject') {
+            $stmt = $conn->prepare("UPDATE session_requests SET status = 'rejected' WHERE request_id = ?");
+            if (!$stmt) {
+                $error_message = 'Error preparing reject: ' . $conn->error;
+                error_log($error_message);
+            } else {
+                $stmt->bind_param("i", $request_id);
+                if ($stmt->execute()) {
+                    $success_message = 'Request rejected successfully';
+                    // 发送通知
+                    $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
+                                            VALUES (?, 'session', 'Request Rejected', 'Your tutoring request has been rejected.', ?, NOW())");
+                    if ($stmt) {
+                        $stmt->bind_param("ii", $request['student_id'], $request_id);
+                        $stmt->execute();
+                    }
+                } else {
+                    $error_message = 'Failed to reject request: ' . $conn->error;
+                    error_log($error_message);
+                }
+            }
         } else {
-            $stmt->bind_param("i", $request_id);
-            if ($stmt->execute()) {
-                $success_message = 'Request rejected successfully';
-                // 发送通知
-                $stmt = $conn->prepare("INSERT INTO notification (user_id, type, title, message, related_id, created_at)
-                                        VALUES (?, 'session', 'Request Rejected', 'Your tutoring request has been rejected.', ?, NOW())");
-                if ($stmt) {
-                    $stmt->bind_param("ii", $request['student_id'], $request_id);
-                    $stmt->execute();
-                }
-            } else {
-                $error_message = 'Failed to reject request: ' . $conn->error;
-            }
+            $error_message = 'Invalid action.';
+            error_log($error_message);
         }
     } else {
         $error_message = 'Invalid request ID or no permission.';
+        error_log($error_message);
     }
     if (isset($stmt) && is_object($stmt)) {
         $stmt->close();
@@ -158,6 +170,7 @@ $stmt = $conn->prepare("SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.cou
                         WHERE sr.tutor_id = ? AND sr.status = 'pending'");
 if (!$stmt) {
     $error_message = "Error preparing pending requests: " . $conn->error;
+    error_log($error_message);
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -180,6 +193,7 @@ $stmt = $conn->prepare("SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.cou
                         LIMIT 20");
 if (!$stmt) {
     $error_message = "Error preparing processed requests: " . $conn->error;
+    error_log($error_message);
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -696,5 +710,4 @@ $conn->close();
         });
     </script>
 </body>
-</html>
 </html>
