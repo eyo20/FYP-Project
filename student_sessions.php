@@ -250,6 +250,7 @@ if (!empty($tutor_stats)) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -257,6 +258,7 @@ if (!empty($tutor_stats)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/stud_session.css">
 </head>
+
 <body>
     <?php include 'header/stud_head.php'; ?>
 
@@ -398,7 +400,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
                                 <div class="session-course">
@@ -463,7 +465,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
                                 <div class="session-course">
@@ -495,12 +497,12 @@ if (!empty($tutor_stats)) {
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-                                <?php if ($session['status'] === 'completed' && !$session['rating']): ?>
-                                    <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
-                                        <i class="fas fa-star"></i>
-                                        Rate Session
-                                    </button>
-                                <?php endif; ?>
+
+                                <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
+                                    <i class="fas fa-star"></i>
+                                    Rate Session
+                                </button>
+
                                 <a href="messages.php?tutor_id=<?php echo $session['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -672,5 +674,6 @@ if (!empty($tutor_stats)) {
             });
         </script>
 </body>
+
 </html>
 <?php $conn->close(); ?>
