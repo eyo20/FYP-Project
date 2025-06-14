@@ -2,16 +2,17 @@
 session_start();
 require_once "db_connection.php";
 
-// Enable error display
+// Enable error display for debugging (remove in production)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Checking Database Connections
+// Check database connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Check if user is logged in and is a student
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -31,7 +32,6 @@ $user_result = $stmt->get_result();
 $user_data = $user_result->fetch_assoc();
 
 if (!$user_data || $user_data['role'] != 'student') {
-    // If the user is not a student, redirect to the login page
     header("Location: login.php");
     exit();
 }
@@ -60,7 +60,6 @@ if ($student_result->num_rows > 0) {
     $year = $student_data['year'] ?: '';
     $school = $student_data['school'] ?: '';
 } else {
-    // If there is no student information, set a default value
     $major = '';
     $year = '';
     $school = '';
@@ -77,7 +76,7 @@ $messages_data = $messages_result->fetch_assoc();
 $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
-// Handling form submissions
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
         // Update basic information
@@ -88,175 +87,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $year = $_POST['year'] ?? '';
         $school = $_POST['school'] ?? '';
 
-        // Verify Malaysia Phone Number
+        // Verify Malaysia phone number
         $phone_valid = false;
         if (!empty($phone)) {
-            // Remove all non-numeric characters
             $phone = preg_replace('/[^0-9]/', '', $phone);
-
-            // Check phone number format
             if (substr($phone, 0, 3) === '011') {
-                // 011The number at the beginning must be 11 digits
                 $phone_valid = (strlen($phone) === 11);
             } else if (substr($phone, 0, 2) === '01') {
-                // Other numbers starting with 01x must be 10 digits.
                 $phone_valid = (strlen($phone) === 10);
             }
-
             if (!$phone_valid) {
                 $error_message = "Invalid Malaysian phone number format. Numbers starting with 011 should be 11 digits, others should be 10 digits.";
                 error_log($error_message);
             }
         } else {
-            // If the phone number is empty, it is considered valid (optional field)
             $phone_valid = true;
         }
 
-        // Continue only if the phone number is valid
         if ($phone_valid) {
-            // Update user basic information
-            $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_user);
-            if (!$stmt) {
-                $error_message = "Database Error: Failed to prepare user update statement - " . $conn->error;
-                error_log($error_message);
-            } else {
+            // Start transaction for user and profile updates
+            $conn->begin_transaction();
+            try {
+                // Update user information
+                $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($update_user);
+                if (!$stmt) {
+                    throw new Exception("Failed to prepare user update statement: " . $conn->error);
+                }
                 $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-                $user_updated = $stmt->execute();
-                if (!$user_updated) {
-                    $error_message = "Database Error: Failed to update user information - " . $stmt->error;
-                    error_log($error_message);
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to update user information: " . $stmt->error);
                 }
                 $stmt->close();
-            }
 
-
-            // Check if the user ID exists in the user table
-            $check_user = "SELECT user_id FROM user WHERE user_id = ?";
-            $user_stmt = $conn->prepare($check_user);
-            if (!$user_stmt) {
-                $error_message = "Database Error: Failed to prepare user check statement - " . $conn->error;
-                error_log($error_message);
-            } else {
-                $user_stmt->bind_param("i", $user_id);
-                $user_stmt->execute();
-                $user_result = $user_stmt->get_result();
-
-                if ($user_result->num_rows == 0) {
-                    $error_message = "Error: User ID does not exist in user table";
-                    error_log($error_message);
-                }
-                $user_stmt->close();
-            }
-
-            // Continue only if there are no errors
-            if (!isset($error_message)) {
-                // Check if the student data exists
+                // Check if student profile exists
                 $check_profile = "SELECT user_id FROM studentprofile WHERE user_id = ?";
                 $stmt = $conn->prepare($check_profile);
                 if (!$stmt) {
-                    $error_message = "Database Error: Failed to prepare profile check statement - " . $conn->error;
-                    error_log($error_message);
-                } else {
-                    $stmt->bind_param("i", $user_id);
-                    $stmt->execute();
-                    $profile_result = $stmt->get_result();
-                    $profile_exists = ($profile_result->num_rows > 0);
-                    $stmt->close();
-
-                    $profile_updated = false;
-
-                    if ($profile_exists) {
-                        // Update student information
-                        $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
-                        $stmt = $conn->prepare($update_profile);
-                        if (!$stmt) {
-                            $error_message = "Database Error: Failed to prepare profile update statement - " . $conn->error;
-                            error_log($error_message);
-                        } else {
-                            $stmt->bind_param("sssi", $major, $year, $school, $user_id);
-                            $profile_updated = $stmt->execute();
-                            if (!$profile_updated) {
-                                $error_message = "Database Error: Failed to update student profile - " . $stmt->error;
-                                error_log($error_message);
-                            }
-                            $stmt->close();
-                        }
-                    } else {
-                        // Checklist Structure
-                        $table_check = "DESCRIBE studentprofile";
-                        $table_result = $conn->query($table_check);
-                        if (!$table_result) {
-                            $error_message = "Database Error: Failed to check table structure - " . $conn->error;
-                            error_log($error_message);
-                        } else {
-                            $table_info = "Table structure: ";
-                            while ($row = $table_result->fetch_assoc()) {
-                                $table_info .= $row['Field'] . " (" . $row['Type'] . "), ";
-                            }
-                            error_log($table_info);
-                        }
-
-                        // Create a student profile
-                        $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
-                        $stmt = $conn->prepare($create_profile);
-
-                        if (!$stmt) {
-                            $error_message = "Database Error: Failed to prepare profile create statement - " . $conn->error;
-                            error_log($error_message);
-                        } else {
-                            // The value to be inserted into the record
-                            $debug_info = "Attempting to insert: user_id=$user_id, major='$major', year='$year', school='$school'";
-                            error_log($debug_info);
-
-                            $stmt->bind_param("isss", $user_id, $major, $year, $school);
-                            $profile_updated = $stmt->execute();
-
-                            if (!$profile_updated) {
-                                $error_message = "Database Error: Failed to create student profile - " . $stmt->error;
-                                error_log($error_message);
-
-                                // Try using a simple SQL statement
-                                $simple_sql = "INSERT INTO studentprofile (user_id, major, year, school) VALUES ($user_id, '$major', '$year', '$school')";
-                                error_log("Trying simple SQL: " . $simple_sql);
-
-                                if ($conn->query($simple_sql)) {
-                                    $profile_updated = true;
-                                    error_log("Simple SQL succeeded");
-                                } else {
-                                    $error_message = "Database Error (simple SQL): " . $conn->error;
-                                    error_log($error_message);
-                                }
-                            }
-
-                            $stmt->close();
-                        }
-                    }
-
-                    if (isset($user_updated) && $user_updated && isset($profile_updated) && $profile_updated) {
-                        $success_message = "Profile updated successfully！";
-                    } else {
-                        if (!isset($error_message)) {
-                            $error_message = "An error occurred while updating your profile. Please try again.！";
-                            if (isset($user_updated) && !$user_updated) {
-                                $error_message .= " (User information update failed)";
-                            }
-                            if (isset($profile_updated) && !$profile_updated) {
-                                $error_message .= " (Student Information" . ($profile_exists ? "Update" : "Create") . "Failed)";
-                            }
-                        }
-                    }
+                    throw new Exception("Failed to prepare profile check statement: " . $conn->error);
                 }
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $profile_result = $stmt->get_result();
+                $profile_exists = ($profile_result->num_rows > 0);
+                $stmt->close();
+
+                if ($profile_exists) {
+                    // Update student profile
+                    $update_profile = "UPDATE studentprofile SET major = ?, year = ?, school = ? WHERE user_id = ?";
+                    $stmt = $conn->prepare($update_profile);
+                    if (!$stmt) {
+                        throw new Exception("Failed to prepare profile update statement: " . $conn->error);
+                    }
+                    $stmt->bind_param("sssi", $major, $year, $school, $user_id);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Failed to update student profile: " . $stmt->error);
+                    }
+                    $stmt->close();
+                } else {
+                    // Create student profile
+                    $create_profile = "INSERT INTO studentprofile (user_id, major, year, school) VALUES (?, ?, ?, ?)";
+                    $stmt = $conn->prepare($create_profile);
+                    if (!$stmt) {
+                        throw new Exception("Failed to prepare profile create statement: " . $conn->error);
+                    }
+                    $stmt->bind_param("isss", $user_id, $major, $year, $school);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Failed to create student profile: " . $stmt->error);
+                    }
+                    $stmt->close();
+                }
+
+                $conn->commit();
+                $success_message = "Profile updated successfully!";
+            } catch (Exception $e) {
+                $conn->rollback();
+                $error_message = "Error updating profile: " . $e->getMessage();
+                error_log($error_message);
             }
         }
     }
 
-    // Handling password changes
+    // Handle password change
     if (isset($_POST['change_password'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
-        $password_error = '';
 
         // Verify current password
         $password_query = "SELECT password FROM user WHERE user_id = ?";
@@ -268,72 +184,137 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
 
         if (!password_verify($current_password, $user['password'])) {
-            $password_error = "The current password is incorrect";
+            $error_message = "The current password is incorrect.";
         } elseif (strlen($new_password) < 8) {
-            $password_error = "The new password must be at least 8 characters";
+            $error_message = "The new password must be at least 8 characters.";
         } elseif (!preg_match('/[A-Z]/', $new_password)) {
-            $password_error = "The new password must contain at least one uppercase letter";
+            $error_message = "The new password must contain at least one uppercase letter.";
         } elseif (!preg_match('/[0-9]/', $new_password)) {
-            $password_error = "The new password must contain at least one number";
+            $error_message = "The new password must contain at least one number.";
         } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-            $password_error = "The new password must contain at least one special character";
+            $error_message = "The new password must contain at least one special character.";
         } elseif ($new_password !== $confirm_password) {
-            $password_error = "The new passwords entered twice do not match";
+            $error_message = "The new passwords entered do not match.";
         } else {
             // Update password
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $update_password = "UPDATE user SET password = ? WHERE user_id = ?";
             $stmt = $conn->prepare($update_password);
             $stmt->bind_param("si", $hashed_password, $user_id);
-
             if ($stmt->execute()) {
-                $success_message = "Password updated successfully！";
+                $success_message = "Password updated successfully!";
             } else {
-                $error_message = "Failed to update password, please try again。";
+                $error_message = "Failed to update password: " . $stmt->error;
+                error_log($error_message);
             }
             $stmt->close();
         }
-
-        if (!empty($password_error)) {
-            $error_message = $password_error;
-        }
     }
-}
 
-// Processing avatar uploads
-if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
-    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-    $max_size = 5 * 1024 * 1024; // 5MB
+    // Handle profile image upload
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        $max_size = 5 * 1024 * 1024; // 5MB
+        $upload_dir = __DIR__ . '/Uploads/profile_images/';
 
-    if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
-        $upload_dir = 'uploads/profile_images/';
-
-        // Create the upload directory if it does not exist）
+        // Create upload directory if it doesn't exist
         if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-
-        $filename = uniqid() . '_' . $_FILES['profile_image']['name'];
-        $target_file = $upload_dir . $filename;
-
-        if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
-            // Update the avatar path in the database
-            $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_image);
-            $stmt->bind_param("si", $target_file, $user_id);
-            $image_updated = $stmt->execute();
-
-            if ($image_updated) {
-                $profile_image = $target_file;
-                $success_message = "Avatar updated successfully！";
-            } else {
-                $error_message = "An error occurred while updating the avatar information. Please try again.！";
+            if (!mkdir($upload_dir, 0775, true)) {
+                $error_message = "Failed to create upload directory.";
+                error_log($error_message);
             }
-        } else {
-            $error_message = "An error occurred while uploading your avatar. Please try again.！";
         }
-    } else {
-        $error_message = "Please upload a valid image file (JPG, PNG, GIF), no larger than 5MB！";
+
+        // Check for upload errors
+        switch ($_FILES['profile_image']['error']) {
+            case UPLOAD_ERR_OK:
+                break;
+            case UPLOAD_ERR_INI_SIZE:
+                $error_message = "The uploaded file exceeds the maximum allowed size.";
+                error_log($error_message);
+                break;
+            case UPLOAD_ERR_FORM_SIZE:
+                $error_message = "The uploaded file exceeds the form's maximum size.";
+                error_log($error_message);
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                $error_message = "The file was only partially uploaded.";
+                error_log($error_message);
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+                $error_message = "Missing a temporary folder.";
+                error_log($error_message);
+                break;
+            case UPLOAD_ERR_CANT_WRITE:
+                $error_message = "Failed to write file to disk.";
+                error_log($error_message);
+                break;
+            case UPLOAD_ERR_EXTENSION:
+                $error_message = "A PHP extension stopped the file upload.";
+                error_log($error_message);
+                break;
+            default:
+                $error_message = "Unknown upload error.";
+                error_log($error_message);
+                break;
+        }
+
+        if (!isset($error_message)) {
+            // Validate file type and size
+            if (!in_array($_FILES['profile_image']['type'], $allowed_types)) {
+                $error_message = "Invalid file type. Only JPG, PNG, and GIF are allowed.";
+                error_log("Invalid file type: " . $_FILES['profile_image']['type']);
+            } elseif ($_FILES['profile_image']['size'] > $max_size) {
+                $error_message = "File is too large. Maximum size is 5MB.";
+                error_log("File size exceeded: " . $_FILES['profile_image']['size']);
+            } else {
+                // Validate image integrity
+                if (!getimagesize($_FILES['profile_image']['tmp_name'])) {
+                    $error_message = "Uploaded file is not a valid image.";
+                    error_log($error_message);
+                } else {
+                    $filename = uniqid() . '_' . basename($_FILES['profile_image']['name']);
+                    $target_file = $upload_dir . $filename;
+
+                    // Start transaction for file move and database update
+                    $conn->begin_transaction();
+                    try {
+                        if (!move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
+                            throw new Exception("Failed to move uploaded file to $target_file.");
+                        }
+
+                        // Delete old profile image if it exists
+                        if ($user_data['profile_image'] && file_exists($user_data['profile_image'])) {
+                            unlink($user_data['profile_image']);
+                        }
+
+                        // Update database with new image path
+                        $relative_path = 'Uploads/profile_images/' . $filename;
+                        $update_image = "UPDATE user SET profile_image = ? WHERE user_id = ?";
+                        $stmt = $conn->prepare($update_image);
+                        if (!$stmt) {
+                            throw new Exception("Failed to prepare image update statement: " . $conn->error);
+                        }
+                        $stmt->bind_param("si", $relative_path, $user_id);
+                        if (!$stmt->execute()) {
+                            throw new Exception("Failed to update profile image: " . $stmt->error);
+                        }
+                        $stmt->close();
+
+                        $conn->commit();
+                        $profile_image = $relative_path;
+                        $success_message = "Profile image uploaded successfully!";
+                    } catch (Exception $e) {
+                        $conn->rollback();
+                        if (file_exists($target_file)) {
+                            unlink($target_file);
+                        }
+                        $error_message = "Failed to upload profile image: " . $e->getMessage();
+                        error_log($error_message);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -342,7 +323,6 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -701,7 +681,6 @@ $conn->close();
         }
 
         @media (max-width: 576px) {
-
             .profile-image,
             .profile-image-placeholder {
                 width: 120px;
@@ -728,28 +707,24 @@ $conn->close();
         }
     </style>
 </head>
-
 <body>
-
     <?php include 'header/stud_head.php'; ?>
-
-
 
     <main>
         <h1 class="page-title">Profile</h1>
 
         <?php if (isset($success_message)): ?>
-            <div class="success-message"><?php echo $success_message; ?></div>
+            <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
         <?php endif; ?>
 
         <?php if (isset($error_message)): ?>
-            <div class="error-message"><?php echo $error_message; ?></div>
+            <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
         <?php endif; ?>
 
         <div class="profile-container">
             <div class="profile-sidebar">
                 <div class="profile-image-container">
-                    <?php if ($profile_image): ?>
+                    <?php if ($profile_image && file_exists($profile_image)): ?>
                         <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image" id="profile-image-preview">
                     <?php else: ?>
                         <div class="profile-image-placeholder" id="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
@@ -758,7 +733,7 @@ $conn->close();
                         <i>📷</i>
                     </label>
                     <form id="image-upload-form" action="" method="post" enctype="multipart/form-data" style="display: none;">
-                        <input type="file" id="profile_image_upload" name="profile_image" accept="image/*">
+                        <input type="file" id="profile_image_upload" name="profile_image" accept="image/jpeg,image/jpg,image/png,image/gif">
                     </form>
                 </div>
                 <h2 class="profile-name"><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h2>
@@ -773,7 +748,6 @@ $conn->close();
                         <div class="info-icon">📱</div>
                         <div class="info-text"><?php echo $phone ? htmlspecialchars($phone) : 'Not Set'; ?></div>
                     </div>
-
                     <div class="info-item">
                         <div class="info-icon">🕒</div>
                         <div class="info-text">Last login: <?php echo $last_login != 'Never' ? date('M d, Y H:i', strtotime($last_login)) : 'Never'; ?></div>
@@ -798,8 +772,6 @@ $conn->close();
                             <label for="phone">Phone Number</label>
                             <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($phone); ?>">
                         </div>
-
-
                         <button type="submit" class="btn" id="save-profile-btn">Save Profile</button>
                     </form>
                 </div>
@@ -833,8 +805,7 @@ $conn->close();
                     <div class="danger-zone">
                         <h4>Delete Account</h4>
                         <p style="margin-bottom: 1rem;">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
-                        <button type="button" id="delete-account
--btn" class="btn btn-danger">Delete My Account</button>
+                        <button type="button" id="delete-account-btn" class="btn btn-danger">Delete My Account</button>
                     </div>
                 </div>
             </div>
@@ -849,28 +820,40 @@ $conn->close();
         // Dropdown functionality
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (dropdown) {
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            }
         }
 
         // Mobile menu toggle
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('show');
+        document.querySelector('.menu-toggle')?.addEventListener('click', function() {
+            document.querySelector('.nav-links')?.classList.toggle('show');
         });
 
-        // Avatar upload preview and automatic submission
+        // Profile image upload preview and auto-submit
         document.getElementById('profile_image_upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Validate file type and size on client side
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Invalid file type. Only JPG, PNG, and GIF are allowed.');
+                    return;
+                }
+                if (file.size > maxSize) {
+                    alert('File is too large. Maximum size is 5MB.');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const previewElement = document.getElementById('profile-image-preview');
                     const placeholderElement = document.getElementById('profile-image-placeholder');
 
                     if (previewElement) {
-                        // If it is already an image, update src
                         previewElement.src = e.target.result;
                     } else if (placeholderElement) {
-                        // If it is a placeholder, replace it with an image element
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.alt = "Profile";
@@ -879,9 +862,17 @@ $conn->close();
                         placeholderElement.parentNode.replaceChild(img, placeholderElement);
                     }
 
-                    // Automatically submit forms
-                    document.getElementById('image-upload-form').submit();
-                }
+                    // Auto-submit the form
+                    const form = document.getElementById('image-upload-form');
+                    if (form) {
+                        form.submit();
+                    } else {
+                        console.error('Image upload form not found.');
+                    }
+                };
+                reader.onerror = function() {
+                    alert('Error reading the file. Please try again.');
+                };
                 reader.readAsDataURL(file);
             }
         });
@@ -893,7 +884,7 @@ $conn->close();
             const phone = document.getElementById('phone').value.trim();
 
             if (!firstName) {
-                alert('Please enter your name');
+                alert('Please enter your first name');
                 e.preventDefault();
                 return;
             }
@@ -905,7 +896,7 @@ $conn->close();
             }
 
             if (phone && !/^\d{10,15}$/.test(phone)) {
-                alert('Please enter a valid phone number');
+                alert('Please enter a valid phone number (10-15 digits)');
                 e.preventDefault();
                 return;
             }
@@ -948,27 +939,27 @@ $conn->close();
             }
 
             if (newPassword !== confirmPassword) {
-                alert('The new passwords you entered twice do not match');
+                alert('The new passwords entered do not match');
                 e.preventDefault();
                 return;
             }
         });
 
-        // Save personal information confirmation
+        // Save profile confirmation
         document.getElementById('save-profile-btn').addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to save your profile changes？')) {
+            if (!confirm('Are you sure you want to save your profile changes?')) {
                 e.preventDefault();
             }
         });
 
         // Change password confirmation
         document.getElementById('change-password-btn').addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to change your password？')) {
+            if (!confirm('Are you sure you want to change your password?')) {
                 e.preventDefault();
             }
         });
 
-        // Deletion Account Confirmation
+        // Delete account confirmation
         document.getElementById('delete-account-btn').addEventListener('click', function() {
             if (confirm('Are you sure you want to delete your account? This action cannot be undone and all data will be permanently deleted.')) {
                 if (prompt('Please enter "DELETE" to confirm') === 'DELETE') {
@@ -978,5 +969,4 @@ $conn->close();
         });
     </script>
 </body>
-
 </html>
