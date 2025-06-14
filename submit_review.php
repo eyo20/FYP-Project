@@ -1,101 +1,108 @@
 <?php
 session_start();
 require_once 'db_connection.php';
+error_log("Starting submit_review.php");
 
-// Check if user is logged in and is a student
+// 检查学生登录
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header('Location: login.php');
-    exit();
+    error_log("Session check failed: user_id=" . ($_SESSION['user_id'] ?? 'unset') . ", role=" . ($_SESSION['role'] ?? 'unset'));
+    header("Location: login.php");
+    exit;
 }
 
-$error_message = '';
-$success_message = '';
+// 检查 POST 请求
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    error_log("Invalid request method: " . $_SERVER['REQUEST_METHOD']);
+    header("Location: student_sessions.php");
+    exit;
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $session_id = isset($_POST['session_id']) ? (int)$_POST['session_id'] : 0;
-    $tutor_id = isset($_POST['tutor_id']) ? (int)$_POST['tutor_id'] : 0;
-    $rating = isset($_POST['rating']) ? (int)$_POST['rating'] : 0;
-    $comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
+// 获取表单数据
+$session_id = $_POST['session_id'] ?? 0;
+$rating = $_POST['rating'] ?? 0;
+$comment = $_POST['comment'] ?? '';
+error_log("Received: session_id=$session_id, rating=$rating, comment=$comment");
 
-    // Validate input
-    if (!$session_id || !$tutor_id || !$rating || $rating < 1 || $rating > 5) {
-        $error_message = 'Invalid rating data provided.';
-    } else {
-        try {
-            $pdo->beginTransaction();
+// 验证输入
+if (!is_numeric($session_id) || !is_numeric($rating) || $rating < 1 || $rating > 5) {
+    error_log("Validation failed: session_id=$session_id, rating=$rating");
+    $_SESSION['error'] = "Invalid session or rating.";
+    header("Location: student_sessions.php");
+    exit;
+}
 
-            // Verify that this session belongs to the current student and is completed
-            $stmt = $pdo->prepare("
-                SELECT session_id, status 
-                FROM session 
-                WHERE session_id = ? AND student_id = ? AND tutor_id = ? AND status = 'completed'
-            ");
-            $stmt->execute([$session_id, $_SESSION['user_id'], $tutor_id]);
-            $session = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$session) {
-                throw new Exception('Session not found or not eligible for review.');
-            }
-
-            // Check if review already exists
-            $stmt = $pdo->prepare("
-                SELECT review_id 
-                FROM review 
-                WHERE session_id = ? AND student_id = ? AND tutor_id = ?
-            ");
-            $stmt->execute([$session_id, $_SESSION['user_id'], $tutor_id]);
-            $existing_review = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existing_review) {
-                throw new Exception('You have already reviewed this session.');
-            }
-
-            // Insert the review
-            $stmt = $pdo->prepare("
-                INSERT INTO review (session_id, student_id, tutor_id, rating, comment, created_at, is_approved)
-                VALUES (?, ?, ?, ?, ?, NOW(), 1)
-            ");
-            $stmt->execute([$session_id, $_SESSION['user_id'], $tutor_id, $rating, $comment]);
-
-            // Update tutor's average rating
-            $stmt = $pdo->prepare("
-                UPDATE tutorprofile 
-                SET rating = (
-                    SELECT AVG(rating) 
-                    FROM review 
-                    WHERE tutor_id = ? AND is_approved = 1
-                ),
-                total_sessions = (
-                    SELECT COUNT(*) 
-                    FROM session 
-                    WHERE tutor_id = ? AND status = 'completed'
-                )
-                WHERE user_id = ?
-            ");
-                        $stmt->execute([$tutor_id, $tutor_id, $tutor_id]);
-
-            $pdo->commit();
-            $success_message = 'Thank you for your review! Your feedback has been submitted successfully.';
-
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $error_message = $e->getMessage();
-        } catch (PDOException $e) {
-            $pdo->rollBack();
-            error_log("Database error in submit_review.php: " . $e->getMessage());
-            $error_message = 'An error occurred while submitting your review. Please try again.';
-        }
+$conn->begin_transaction();
+try {
+    // 检查会话是否存在且已完成
+    $stmt = $conn->prepare("SELECT session_id, tutor_id, status FROM session WHERE session_id = ? AND student_id = ? AND status = 'completed'");
+    if (!$stmt) {
+        error_log("Session query prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to check session.");
     }
+    $stmt->bind_param("ii", $session_id, $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        error_log("Session not found or not completed: session_id=$session_id, student_id=" . $_SESSION['user_id']);
+        throw new Exception("Session not found or not completed.");
+    }
+    $session = $result->fetch_assoc();
+    $user_id = $session['tutor_id'];
+    $stmt->close();
+
+    // 检查是否已评论
+    $stmt = $conn->prepare("SELECT review_id FROM review WHERE session_id = ? AND student_id = ?");
+    if (!$stmt) {
+        error_log("Review check prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to check review.");
+    }
+    $stmt->bind_param("ii", $session_id, $_SESSION['user_id']);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        error_log("Review already exists: session_id=$session_id, student_id=" . $_SESSION['user_id']);
+        throw new Exception("You have already reviewed this session.");
+    }
+    $stmt->close();
+
+    // 插入评论
+    $stmt = $conn->prepare("INSERT INTO review (session_id, student_id, tutor_id, rating, comment, created_at, is_approved) VALUES (?, ?, ?, ?, ?, NOW(), 1)");
+    if (!$stmt) {
+        error_log("Insert review prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to insert review.");
+    }
+    $stmt->bind_param("iiiss", $session_id, $_SESSION['user_id'], $user_id, $rating, $comment);
+    if (!$stmt->execute()) {
+        error_log("Insert review failed: " . $conn->error);
+        throw new Exception("Failed to insert review.");
+    }
+    $stmt->close();
+
+    // 更新导师评分和会话总数
+    $stmt = $conn->prepare("UPDATE tutorprofile SET rating = (SELECT AVG(rating) FROM review WHERE tutor_id = ? AND is_approved = 1), total_sessions = (SELECT COUNT(*) FROM session WHERE tutor_id = ? AND status = 'completed') WHERE user_id = ?");
+    if (!$stmt) {
+        error_log("Update tutorprofile prepare failed: " . $conn->error);
+        throw new Exception("Database error: Unable to update tutor profile.");
+    }
+    $stmt->bind_param("iii", $user_id, $user_id, $user_id);
+    if (!$stmt->execute()) {
+        error_log("Update tutorprofile failed: " . $conn->error);
+        throw new Exception("Failed to update tutor profile.");
+    }
+    $stmt->close();
+
+    // 提交事务
+    $conn->commit();
+    error_log("Review submitted successfully: session_id=$session_id");
+    $_SESSION['success'] = "Thank you for your review!";
+    header("Location: student_sessions.php");
+    exit;
+} catch (Exception $e) {
+    $conn->rollback();
+    error_log("Error: " . $e->getMessage());
+    $_SESSION['error'] = "Failed to submit review: " . $e->getMessage();
+    header("Location: student_sessions.php");
+    exit;
 }
 
-// Redirect back to sessions page with message
-if ($success_message) {
-    $_SESSION['success_message'] = $success_message;
-} elseif ($error_message) {
-    $_SESSION['error_message'] = $error_message;
-}
-
-header('Location: student_sessions.php');
-exit();
+$conn->close();
 ?>
-
