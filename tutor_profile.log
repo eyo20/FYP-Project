@@ -525,3 +525,824 @@
 [08-Jun-2025 20:02:26 Europe/Berlin] Processing profile update for user_id: 16
 [08-Jun-2025 20:02:26 Europe/Berlin] Profile updated for user_id: 16
 [08-Jun-2025 20:02:26 Europe/Berlin] Redirecting to tutor_profile.php for user_id: 16
+[14-Jun-2025 12:19:19 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:31 Europe/Berlin] POST data received: Array
+(
+)
+
+[14-Jun-2025 12:19:31 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => OIP.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpEFDF.tmp
+            [error] => 0
+            [size] => 224663
+        )
+
+)
+
+[14-Jun-2025 12:19:31 Europe/Berlin] POST request received at 2025-06-14 12:19:31 for user_id: 16 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => OIP.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpEFDF.tmp
+            [error] => 0
+            [size] => 224663
+        )
+
+)
+
+[14-Jun-2025 12:19:31 Europe/Berlin] Processing profile image upload for user ID: 16
+[14-Jun-2025 12:19:31 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749896371_OIP.png
+[14-Jun-2025 12:19:31 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:40 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:46 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:19:46 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1726411605225.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php2B05.tmp
+            [error] => 0
+            [size] => 4098
+        )
+
+)
+
+[14-Jun-2025 12:19:46 Europe/Berlin] POST request received at 2025-06-14 12:19:46 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1726411605225.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php2B05.tmp
+            [error] => 0
+            [size] => 4098
+        )
+
+)
+
+[14-Jun-2025 12:19:46 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/684d4cc2bf064_screenshot-1726411605225.png
+[14-Jun-2025 12:19:46 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file uploaded successfully. It will be reviewed.
+[14-Jun-2025 12:19:46 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:54 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:19:54 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php47E5.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[14-Jun-2025 12:19:54 Europe/Berlin] POST request received at 2025-06-14 12:19:54 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php47E5.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[14-Jun-2025 12:19:54 Europe/Berlin] Old file deleted: Uploads/credentials/684d4cc2bf064_screenshot-1726411605225.png
+[14-Jun-2025 12:19:54 Europe/Berlin] CGPA updated for user_id: 16, file: Uploads/credentials/684d4cca2bca3_screenshot-1717507504216.png
+[14-Jun-2025 12:19:54 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file updated successfully. It will be reviewed.
+[14-Jun-2025 12:19:54 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:55 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:19:55 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:19:55 Europe/Berlin] POST request received at 2025-06-14 12:19:55 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:19:55 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:19:55 Europe/Berlin] Before user update for user_id: 16, first_name: mingweng, last_name: gan, phone: 0123456789
+[14-Jun-2025 12:19:55 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:19:55 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:19:55 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:19:57 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:19:57 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:19:57 Europe/Berlin] POST request received at 2025-06-14 12:19:57 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:19:57 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:19:57 Europe/Berlin] Before user update for user_id: 16, first_name: mingweng, last_name: gan, phone: 0123456789
+[14-Jun-2025 12:19:57 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:19:57 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:19:57 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:24:35 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:24:35 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php9362.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[14-Jun-2025 12:24:35 Europe/Berlin] POST request received at 2025-06-14 12:24:35 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php9362.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[14-Jun-2025 12:24:35 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/684d4de3a2312_OIP.jpeg
+[14-Jun-2025 12:24:35 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file uploaded successfully. It will be reviewed.
+[14-Jun-2025 12:24:35 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:27:17 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:27:17 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:27:17 Europe/Berlin] POST request received at 2025-06-14 12:27:17 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:27:17 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:27:17 Europe/Berlin] Before user update for user_id: 16, first_name: mingwen, last_name: gan, phone: 0123456789
+[14-Jun-2025 12:27:17 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:27:17 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:27:17 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1180
+[14-Jun-2025 12:29:41 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1183
+[14-Jun-2025 12:29:44 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:29:44 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:29:44 Europe/Berlin] POST request received at 2025-06-14 12:29:44 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => gan
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:29:44 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:29:44 Europe/Berlin] Before user update for user_id: 16, first_name: mingwen, last_name: gan, phone: 0123456789
+[14-Jun-2025 12:29:44 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:29:44 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:29:44 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1183
+[14-Jun-2025 12:29:53 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:29:53 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:29:53 Europe/Berlin] POST request received at 2025-06-14 12:29:53 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:29:53 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:29:53 Europe/Berlin] Before user update for user_id: 16, first_name: mingwen, last_name: koh, phone: 0123456789
+[14-Jun-2025 12:29:53 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:29:53 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:29:53 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1183
+[14-Jun-2025 12:41:21 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1183
+[14-Jun-2025 12:42:55 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:42:55 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:42:55 Europe/Berlin] POST request received at 2025-06-14 12:42:55 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingweng
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:42:55 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:42:55 Europe/Berlin] Before user update for user_id: 16, first_name: mingweng, last_name: koh, phone: 0123456789
+[14-Jun-2025 12:42:55 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:42:55 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:42:55 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1183
+[14-Jun-2025 12:49:09 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1185
+[14-Jun-2025 12:49:15 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:49:15 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:49:15 Europe/Berlin] POST request received at 2025-06-14 12:49:15 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 12:49:15 Europe/Berlin] Processing profile update for user_id: 16
+[14-Jun-2025 12:49:15 Europe/Berlin] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
+[14-Jun-2025 12:49:15 Europe/Berlin] Transaction committed for user_id: 16
+[14-Jun-2025 12:49:15 Europe/Berlin] Profile updated for user_id: 16
+[14-Jun-2025 12:49:15 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1185
+[14-Jun-2025 12:51:33 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 12:51:33 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php4217.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[14-Jun-2025 12:51:33 Europe/Berlin] POST request received at 2025-06-14 12:51:33 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => Picture1.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php4217.tmp
+            [error] => 0
+            [size] => 522237
+        )
+
+)
+
+[14-Jun-2025 12:51:33 Europe/Berlin] Old file deleted: Uploads/credentials/684d4de3a2312_OIP.jpeg
+[14-Jun-2025 12:51:33 Europe/Berlin] CGPA updated for user_id: 16, file: Uploads/credentials/684d54354c33c_Picture1.png
+[14-Jun-2025 12:51:33 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file updated successfully. It will be reviewed.
+[14-Jun-2025 12:51:33 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1185
+[14-Jun-2025 13:08:44 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [delete_cgpa] => 1
+)
+
+[14-Jun-2025 13:08:44 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 13:08:44 Europe/Berlin] POST request received at 2025-06-14 13:08:44 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [delete_cgpa] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+)
+
+[14-Jun-2025 13:08:44 Europe/Berlin] Delete CGPA requested for user_id: 16
+[14-Jun-2025 13:08:44 Europe/Berlin] File deleted: Uploads/credentials/684d54354c33c_Picture1.png
+[14-Jun-2025 13:08:44 Europe/Berlin] CGPA deleted for user_id: 16
+[14-Jun-2025 14:19:54 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1185
+[14-Jun-2025 14:19:59 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 14:19:59 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php38E6.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[14-Jun-2025 14:19:59 Europe/Berlin] POST request received at 2025-06-14 14:19:59 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php38E6.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[14-Jun-2025 14:19:59 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/684d68ef5b29e_screenshot-1717507504216.png
+[14-Jun-2025 14:19:59 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file uploaded successfully. It will be reviewed.
+[14-Jun-2025 14:19:59 Europe/Berlin] PHP Warning:  Undefined variable $has_cgpa in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 1185
+[14-Jun-2025 14:22:43 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [delete_cgpa] => 1
+)
+
+[14-Jun-2025 14:22:43 Europe/Berlin] FILES data received: Array
+(
+)
+
+[14-Jun-2025 14:22:43 Europe/Berlin] POST request received at 2025-06-14 14:22:43 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[14-Jun-2025 14:22:43 Europe/Berlin] Delete CGPA requested for user_id: 16
+[14-Jun-2025 14:22:43 Europe/Berlin] File deleted: Uploads/credentials/684d68ef5b29e_screenshot-1717507504216.png
+[14-Jun-2025 14:22:43 Europe/Berlin] CGPA deleted for user_id: 16
+[14-Jun-2025 14:22:48 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[14-Jun-2025 14:22:48 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpCE47.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[14-Jun-2025 14:22:48 Europe/Berlin] POST request received at 2025-06-14 14:22:48 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [save_cgpa] => 
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpCE47.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[14-Jun-2025 14:22:48 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/684d6998a9b8d_OIP.jpeg
+[14-Jun-2025 14:22:48 Europe/Berlin] CGPA processed for user_id: 16 - Message: CGPA credential file uploaded successfully. It will be reviewed.
