@@ -7,15 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: login.php');
     exit();
 }
-// $servername = "localhost";
-// $username = "root";
-// $password = "";
-// $dbname = "peer_tutoring_platform";
-
-// $conn = new mysqli($servername, $username, $password, $dbname);
-// if ($conn->connect_error) {
-//     die("Connection failed: " . $conn->connect_error);
-// }
 
 $tutor_id = isset($_GET['tutor_id']) ? intval($_GET['tutor_id']) : 16;
 
@@ -42,18 +33,18 @@ while ($row = $courses_result->fetch_assoc()) {
     $courses[] = $row;
 }
 
-// Fetch session count per date
-$session_query = "SELECT selected_date, COUNT(*) as session_count 
+// Fetch session count per date and time slot
+$session_query = "SELECT selected_date, time_slot, COUNT(*) as session_count 
                  FROM session_requests 
                  WHERE tutor_id = ? AND status != 'cancelled'
-                 GROUP BY selected_date";
+                 GROUP BY selected_date, time_slot";
 $stmt = $conn->prepare($session_query);
 $stmt->bind_param("i", $tutor_id);
 $stmt->execute();
 $session_result = $stmt->get_result();
 $session_counts = [];
 while ($row = $session_result->fetch_assoc()) {
-    $session_counts[$row['selected_date']] = $row['session_count'];
+    $session_counts[$row['selected_date'] . '|' . $row['time_slot']] = $row['session_count'];
 }
 
 // Fetch reviews
@@ -127,7 +118,7 @@ $page_title = "Book a Study Partner - PeerLearn";
                 <ul style="list-style: none; padding: 0;">
                     <?php foreach ($courses as $course): ?>
                         <li style="margin-bottom: 0.5rem;">
-                            <?php echo htmlspecialchars($course['course_name']); ?> - RM <?php echo number_format($course['hourly_rate'], 2); ?>/hr
+                            <?php echo htmlspecialchars($course['course_name']); ?> - RM <?php echo number_format($course['hourly_rate'], 2); ?>/session
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -171,7 +162,7 @@ $page_title = "Book a Study Partner - PeerLearn";
                         <option value="">Select a Course</option>
                         <?php foreach ($courses as $course): ?>
                             <option value="<?php echo htmlspecialchars($course['id']); ?>" data-rate="<?php echo $course['hourly_rate']; ?>">
-                                <?php echo htmlspecialchars($course['course_name']); ?> (RM <?php echo number_format($course['hourly_rate'], 2); ?>/hr)
+                                <?php echo htmlspecialchars($course['course_name']); ?> (RM <?php echo number_format($course['hourly_rate'], 2); ?>/session)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -192,11 +183,12 @@ $page_title = "Book a Study Partner - PeerLearn";
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="duration" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Session Duration</label>
-                    <select id="duration" name="duration" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="1">1 hour</option>
-                        <option value="1.5">1.5 hours</option>
-                        <option value="2" selected>2 hours</option>
+                    <label for="time_slot" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Time Slot</label>
+                    <select id="time_slot" name="time_slot" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Select a Time Slot</option>
+                        <option value="08:00-10:00">08:00 - 10:00</option>
+                        <option value="10:00-12:00">10:00 - 12:00</option>
+                        <option value="12:00-14:00">12:00 - 14:00</option>
                     </select>
                 </div>
 
@@ -223,10 +215,6 @@ $page_title = "Book a Study Partner - PeerLearn";
                         <span>Tutor Fees</span>
                         <span id="tutor-fee">RM0.00</span>
                     </div>
-                    <div class="price-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span></span>
-                        <span id="platform-fee">RM0.00</span>
-                    </div>
                     <hr>
                     <div class="price-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: bold; color: #2B3990; font-size: 1.2rem;">
                         <span>Total</span>
@@ -251,25 +239,19 @@ $page_title = "Book a Study Partner - PeerLearn";
     document.addEventListener('DOMContentLoaded', function() {
         const courseSelect = document.getElementById('course');
         const hourlyRates = <?php echo json_encode(array_column($courses, 'hourly_rate', 'id')); ?>;
-        const durationSelect = document.getElementById('duration');
 
         function updatePrice() {
             const courseId = courseSelect.value;
-            const duration = parseFloat(durationSelect.value) || 0;
             const hourlyRate = courseId && hourlyRates[courseId] ? parseFloat(hourlyRates[courseId]) : 0;
-            const tutorFee = hourlyRate * duration;
+            const totalFee = hourlyRate;
 
-            const totalFee = tutorFee;
-
-            document.getElementById('tutor-fee').innerHTML = `RM${tutorFee.toFixed(2)}`;
-
+            document.getElementById('tutor-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
             document.getElementById('total-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
         }
 
         // Initialize price
         updatePrice();
         courseSelect.addEventListener('change', updatePrice);
-        durationSelect.addEventListener('change', updatePrice);
 
         const sessionCounts = <?php echo json_encode($session_counts); ?>;
         let currentMonth = <?php echo $current_month; ?>;

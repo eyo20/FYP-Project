@@ -15,28 +15,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = intval($_POST['student_id']);
     $course_id = intval($_POST['course_id']);
     $location_id = intval($_POST['location_id']);
-    $duration = floatval($_POST['duration']);
+    $time_slot = trim($_POST['time_slot']);
     $selected_date = $_POST['selected_date'];
     $notes = trim($_POST['notes']);
 
     // Validate inputs
-    if (!$student_id || !$tutor_id || !$course_id || !$location_id || !$duration || !$selected_date) {
+    if (!$student_id || !$tutor_id || !$course_id || !$location_id || !$time_slot || !$selected_date) {
         header("Location: appointments.php?tutor_id=$tutor_id&error=All fields are required");
+        exit;
+    }
+
+    // Validate time slot
+    $valid_time_slots = ['08:00-10:00', '10:00-12:00', '12:00-14:00'];
+    if (!in_array($time_slot, $valid_time_slots)) {
+        header("Location: appointments.php?tutor_id=$tutor_id&error=Invalid time slot");
         exit;
     }
 
     // Check session limit
     $session_query = "SELECT COUNT(*) as session_count 
                      FROM session_requests 
-                     WHERE tutor_id = ? AND selected_date = ? AND status != 'cancelled'";
+                     WHERE tutor_id = ? AND selected_date = ? AND time_slot = ? AND status != 'cancelled'";
     $stmt = $conn->prepare($session_query);
-    $stmt->bind_param("is", $tutor_id, $selected_date);
+    $stmt->bind_param("iss", $tutor_id, $selected_date, $time_slot);
     $stmt->execute();
     $session_result = $stmt->get_result();
     $session_count = $session_result->fetch_assoc()['session_count'];
 
     if ($session_count >= 3) {
-        header("Location: appointments.php?tutor_id=$tutor_id&error=Maximum 3 sessions per day reached");
+        header("Location: appointments.php?tutor_id=$tutor_id&error=Maximum 3 sessions per time slot reached");
         exit;
     }
 
@@ -66,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hourly_rate = $rate['hourly_rate'] ?? 0;
 
     // Insert into session_requests
-    $insert_query = "INSERT INTO session_requests (tutor_id, student_id, course_id, location_id, duration, selected_date, notes, status, created_at)
+    $insert_query = "INSERT INTO session_requests (tutor_id, student_id, course_id, location_id, time_slot, selected_date, notes, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
     $stmt = $conn->prepare($insert_query);
-    $stmt->bind_param("iiiidss", $tutor_id, $student_id, $course_id, $location_id, $duration, $selected_date, $notes);
+    $stmt->bind_param("iiiisss", $tutor_id, $student_id, $course_id, $location_id, $time_slot, $selected_date, $notes);
 
     if ($stmt->execute()) {
         // Render confirmation page
@@ -84,10 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Booking Details</h3>
                         <p style="margin: 0.5rem 0;"><strong>Course:</strong> <?php echo htmlspecialchars($course['course_name']); ?></p>
                         <p style="margin: 0.5rem 0;"><strong>Date:</strong> <?php echo htmlspecialchars($selected_date); ?></p>
-                        <p style="margin: 0.5rem 0;"><strong>Duration:</strong> <?php echo htmlspecialchars($duration); ?> hours</p>
+                        <p style="margin: 0.5rem 0;"><strong>Time Slot:</strong> <?php echo htmlspecialchars($time_slot); ?></p>
                         <p style="margin: 0.5rem 0;"><strong>Study Venue:</strong> <?php echo htmlspecialchars($location['location_name']); ?></p>
                         <p style="margin: 0.5rem 0;"><strong>Notes:</strong> <?php echo empty($notes) ? "None" : htmlspecialchars($notes); ?></p>
-                        <p style="margin: 0.5rem 0;"><strong>Hourly Rate:</strong> RM <?php echo number_format($hourly_rate, 2); ?></p>
+                        <p style="margin: 0.5rem 0;"><strong>Total Fee:</strong> RM <?php echo number_format($hourly_rate, 2); ?></p>
                     </div>
                 </div>
                 <a href="student_main_page.php" class="btn" style="background-color: var(--accent-color); padding: 0.8rem 1.5rem; text-decoration: none; color: var(--dark-gray); border-radius: 4px; display: inline-block; margin-top: 1rem;">Back to Main Page</a>
