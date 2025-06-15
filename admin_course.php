@@ -33,7 +33,7 @@
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
                 <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
-                <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
+                <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
                 <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>

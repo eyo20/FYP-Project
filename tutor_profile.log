@@ -1545,6 +1545,7 @@
 [15-Jun-2025 12:26:07 Europe/Berlin] Processing profile image upload for user ID: 16
 [15-Jun-2025 12:26:07 Europe/Berlin] Old profile image deleted: Uploads/profile_images/16_1749975508_16_1749401252_OIP.png
 [15-Jun-2025 12:26:07 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749983167_OIP.jpg_1.jpg
+<<<<<<< HEAD
 [15-Jun-2025 18:25:25 Europe/Berlin] Request received at 2025-06-15 18:25:25
 [15-Jun-2025 18:38:08 Europe/Berlin] Request received at 2025-06-15 18:38:08
 [15-Jun-2025 18:45:10 Europe/Berlin] PHP Warning:  Undefined variable $user_id in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 24
@@ -1646,10 +1647,27 @@
             [tmp_name] => C:\xampp\tmp\phpBE2B.tmp
             [error] => 0
             [size] => 692413
+=======
+[15-Jun-2025 16:18:02 Europe/Berlin] POST data received: Array
+(
+)
+
+[15-Jun-2025 16:18:02 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Screenshot 2025-06-15 200410.png
+            [full_path] => Screenshot 2025-06-15 200410.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5A85.tmp
+            [error] => 0
+            [size] => 29464
+>>>>>>> 904f2f33742990400098b9b09e4ecbd0775eeaa6
         )
 
 )
 
+<<<<<<< HEAD
 [16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:41:26 for user_id: 16 - POST: Array
 (
     [save_cgpa] => 
@@ -1663,10 +1681,23 @@
             [tmp_name] => C:\xampp\tmp\phpBE2B.tmp
             [error] => 0
             [size] => 692413
+=======
+[15-Jun-2025 16:18:02 Europe/Berlin] POST request received at 2025-06-15 16:18:02 for user_id: 16 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Screenshot 2025-06-15 200410.png
+            [full_path] => Screenshot 2025-06-15 200410.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5A85.tmp
+            [error] => 0
+            [size] => 29464
+>>>>>>> 904f2f33742990400098b9b09e4ecbd0775eeaa6
         )
 
 )
 
+<<<<<<< HEAD
 [16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] CGPA inserted for user_id: 16, file: Uploads/credentials/684f21e6d36c5_screenshot-1717507504216.png
 [16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] POST data received: Array
 (
@@ -1889,3 +1920,72 @@
 )
 
 [16-Jun-2025 04:16:15 Asia/Kuala_Lumpur] CGPA inserted for user_id: 16, file: Uploads/credentials/684f2a0fcd831_cgpa.jpeg
+=======
+[15-Jun-2025 16:18:02 Europe/Berlin] Processing profile image upload for user ID: 16
+[15-Jun-2025 16:18:02 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749997082_Screenshot_2025-06-15_200410.png
+>>>>>>> 904f2f33742990400098b9b09e4ecbd0775eeaa6
+[16-Jun-2025 04:34:50 Asia/Kuala_Lumpur] POST data received: Array
+(
+)
+
+[16-Jun-2025 04:34:50 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => imgstudent.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php9FFA.tmp
+            [error] => 0
+            [size] => 3376
+        )
+
+)
+
+[16-Jun-2025 04:34:50 Asia/Kuala_Lumpur] POST request received at 2025-06-16 04:34:50 for user_id: 16 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => imgstudent.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php9FFA.tmp
+            [error] => 0
+            [size] => 3376
+        )
+
+)
+
+[16-Jun-2025 04:34:50 Asia/Kuala_Lumpur] Processing profile image upload for user ID: 16
+[16-Jun-2025 04:34:50 Asia/Kuala_Lumpur] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1750019690_imgstudent.png
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] POST data received: Array
+(
+)
+
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Multimedia-University-MMU-Cyberjaya-Malaysia.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpAFE9.tmp
+            [error] => 0
+            [size] => 126557
+        )
+
+)
+
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] POST request received at 2025-06-16 04:34:54 for user_id: 16 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Multimedia-University-MMU-Cyberjaya-Malaysia.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpAFE9.tmp
+            [error] => 0
+            [size] => 126557
+        )
+
+)
+
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Processing profile image upload for user ID: 16
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Old profile image deleted: Uploads/profile_images/16_1750019690_imgstudent.png
+[16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1750019694_Multimedia-University-MMU-Cyberjaya-Malaysia.jpg

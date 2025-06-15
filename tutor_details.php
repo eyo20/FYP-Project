@@ -1,9 +1,11 @@
 <?php
-// Start session and include database connection
+// tutor_details.php
 session_start();
+
+// Database connection
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = ""; 
 $dbname = "peer_tutoring_platform";
 
 // Create connection
@@ -14,19 +16,59 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get tutor ID from URL
-$tutor_id = $_GET['id'] ?? 0;
+// Initialize variables
+$tutor = null;
+$credentials = array();
 
-// Fetch tutor details
-$sql = "SELECT * FROM tutors WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $tutor_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$tutor = $result->fetch_assoc();
-
-// Close connection
-$conn->close();
+// Check if ID parameter exists
+if(isset($_GET['id']) && !empty($_GET['id'])) {
+    $user_id = $conn->real_escape_string($_GET['id']);
+    
+    // Get tutor information and credentials in one query
+    $sql = "SELECT sp.*, u.username, u.email, u.phone, 
+                   cf.file_id, cf.file_name, cf.file_path, cf.file_type, 
+                   cf.upload_date, cf.status, cf.is_verified, cf.rejection_reason
+            FROM tutorprofile sp
+            JOIN user u ON sp.user_id = u.user_id
+            LEFT JOIN credential_file cf ON sp.user_id = cf.user_id
+            WHERE sp.user_id = '$user_id'
+            ORDER BY 
+                CASE WHEN cf.status = 'approved' THEN 0 
+                     WHEN cf.status = 'pending' THEN 1
+                     ELSE 2 END,
+                cf.upload_date DESC";   
+    
+    $result = $conn->query($sql);
+    
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            if ($tutor === null) {
+                // First row has the tutor data
+                $tutor = array(
+                    'username' => $row['username'],
+                    'email' => $row['email'],
+                    'phone' => $row['phone'],
+                    'year' => $row['year'],
+                    'program' => $row['program'],
+                    'major' => $row['major'],
+                    'rating' => $row['rating']
+                );
+            }
+            if (!empty($row['file_id'])) {
+                $credentials[] = array(
+                    'file_id' => $row['file_id'],
+                    'file_name' => $row['file_name'],
+                    'file_path' => $row['file_path'],
+                    'file_type' => $row['file_type'],
+                    'upload_date' => $row['upload_date'],
+                    'status' => $row['status'],
+                    'is_verified' => $row['is_verified'],
+                    'rejection_reason' => $row['rejection_reason']
+                );
+            }
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -34,16 +76,97 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutor Profile - <?php echo htmlspecialchars($tutor['tutor_name'] ?? 'Tutor'); ?></title>
+    <title>Tutor Profile - <?php echo isset($tutor['username']) ? htmlspecialchars($tutor['username']) : 'Tutor'; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="studentstyle.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
-            margin: 1;
-            padding: 1;
+            margin: 0;
+            padding: 0;
             color: #333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        aside {
+            width: 250px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo h2 {
+            font-size: 18px;
+        }
+        
+        .danger {
+            color: #ff7782;
+        }
+        
+        .sidebar {
+            padding: 20px;
+        }
+        
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: #7d8da1;
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+        
+        .sidebar a.active {
+            background: rgba(115, 128, 236, 0.1);
+            color: #7380ec;
+        }
+        
+        .sidebar a:hover:not(.active) {
+            background: #f6f6f9;
+        }
+        
+        .sidebar .material-symbols-sharp {
+            margin-right: 10px;
+            font-size: 22px;
+        }
+        
+        .sidebar h3 {
+            font-size: 15px;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .message-count {
+            background: #ff7782;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: auto;
         }
         
         .profile-content {
@@ -142,7 +265,114 @@ $conn->close();
             font-size: 20px;
         }
         
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
 
+        .edit-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #3e8e41;
+        }
+
+        .edit-btn .material-symbols-sharp {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        
+        /* Credentials specific styles */
+        .credentials-list {
+            margin-top: 10px;
+        }
+
+        .credential-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #ddd;
+        }
+
+        .credential-item.approved {
+            border-left-color: #28a745;
+        }
+
+        .credential-item.pending {
+            border-left-color: #ffc107;
+        }
+
+        .credential-item.rejected {
+            border-left-color: #dc3545;
+        }
+
+        .credential-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .view-credential {
+            color: #7380ec;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .view-credential:hover {
+            text-decoration: underline;
+        }
+
+        .file-type {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .credential-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .verification-status {
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .verification-status.pending {
+            color: #ffc107;
+            background-color: #fff3cd;
+        }
+
+        .verification-status.approved {
+            color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .verification-status.rejected {
+            color: #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .rejection-reason {
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -159,84 +389,113 @@ $conn->close();
             </div>
 
             <div class="sidebar">
-                <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
-                <a href="#"></a>
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php" class="active"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
                 <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
-                <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
-                <a href="session.php"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
+                <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
-                <a href="sales.php"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
                 <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
         </aside>
 
         <div class="profile-content">
-            <div class="profile-header">
-                <span class="material-symbols-sharp profile-icon">account_circle</span>
-                <div class="profile-title">
-                    <h1><?php echo htmlspecialchars($tutor['tutor_name'] ?? 'Tutor Name'); ?></h1>
-                    <p>Tutor Profile</p>
-                </div>
-            </div>
-            
-            <div class="profile-sections">
-                <div class="profile-section">
-                    <h2>Academic Information</h2>
-                    <div class="detail-item">
-                        <strong>Level</strong>
-                        <p><?php echo htmlspecialchars($tutor['level'] ?? 'N/A'); ?></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Program</strong>
-                        <p><?php echo htmlspecialchars($tutor['program'] ?? 'N/A'); ?></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Current Year</strong>
-                        <p><?php echo htmlspecialchars($tutor['course_year'] ?? 'N/A'); ?></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Current CGPA</strong>
-                        <p><?php echo htmlspecialchars($tutor['cgpa'] ?? 'N/A'); ?></p>
+            <?php if(isset($tutor)): ?>
+                <div class="profile-header">
+                    <span class="material-symbols-sharp profile-icon">account_circle</span>
+                    <div class="profile-title">
+                        <h1><?php echo htmlspecialchars($tutor['username']); ?></h1>
+                        <p>Tutor Profile</p>
                     </div>
                 </div>
                 
-                
-                <div class="profile-section">
-                    <h2>Contact Information</h2>
-                    <div class="detail-item">
-                        <strong>Email</strong>
-                        <p><?php echo htmlspecialchars($tutor['email'] ?? 'Not provided'); ?></p>
+                <div class="profile-sections">
+                    <div class="profile-section">
+                        <h2>Academic Information</h2>
+                        <div class="detail-item">
+                            <strong>Level</strong>
+                            <p><?php echo !empty($tutor['year']) ? htmlspecialchars($tutor['year']) : 'N/A'; ?></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Program</strong>
+                            <p><?php echo !empty($tutor['program']) ? htmlspecialchars($tutor['program']) : 'N/A'; ?></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Major</strong>
+                            <p><?php echo !empty($tutor['major']) ? htmlspecialchars($tutor['major']) : 'N/A'; ?></p>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <strong>Phone</strong>
-                        <p><?php echo htmlspecialchars($tutor['phone'] ?? 'Not provided'); ?></p>
+                    
+                    <div class="profile-section">
+                        <h2>Contact Information</h2>
+                        <div class="detail-item">
+                            <strong>Email</strong>
+                            <p><?php echo !empty($tutor['email']) ? htmlspecialchars($tutor['email']) : 'N/A'; ?></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Phone</strong>
+                            <p><?php echo !empty($tutor['phone']) ? htmlspecialchars($tutor['phone']) : 'N/A'; ?></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Rating</strong>
+                            <p><?php echo !empty($tutor['rating']) ? htmlspecialchars($tutor['rating']) : 'N/A'; ?></p>
+                        </div>
                     </div>
-                   <?php if (!empty($tutor['transcript'])): ?>
-                    <div class="detail-item">
-                        <strong>Academic Transcript</strong>
-                        <a href="uploads/<?php echo htmlspecialchars($tutor['transcript']); ?>" class="transcript-link" target="_blank">
-                            <span class="material-symbols-sharp">description</span>
-                            View Transcript
-                        </a>
-                    </div>
+                    
+                    <div class="profile-section full-width">
+                    <?php if (!empty($credentials) && is_array($credentials)): ?>
+                        <?php foreach ($credentials as $cred): ?>
+                            <?php if (isset($cred['file_id']) && $cred['file_id'] !== null): ?>
+                                <div class="credential-item <?php echo htmlspecialchars($cred['status']); ?>">
+                                    <div class="credential-info">
+                                        <strong>
+                                            <?php if ($cred['status'] == 'approved'): ?>
+                                                <a href="download.php?file_id=<?php echo htmlspecialchars($cred['file_id']); ?>" class="view-credential">
+                                                    <?php echo htmlspecialchars($cred['file_name']); ?>
+                                                </a>
+                                            <?php else: ?>
+                                                <?php echo htmlspecialchars($cred['file_name']); ?>
+                                            <?php endif; ?>
+                                        </strong>
+                                        <span class="verification-status <?php echo htmlspecialchars($cred['status']); ?>">
+                                            <?php echo ucfirst($cred['status']); ?>
+                                            <?php if ($cred['is_verified'] && $cred['status'] == 'approved'): ?>
+                                                (Verified)
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                    <div class="file-type">Type: <?php echo htmlspecialchars($cred['file_type']); ?></div>
+                                    <div class="credential-meta">
+                                        <span>Uploaded: <?php echo htmlspecialchars($cred['upload_date']); ?></span>
+                                    </div>
+                                    <?php if ($cred['status'] == 'rejected' && !empty($cred['rejection_reason'])): ?>
+                                        <div class="rejection-reason">
+                                            <strong>Reason: </strong><?php echo htmlspecialchars($cred['rejection_reason']); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>No credentials found for this tutor.</p>
                     <?php endif; ?>
-                </div>
-                
-                
-                <div class="profile-section full-width">
-                    <h2>Experience & Details</h2>
-                    <div class="detail-item">
-                        <p><?php echo nl2br(htmlspecialchars($tutor['details'] ?? 'No additional information provided')); ?></p>
                     </div>
                 </div>
-            </div>
-            
-            <a href="admin_tutors.php" class="back-btn">
-                <span class="material-symbols-sharp">arrow_back</span>
-                Back to Tutors List
-            </a>
+                
+                <a href="admin_tutors.php" class="back-btn">
+                    <span class="material-symbols-sharp">arrow_back</span>
+                    Back to Tutors List
+                </a>
+            <?php else: ?>
+                <div class="profile-section full-width">
+                    <h2>Error</h2>
+                    <p>No tutor information found for the specified ID.</p>
+                    <a href="admin_tutors.php" class="back-btn">
+                        <span class="material-symbols-sharp">arrow_back</span>
+                        Back to Tutors List
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>
