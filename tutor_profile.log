@@ -1512,3 +1512,36 @@
 
 [15-Jun-2025 10:18:28 Europe/Berlin] Processing profile image upload for user ID: 16
 [15-Jun-2025 10:18:28 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749975508_16_1749401252_OIP.png
+[15-Jun-2025 12:26:07 Europe/Berlin] POST data received: Array
+(
+)
+
+[15-Jun-2025 12:26:07 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => OIP.jpg 1.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php548D.tmp
+            [error] => 0
+            [size] => 18258
+        )
+
+)
+
+[15-Jun-2025 12:26:07 Europe/Berlin] POST request received at 2025-06-15 12:26:07 for user_id: 16 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => OIP.jpg 1.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php548D.tmp
+            [error] => 0
+            [size] => 18258
+        )
+
+)
+
+[15-Jun-2025 12:26:07 Europe/Berlin] Processing profile image upload for user ID: 16
+[15-Jun-2025 12:26:07 Europe/Berlin] Old profile image deleted: Uploads/profile_images/16_1749975508_16_1749401252_OIP.png
+[15-Jun-2025 12:26:07 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749983167_OIP.jpg_1.jpg

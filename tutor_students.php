@@ -14,7 +14,7 @@ $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT username, email, role, first_name, last_name, phone, profile_image, created_at FROM user WHERE user_id = ?");
 if (!$stmt) {
     error_log("Error preparing user query: " . $conn->error);
-    die("Error preparing user query: " . $conn->error);
+    $_SESSION['error'] = "Error preparing user query: " . $conn->error;
 }
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -32,7 +32,7 @@ $email = $user_data['email'];
 $first_name = $user_data['first_name'] ?: '';
 $last_name = $user_data['last_name'] ?: '';
 $phone = $user_data['phone'] ?: '';
-$profile_image = $user_data['profile_image'];
+$profile_image = $user_data['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
 $created_at = $user_data['created_at'];
 $stmt->close();
 
@@ -60,23 +60,31 @@ if ($stmt) {
 
 // 获取当前预约的学生列表（状态为 confirmed）
 $current_sessions = [];
-$stmt = $conn->prepare("SELECT s.session_id, s.start_datetime, s.end_datetime, s.status,
-                        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
-                        c.course_name, l.location_name
-                        FROM session s
-                        JOIN user u ON s.student_id = u.user_id
-                        JOIN course c ON s.course_id = c.id
-                        LEFT JOIN location l ON s.location_id = l.location_id
-                        WHERE s.tutor_id = ? AND s.status = 'confirmed'
-                        ORDER BY s.start_datetime ASC");
+$stmt = $conn->prepare("
+    SELECT s.session_id, s.start_datetime, s.end_datetime, s.status,
+           u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
+           c.course_name, l.location_name,
+           sr.time_slot
+    FROM session s
+    JOIN user u ON s.student_id = u.user_id
+    JOIN course c ON s.course_id = c.id
+    LEFT JOIN location l ON s.location_id = l.location_id
+    LEFT JOIN session_requests sr ON s.tutor_id = sr.tutor_id 
+        AND s.student_id = sr.student_id 
+        AND s.course_id = sr.course_id 
+        AND DATE(s.start_datetime) = sr.selected_date
+    WHERE s.tutor_id = ? AND s.status = 'confirmed'
+    ORDER BY s.start_datetime ASC
+");
 if (!$stmt) {
     error_log("Error preparing current sessions query: " . $conn->error);
-    $error_message = "Error preparing current sessions query: " . $conn->error;
+    $_SESSION['error'] = "Error preparing current sessions query: " . $conn->error;
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
         $current_sessions[] = $row;
     }
     $stmt->close();
@@ -84,25 +92,33 @@ if (!$stmt) {
 
 // 获取历史预约的学生列表（状态为 completed 或 cancelled）
 $past_sessions = [];
-$stmt = $conn->prepare("SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
-                        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
-                        c.course_name, l.location_name,
-                        r.rating, r.comment
-                        FROM session s
-                        JOIN user u ON s.student_id = u.user_id
-                        JOIN course c ON s.course_id = c.id
-                        LEFT JOIN location l ON s.location_id = l.location_id
-                        LEFT JOIN review r ON s.session_id = r.session_id AND r.tutor_id = s.tutor_id
-                        WHERE s.tutor_id = ? AND (s.status = 'completed' OR s.status = 'cancelled')
-                        ORDER BY s.start_datetime DESC");
+$stmt = $conn->prepare("
+    SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
+           u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
+           c.course_name, l.location_name,
+           r.rating, r.comment,
+           sr.time_slot
+    FROM session s
+    JOIN user u ON s.student_id = u.user_id
+    JOIN course c ON s.course_id = c.id
+    LEFT JOIN location l ON s.location_id = l.location_id
+    LEFT JOIN review r ON s.session_id = r.session_id AND r.tutor_id = s.tutor_id
+    LEFT JOIN session_requests sr ON s.tutor_id = sr.tutor_id 
+        AND s.student_id = sr.student_id 
+        AND s.course_id = sr.course_id 
+        AND DATE(s.start_datetime) = sr.selected_date
+    WHERE s.tutor_id = ? AND (s.status = 'completed' OR s.status = 'cancelled')
+    ORDER BY s.start_datetime DESC
+");
 if (!$stmt) {
     error_log("Error preparing past sessions query: " . $conn->error);
-    $error_message = "Error preparing past sessions query: " . $conn->error;
+    $_SESSION['error'] = "Error preparing past sessions query: " . $conn->error;
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
         $past_sessions[] = $row;
     }
     $stmt->close();
@@ -110,28 +126,31 @@ if (!$stmt) {
 
 // 获取所有学生的统计信息
 $student_stats = [];
-$stmt = $conn->prepare("SELECT 
-                        s.student_id,
-                        u.first_name,
-                        u.last_name,
-                        u.profile_image,
-                        COUNT(s.session_id) as total_sessions,
-                        SUM(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END) as completed_sessions,
-                        SUM(CASE WHEN s.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_sessions,
-                        MAX(s.start_datetime) as last_session_date
-                        FROM session s
-                        JOIN user u ON s.student_id = u.user_id
-                        WHERE s.tutor_id = ?
-                        GROUP BY s.student_id
-                        ORDER BY total_sessions DESC");
+$stmt = $conn->prepare("
+    SELECT 
+        s.student_id,
+        u.first_name,
+        u.last_name,
+        u.profile_image,
+        COUNT(s.session_id) as total_sessions,
+        SUM(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END) as completed_sessions,
+        SUM(CASE WHEN s.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_sessions,
+        MAX(s.start_datetime) as last_session_date
+    FROM session s
+    JOIN user u ON s.student_id = u.user_id
+    WHERE s.tutor_id = ?
+    GROUP BY s.student_id
+    ORDER BY total_sessions DESC
+");
 if (!$stmt) {
     error_log("Error preparing student stats query: " . $conn->error);
-    $error_message = "Error preparing student stats query: " . $conn->error;
+    $_SESSION['error'] = "Error preparing student stats query: " . $conn->error;
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
         $student_stats[$row['student_id']] = $row;
     }
     $stmt->close();
@@ -139,25 +158,101 @@ if (!$stmt) {
 
 // 获取学生详细信息
 $student_details = [];
-$stmt = $conn->prepare("SELECT 
-                        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, u.created_at,
-                        sp.major, sp.year, sp.school
-                        FROM user u
-                        LEFT JOIN studentprofile sp ON u.user_id = sp.user_id
-                        WHERE u.user_id IN (
-                            SELECT DISTINCT student_id FROM session WHERE tutor_id = ?
-                        )");
+$stmt = $conn->prepare("
+    SELECT 
+        u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, u.created_at
+    FROM user u
+    WHERE u.user_id IN (
+        SELECT DISTINCT student_id FROM session WHERE tutor_id = ?
+    )
+");
 if (!$stmt) {
     error_log("Error preparing student details query: " . $conn->error);
-    $error_message = "Error preparing student details query: " . $conn->error;
+    $_SESSION['error'] = "Error preparing student details query: " . $conn->error;
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
         $student_details[$row['user_id']] = $row;
     }
     $stmt->close();
+}
+
+// 渲染会话卡片函数
+function renderSessionCard($session, $student_details) {
+    $statusClass = $session['status'] == 'cancelled' ? 'status-cancelled' : 
+                   ($session['status'] == 'completed' ? 'status-completed' : 'status-confirmed');
+    ?>
+    <div class="request-card">
+        <div class="request-header">
+            <div class="student-avatar" data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>">
+                <img src="<?php echo htmlspecialchars($session['profile_image']); ?>" alt="Student" class="profile-image" 
+                     onerror="this.src='assets/default-avatar.png'; this.onerror=null;">
+                <span style="display:none;"><?php echo htmlspecialchars(substr($session['first_name'] ?? '', 0, 1) . substr($session['last_name'] ?? '', 0, 1)); ?></span>
+            </div>
+            <div class="request-info">
+                <div class="student-name"><?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?></div>
+            </div>
+            <span class="status-badge <?php echo $statusClass; ?>">
+                <?php echo ucfirst($session['status'] ?? 'Unknown'); ?>
+            </span>
+        </div>
+        <div class="request-details">
+            <div class="detail-item">
+                <div class="detail-label">Course:</div>
+                <div class="detail-value"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Date:</div>
+                <div class="detail-value">
+                    <?php echo !empty($session['start_datetime']) 
+                        ? date('M d, Y', strtotime($session['start_datetime'])) 
+                        : 'Not specified'; ?>
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Time Slot:</div>
+                <div class="detail-value">
+                    <?php echo htmlspecialchars($session['time_slot'] ?? 
+                        (date('H:i', strtotime($session['start_datetime'])) . '-' . date('H:i', strtotime($session['end_datetime'])))) ?: 'Not specified'; ?>
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Location:</div>
+                <div class="detail-value"><?php echo htmlspecialchars($session['location_name'] ?? 'Not specified'); ?></div>
+            </div>
+            <?php if ($session['status'] == 'cancelled' && $session['cancellation_reason']): ?>
+                <div class="detail-item">
+                    <div class="detail-label">Reason:</div>
+                    <div class="detail-value"><?php echo htmlspecialchars($session['cancellation_reason'] ?? 'Not specified'); ?></div>
+                </div>
+            <?php endif; ?>
+            <?php if (isset($session['rating']) && $session['rating']): ?>
+                <div class="detail-item">
+                    <div class="detail-label">Rating:</div>
+                    <div class="detail-value"><?php echo htmlspecialchars($session['rating']); ?>/5
+                        <?php if (isset($session['comment']) && $session['comment']): ?>
+                            <span class="text-muted">"<?php echo htmlspecialchars($session['comment']); ?>"</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="request-actions">
+            <button class="btn btn-profile view-student" 
+                    data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" 
+                    data-name="<?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?>"
+                    data-email="<?php echo htmlspecialchars($student_details[$session['user_id']]['email'] ?? ''); ?>"
+                    data-phone="<?php echo htmlspecialchars($student_details[$session['user_id']]['phone'] ?? ''); ?>"
+                    data-image="<?php echo htmlspecialchars($session['profile_image'] ?? ''); ?>">
+                <i class="fas fa-eye"></i> View Profile
+            </button>
+            <a href="messages.php?student_id=<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+        </div>
+    </div>
+    <?php
 }
 
 $conn->close();
@@ -323,6 +418,7 @@ $conn->close();
         color: white;
         font-weight: bold;
         overflow: hidden;
+        cursor: pointer;
     }
 
     .profile-image {
@@ -338,11 +434,6 @@ $conn->close();
     .student-name {
         font-weight: 600;
         color: var(--primary);
-    }
-
-    .request-subject {
-        color: var(--dark-gray);
-        font-size: 0.9rem;
     }
 
     .request-details {
@@ -402,7 +493,6 @@ $conn->close();
         min-width: 120px;
         justify-content: center;
         transition: background-color 0.3s;
-        background-color: var(--accent); /* 确保按钮有颜色 */
         color: white;
     }
 
@@ -429,8 +519,6 @@ $conn->close();
         font-size: 0.8rem;
         font-weight: 600;
         margin-left: auto;
-        background-color: rgba(196, 214, 0, 0.1);
-        color: var(--accent);
     }
 
     .status-confirmed {
@@ -469,7 +557,6 @@ $conn->close();
         margin-bottom: 1.5rem;
     }
 
-    /* 模态框样式 */
     .modal {
         display: none;
         position: fixed;
@@ -529,11 +616,6 @@ $conn->close();
         margin-bottom: 0.5rem;
     }
 
-    .profile-major-year {
-        color: var(--dark-gray);
-        margin-bottom: 1rem;
-    }
-
     .profile-detail {
         display: flex;
         align-items: center;
@@ -554,18 +636,21 @@ $conn->close();
         .btn { width: 100%; justify-content: center; }
         .modal-content { margin: 10% auto; }
     }
-</style></head>
+    </style>
+</head>
 <body>
     <?php include 'header/tut_head.php'; ?>
 
     <main>
         <h1 class="page-title">My Students</h1>
 
-        <?php if (isset($_GET['success'])): ?>
-            <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['success']); ?></div>
+            <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
-        <?php if (isset($_GET['error'])): ?>
-            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['error']); ?></div>
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger"><?php echo htmlspecialchars($_SESSION['error']); ?></div>
+            <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
         <div class="tabs">
@@ -579,51 +664,7 @@ $conn->close();
             <?php if (count($current_sessions) > 0): ?>
                 <div class="session-list">
                     <?php foreach ($current_sessions as $session): ?>
-                        <div class="request-card">
-                            <div class="request-header">
-                                <div class="student-avatar">
-                                    <?php if ($session['profile_image']): ?>
-                                        <img src="<?php echo htmlspecialchars($session['profile_image']); ?>" alt="Student" class="profile-image">
-                                    <?php else: ?>
-                                        <?php echo htmlspecialchars(substr($session['first_name'] ?? '', 0, 1) . substr($session['last_name'] ?? '', 0, 1)); ?>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="request-info">
-                                    <div class="student-name"><?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?></div>
-                                    <div class="request-subject"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <span class="status-badge status-confirmed">Confirmed</span>
-                            </div>
-                            <div class="request-details">
-                                <div class="detail-item">
-                                    <div class="detail-label">Course:</div>
-                                    <div class="detail-value"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Date:</div>
-                                    <div class="detail-value">
-                                        <?php echo !empty($session['start_datetime']) 
-                                            ? date('M d, Y', strtotime($session['start_datetime'])) 
-                                            : 'Not specified'; ?>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Location:</div>
-                                    <div class="detail-value"><?php echo htmlspecialchars($session['location_name'] ?? 'Not specified'); ?></div>
-                                </div>
-                            </div>
-                            <div class="request-actions">
-                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" 
-                                        data-name="<?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?>"
-                                        data-major="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['major']) ? $student_details[$session['user_id']]['major'] : 'Not specified'); ?>"
-                                        data-year="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['year']) ? $student_details[$session['user_id']]['year'] : 'Not specified'); ?>"
-                                        data-email="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['email']) ? $student_details[$session['user_id']]['email'] : 'Not specified'); ?>"
-                                        data-phone="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['phone']) ? $student_details[$session['user_id']]['phone'] : 'Not specified'); ?>">
-                                    <i class="fas fa-eye"></i> View Profile
-                                </button>
-                                <a href="messages.php?student_id=<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
-                            </div>
-                        </div>
+                        <?php renderSessionCard($session, $student_details); ?>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
@@ -640,69 +681,7 @@ $conn->close();
             <?php if (count($past_sessions) > 0): ?>
                 <div class="session-list">
                     <?php foreach ($past_sessions as $session): ?>
-                        <div class="request-card">
-                            <div class="request-header">
-                                <div class="student-avatar">
-                                    <?php if ($session['profile_image']): ?>
-                                        <img src="<?php echo htmlspecialchars($session['profile_image']); ?>" alt="Student" class="profile-image">
-                                    <?php else: ?>
-                                        <?php echo htmlspecialchars(substr($session['first_name'] ?? '', 0, 1) . substr($session['last_name'] ?? '', 0, 1)); ?>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="request-info">
-                                    <div class="student-name"><?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?></div>
-                                    <div class="request-subject"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <span class="status-badge <?php echo $session['status'] == 'cancelled' ? 'status-cancelled' : 'status-completed'; ?>">
-                                    <?php echo ucfirst($session['status'] ?? 'Unknown'); ?>
-                                </span>
-                            </div>
-                            <div class="request-details">
-                                <div class="detail-item">
-                                    <div class="detail-label">Course:</div>
-                                    <div class="detail-value"><?php echo htmlspecialchars($session['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Date:</div>
-                                    <div class="detail-value">
-                                        <?php echo !empty($session['start_datetime']) 
-                                            ? date('M d, Y', strtotime($session['start_datetime'])) 
-                                            : 'Not specified'; ?>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Location:</div>
-                                    <div class="detail-value"><?php echo htmlspecialchars($session['location_name'] ?? 'Not specified'); ?></div>
-                                </div>
-                                <?php if ($session['status'] == 'cancelled' && $session['cancellation_reason']): ?>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Reason:</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars($session['cancellation_reason'] ?? 'Not specified'); ?></div>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ($session['rating']): ?>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Rating:</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars($session['rating']); ?>/5
-                                            <?php if ($session['comment']): ?>
-                                                <span class="text-muted">"<?php echo htmlspecialchars($session['comment']); ?>"</span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="request-actions">
-                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" 
-                                        data-name="<?php echo htmlspecialchars(($session['first_name'] ?? '') . ' ' . ($session['last_name'] ?? '')); ?>"
-                                        data-major="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['major']) ? $student_details[$session['user_id']]['major'] : 'Not specified'); ?>"
-                                        data-year="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['year']) ? $student_details[$session['user_id']]['year'] : 'Not specified'); ?>"
-                                        data-email="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['email']) ? $student_details[$session['user_id']]['email'] : 'Not specified'); ?>"
-                                        data-phone="<?php echo htmlspecialchars(isset($student_details[$session['user_id']]['phone']) ? $student_details[$session['user_id']]['phone'] : 'Not specified'); ?>">
-                                    <i class="fas fa-eye"></i> View Profile
-                                </button>
-                                <a href="messages.php?student_id=<?php echo htmlspecialchars($session['user_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
-                            </div>
-                        </div>
+                        <?php renderSessionCard($session, $student_details); ?>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
@@ -721,27 +700,13 @@ $conn->close();
                     <?php foreach ($student_stats as $student_id => $student): ?>
                         <div class="request-card view-student" data-id="<?php echo htmlspecialchars($student_id); ?>">
                             <div class="request-header">
-                                <div class="student-avatar">
-                                    <?php if (isset($student_details[$student_id]['profile_image'])): ?>
-                                        <img src="<?php echo htmlspecialchars($student_details[$student_id]['profile_image']); ?>" alt="Student" class="profile-image">
-                                    <?php else: ?>
-                                        <?php echo htmlspecialchars(substr($student['first_name'] ?? '', 0, 1) . substr($student['last_name'] ?? '', 0, 1)); ?>
-                                    <?php endif; ?>
+                                <div class="student-avatar" data-id="<?php echo htmlspecialchars($student_id); ?>">
+                                    <img src="<?php echo htmlspecialchars($student_details[$student_id]['profile_image']); ?>" alt="Student" class="profile-image" 
+                                         onerror="this.src='assets/default-avatar.png'; this.onerror=null;">
+                                    <span style="display:none;"><?php echo htmlspecialchars(substr($student['first_name'] ?? '', 0, 1) . substr($student['last_name'] ?? '', 0, 1)); ?></span>
                                 </div>
                                 <div class="request-info">
                                     <div class="student-name"><?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?></div>
-                                    <div class="request-subject">
-                                        <?php
-                                        if (isset($student_details[$student_id]) && !empty($student_details[$student_id]['major'])) {
-                                            echo htmlspecialchars($student_details[$student_id]['major']);
-                                            if (!empty($student_details[$student_id]['year'])) {
-                                                echo ' - ' . htmlspecialchars($student_details[$student_id]['year']);
-                                            }
-                                        } else {
-                                            echo 'Student';
-                                        }
-                                        ?>
-                                    </div>
                                 </div>
                             </div>
                             <div class="request-details">
@@ -771,12 +736,12 @@ $conn->close();
                                 </div>
                             </div>
                             <div class="request-actions">
-                                <button class="btn btn-profile view-student" data-id="<?php echo htmlspecialchars($student_id); ?>" 
+                                <button class="btn btn-profile view-student" 
+                                        data-id="<?php echo htmlspecialchars($student_id); ?>" 
                                         data-name="<?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?>"
-                                        data-major="<?php echo htmlspecialchars($student_details[$student_id]['major'] ?? 'Not specified'); ?>"
-                                        data-year="<?php echo htmlspecialchars($student_details[$student_id]['year'] ?? 'Not specified'); ?>"
-                                        data-email="<?php echo htmlspecialchars($student_details[$student_id]['email'] ?? 'Not specified'); ?>"
-                                        data-phone="<?php echo htmlspecialchars($student_details[$student_id]['phone'] ?? 'Not specified'); ?>">
+                                        data-email="<?php echo htmlspecialchars($student_details[$student_id]['email'] ?? ''); ?>"
+                                        data-phone="<?php echo htmlspecialchars($student_details[$student_id]['phone'] ?? ''); ?>"
+                                        data-image="<?php echo htmlspecialchars($student_details[$student_id]['profile_image'] ?? ''); ?>">
                                     <i class="fas fa-eye"></i> View Profile
                                 </button>
                                 <a href="messages.php?student_id=<?php echo htmlspecialchars($student_id); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
@@ -789,7 +754,6 @@ $conn->close();
                     <div class="empty-icon"><i class="fas fa-users"></i></div>
                     <h3>No Students</h3>
                     <p class="empty-text">You haven't had any sessions with students yet.</p>
-                    <a href="tutor_availability.php" class="btn btn-success">Set Your Availability</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -799,9 +763,10 @@ $conn->close();
             <div class="modal-content">
                 <span class="close-modal">×</span>
                 <div class="modal-body">
-                    <div class="profile-avatar"></div>
+                    <div class="profile-avatar">
+                        <img src="" alt="Profile" id="modal-avatar" onerror="this.src='assets/default-avatar.png'; this.onerror=null;">
+                    </div>
                     <div class="profile-name" id="modal-name"></div>
-                    <div class="profile-major-year" id="modal-major-year"></div>
                     <div class="profile-detail"><i class="fas fa-envelope"></i> <span id="modal-email"></span></div>
                     <div class="profile-detail"><i class="fas fa-phone"></i> <span id="modal-phone"></span></div>
                 </div>
@@ -825,18 +790,18 @@ $conn->close();
         const modal = document.getElementById('profile-modal');
         const closeModal = document.querySelector('.close-modal');
 
-        document.querySelectorAll('.view-student').forEach(button => {
+        document.querySelectorAll('.view-student, .student-avatar').forEach(button => {
             button.addEventListener('click', (e) => {
-                const name = e.target.getAttribute('data-name');
-                const major = e.target.getAttribute('data-major');
-                const year = e.target.getAttribute('data-year');
-                const email = e.target.getAttribute('data-email');
-                const phone = e.target.getAttribute('data-phone');
+                const id = e.target.getAttribute('data-id') || e.target.closest('[data-id]').getAttribute('data-id');
+                const name = e.target.getAttribute('data-name') || e.target.closest('[data-name]').getAttribute('data-name');
+                const email = e.target.getAttribute('data-email') || e.target.closest('[data-email]').getAttribute('data-email') || '';
+                const phone = e.target.getAttribute('data-phone') || e.target.closest('[data-phone]').getAttribute('data-phone') || '';
+                const image = e.target.getAttribute('data-image') || e.target.closest('[data-image]').getAttribute('data-image');
 
-                document.getElementById('modal-name').textContent = name || 'Not specified';
-                document.getElementById('modal-major-year').textContent = `${major} ${year !== 'Not specified' ? year : ''}`.trim() || 'Not specified';
-                document.getElementById('modal-email').textContent = email || 'Not specified';
-                document.getElementById('modal-phone').textContent = phone || 'Not specified';
+                document.getElementById('modal-name').textContent = name || '';
+                document.getElementById('modal-email').textContent = email || '';
+                document.getElementById('modal-phone').textContent = phone || '';
+                document.getElementById('modal-avatar').src = image || 'assets/default-avatar.png';
 
                 modal.style.display = 'block';
             });
