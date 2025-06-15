@@ -227,7 +227,7 @@ if (!empty($tutor_stats)) {
         $placeholders = implode(',', array_fill(0, count($tutor_ids), '?'));
         $stmt = $conn->prepare("
             SELECT user_id, major, tutor_id
-            FROM tutor_profile
+            FROM tutorprofile
             WHERE user_id IN ($placeholders)
         ");
         if (!$stmt) {
