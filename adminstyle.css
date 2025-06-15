@@ -289,7 +289,7 @@ main .insights  h3{
     font-size: 1rem;
 }
 
-main .insights .progress {
+main .insights .total_course {
     position: relative;
     width: 92px;
     height: 92px;
@@ -307,21 +307,21 @@ main .insights svg  circle {
     stroke-width: 14px;
     stroke-linecap: round;
     transform: translate(5px, 5px);
-    stroke-dasharray: 110;
-    stroke-dashoffset: 92;
+    stroke-dasharray: 120;
+    stroke-dashoffset: 110;
 }
 
-main .insights .sales svg circle {
-    stroke-dashoffset: -30;
+main .insights .total_stud svg circle {
+    stroke-dashoffset: 200;
     stroke-dasharray: 200;
 }
 
-main .insights .expenses svg circle {
+main .insights .total_tutor svg circle {
     stroke-dashoffset: 20;
     stroke-dasharray: 80;
 }
 
-main .insights .income svg circle {
+main .insights .total_course svg circle {
     stroke-dashoffset: 35;
     stroke-dasharray: 110;
 }

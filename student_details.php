@@ -1,9 +1,11 @@
 <?php
-// Start session and include database connection
+// student_details.php
 session_start();
+
+// Database connection
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = ""; 
 $dbname = "peer_tutoring_platform";
 
 // Create connection
@@ -14,19 +16,20 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get student ID from URL
-$student_id = $_GET['id'] ?? 0;
-
-// Fetch student details
-$sql = "SELECT * FROM students WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $student_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$student = $result->fetch_assoc();
-
-// Close connection
-$conn->close();
+// Check if ID parameter exists
+if(isset($_GET['id']) && !empty($_GET['id'])) {
+    $user_id = $conn->real_escape_string($_GET['id']);
+    
+    // Query to get student details with email and phone from user table
+    $sql = "SELECT sp.*,u.username, u.email, u.phone 
+            FROM studentprofile sp
+            JOIN user u ON sp.user_id = u.user_id
+            WHERE sp.user_id = '$user_id'";
+    
+    $result = $conn->query($sql);
+    
+    if ($result->num_rows > 0) {
+        $student = $result->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -34,16 +37,97 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Profile - <?php echo htmlspecialchars($student['student_name'] ?? 'Student'); ?></title>
+    <title>Student Profile - <?php echo htmlspecialchars($student['username']); ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="studentstyle.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
-            margin: 1;
-            padding: 1;
+            margin: 0;
+            padding: 0;
             color: #333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        aside {
+            width: 250px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo h2 {
+            font-size: 18px;
+        }
+        
+        .danger {
+            color: #ff7782;
+        }
+        
+        .sidebar {
+            padding: 20px;
+        }
+        
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: #7d8da1;
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+        
+        .sidebar a.active {
+            background: rgba(115, 128, 236, 0.1);
+            color: #7380ec;
+        }
+        
+        .sidebar a:hover:not(.active) {
+            background: #f6f6f9;
+        }
+        
+        .sidebar .material-symbols-sharp {
+            margin-right: 10px;
+            font-size: 22px;
+        }
+        
+        .sidebar h3 {
+            font-size: 15px;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .message-count {
+            background: #ff7782;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: auto;
         }
         
         .profile-content {
@@ -141,6 +225,32 @@ $conn->close();
             margin-right: 8px;
             font-size: 20px;
         }
+                .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .edit-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #3e8e41;
+        }
+
+        .edit-btn .material-symbols-sharp {
+            margin-right: 8px;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -157,26 +267,23 @@ $conn->close();
             </div>
 
             <div class="sidebar">
-                <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
-                <a href="#"></a>
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="admin_student.php" class="active"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
                 <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
-                <a href="message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3><span class="message-count">26</span></a>
-                <a href="session.php"><span class="material-symbols-sharp">library_books</span><h3>Session</h3></a>
+                <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
-                <a href="sales.php"><span class="material-symbols-sharp">finance</span><h3>Sales</h3></a>
                 <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
         </aside>
 
-        <div class="profile-content">
+         <div class="profile-content">
             <div class="profile-header">
-                <span class="material-symbols-sharp profile-icon">account_circle</span>
-                <div class="profile-title">
-                    <h1><?php echo htmlspecialchars($student['student_name'] ?? 'Student Name'); ?></h1>
-                    <p>Student Profile</p>
-                </div>
+            <span class="material-symbols-sharp profile-icon">account_circle</span>
+            <div class="profile-title">
+                <h1><?php echo htmlspecialchars($student['username']); ?></h1>
+                <p>Student Profile</p>
+            </div>
             </div>
             
             <div class="profile-sections">
@@ -184,15 +291,15 @@ $conn->close();
                     <h2>Academic Information</h2>
                     <div class="detail-item">
                         <strong>Level</strong>
-                        <p><?php echo htmlspecialchars($student['level'] ?? 'N/A'); ?></p>
+                        <p><?php echo htmlspecialchars($student['year']); ?></p>
                     </div>
                     <div class="detail-item">
                         <strong>Program</strong>
-                        <p><?php echo htmlspecialchars($student['program'] ?? 'N/A'); ?></p>
+                        <p><?php echo htmlspecialchars($student['program']); ?></p>
                     </div>
                     <div class="detail-item">
-                        <strong>Course</strong>
-                        <p><?php echo htmlspecialchars($student['course'] ?? 'N/A'); ?></p>
+                        <strong>Major</strong>
+                        <p><?php echo htmlspecialchars($student['major']); ?></p>
                     </div>
                 </div>
                 
@@ -200,22 +307,12 @@ $conn->close();
                     <h2>Contact Information</h2>
                     <div class="detail-item">
                         <strong>Email</strong>
-                        <p><?php echo htmlspecialchars($student['email'] ?? 'Not provided'); ?></p>
+                        <p><?php echo !empty($student['email']) ? htmlspecialchars($student['email']) : 'N/A'; ?></p>
                     </div>
                     <div class="detail-item">
                         <strong>Phone</strong>
-                        <p><?php echo htmlspecialchars($student['phone'] ?? 'Not provided'); ?></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Learning Goals</strong>
-                        <p><?php echo htmlspecialchars($student['learning_goals'] ?? 'Not specified'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="profile-section full-width">
-                    <h2>Additional Information</h2>
-                    <div class="detail-item">
-                        <p><?php echo nl2br(htmlspecialchars($student['additional_info'] ?? 'No additional information provided')); ?></p>
+                        <p><?php echo !empty($student['phone']) ? htmlspecialchars($student['phone']) : 'N/A'; ?></p>
+                        
                     </div>
                 </div>
             </div>
@@ -228,3 +325,14 @@ $conn->close();
     </div>
 </body>
 </html>
+
+<?php
+    } else {
+        echo "Student not found";
+    }
+} else {
+    echo "No student ID specified";
+}
+
+$conn->close();
+?>
