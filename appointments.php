@@ -235,33 +235,33 @@ $page_title = "Book a Study Partner - PeerLearn";
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const courseSelect = document.getElementById('course');
-        const hourlyRates = <?php echo json_encode(array_column($courses, 'hourly_rate', 'id')); ?>;
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('course');
+    const hourlyRates = <?php echo json_encode(array_column($courses, 'hourly_rate', 'id')); ?>;
 
-        function updatePrice() {
-            const courseId = courseSelect.value;
-            const hourlyRate = courseId && hourlyRates[courseId] ? parseFloat(hourlyRates[courseId]) : 0;
-            const totalFee = hourlyRate;
+    function updatePrice() {
+        const courseId = courseSelect.value;
+        const hourlyRate = courseId && hourlyRates[courseId] ? parseFloat(hourlyRates[courseId]) : 0;
+        const totalFee = hourlyRate;
 
-            document.getElementById('tutor-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
-            document.getElementById('total-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
-        }
+        document.getElementById('tutor-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
+        document.getElementById('total-fee').innerHTML = `RM${totalFee.toFixed(2)}`;
+    }
 
-        // Initialize price
-        updatePrice();
-        courseSelect.addEventListener('change', updatePrice);
+    // Initialize price
+    updatePrice();
+    courseSelect.addEventListener('change', updatePrice);
 
-        const confirmedSlots = <?php echo json_encode($confirmed_slots); ?>;
-        let currentMonth = <?php echo $current_month; ?>;
-        let currentYear = <?php echo $current_year; ?>;
-        const today = new Date('<?php echo $today; ?>');
-        const calendarGrid = document.querySelector('.calendar-grid');
-        const calendarHeader = document.querySelector('.calendar-header h4');
-        const timeSlotSelect = document.getElementById('time_slot');
+    const confirmedSlots = <?php echo json_encode($confirmed_slots); ?>;
+    let currentMonth = <?php echo $current_month; ?>;
+    let currentYear = <?php echo $current_year; ?>;
+    const today = new Date('<?php echo $today; ?>');
+    const calendarGrid = document.querySelector('.calendar-grid');
+    const calendarHeader = document.querySelector('.calendar-header h4');
+    const timeSlotSelect = document.getElementById('time_slot');
 
-        function renderCalendar(month, year) {
-            calendarGrid.innerHTML = `
+    function renderCalendar(month, year) {
+        calendarGrid.innerHTML = `
             <div style="font-weight: bold; background: #f5f5f5; padding: 0.5rem; text-align: center;">Sun</div>
             <div style="font-weight: bold; background: #f5f5f5; padding: 0.5rem; text-align: center;">Mon</div>
             <div style="font-weight: bold; background: #f5f5f5; padding: 0.5rem; text-align: center;">Tue</div>
@@ -270,101 +270,116 @@ $page_title = "Book a Study Partner - PeerLearn";
             <div style="font-weight: bold; background: #f5f5f5; padding: 0.5rem; text-align: center;">Fri</div>
             <div style="font-weight: bold; background: #f5f5f5; padding: 0.5rem; text-align: center;">Sat</div>
         `;
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            const daysInMonth = new Date(year, month, 0).getDate();
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const daysInMonth = new Date(year, month, 0).getDate();
 
-            // Previous month days
-            const prevMonthDays = new Date(year, month - 1, 0).getDate();
-            for (let i = firstDay - 1; i >= 0; i--) {
-                calendarGrid.innerHTML += `<div style="padding: 0.5rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; color: #ccc; background: #f9f9f9; cursor: not-allowed;">${prevMonthDays - i}</div>`;
-            }
+        // Previous month days
+        const prevMonthDays = new Date(year, month - 1, 0).getDate();
+        for (let i = firstDay - 1; i >= 0; i--) {
+            calendarGrid.innerHTML += `<div style="padding: 0.5rem; text-align: center; border:1px solid #ddd; border-radius: 4px; color:gray; background: #f9f9f9; cursor:not-allowed;">${prevMonthDays - i}</div>`;
+        }
 
-            // Current month days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                const date = new Date(year, month - 1, day);
-                const isPast = date < today.setHours(0, 0, 0, 0);
-                const isUnavailable = ['08:00-10:00', '10:00-12:00', '12:00-14:00'].some(slot => confirmedSlots[dateStr + '|' + slot]);
-                const isSelected = dateStr === document.getElementById('selected_date').value;
-                const className = isPast || isUnavailable ? 'disabled' : (isSelected ? 'selected' : '');
-                const style = `
+        // Current month days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            const date = new Date(year, month - 1, day);
+            const isPast = date < today.setHours(0, 0, 0, 0);
+            const isSelected = dateStr === document.getElementById('selected_date').value;
+            const className = isPast ? 'not-allowed' : (isSelected ? 'selected' : '');
+            const style = `
                 padding: 0.5rem; 
                 text-align: center; 
                 border: 1px solid #ddd; 
                 border-radius: 4px; 
-                cursor: ${isPast || isUnavailable ? 'not-allowed' : 'pointer'};
-                color: ${isPast || isUnavailable ? '#ccc' : '#333'};
-                background: ${isPast || isUnavailable ? '#f9f9f9' : isSelected ? '#2B3990' : 'white'};
-                color: ${isSelected ? 'white' : ''};
+                cursor: ${isPast ? 'not-allowed' : 'pointer'};
+                color: ${isPast ? '#ccc' : isSelected ? 'white' : '#333'};
+                background: ${isPast ? '#f9f9f9' : isSelected ? '#2B3990' : 'white'};
             `;
-                calendarGrid.innerHTML += `<div style="${style}" class="${className}" data-date="${dateStr}">${day}</div>`;
-            }
+            calendarGrid.innerHTML += `<div style="${style}" class="${className}" data-date="${dateStr}">${day}</div>`;
+        }
 
-            // Next month days
-            const remainingCells = 42 - (firstDay + daysInMonth);
-            for (let i = 1; i <= remainingCells; i++) {
-                calendarGrid.innerHTML += `<div style="padding: 0.5rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; color: #ccc; background: #f9f9f9; cursor: not-allowed;">${i}</div>`;
-            }
+        // Next month days
+        const remainingCells = 42 - (firstDay + daysInMonth);
+        for (let i = 1; i <= remainingCells; i++) {
+            calendarGrid.innerHTML += `<div style="padding: 0.5rem; text-align: center; border:1px solid #ddd; border-radius: 4px; color:gray; background: #f9f9f9; cursor:not-allowed;">${i}</div>`;
+        }
 
-            calendarHeader.textContent = new Date(year, month - 1).toLocaleString('en-US', {
-                month: 'long',
-                year: 'numeric'
-            });
+        calendarHeader.textContent = new Date(year, month - 1).toLocaleString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
 
-            // Update time slot options based on selected date
-            const calendarDays = document.querySelectorAll('.calendar-grid div:not(.disabled)');
-            calendarDays.forEach(day => {
-                day.addEventListener('click', function() {
-                    document.querySelectorAll('.calendar-grid div').forEach(d => {
-                        d.classList.remove('selected');
-                        d.style.background = d.classList.contains('disabled') ? '#f9f9f9' : 'white';
-                        d.style.color = d.classList.contains('disabled') ? '#ccc' : '#333';
-                    });
-                    this.classList.add('selected');
-                    this.style.background = '#2B3990';
-                    this.style.color = 'white';
-                    document.getElementById('selected_date').value = this.dataset.date;
+        // Add click event listeners to calendar days
+        const calendarDays = document.querySelectorAll('.calendar-grid div:not(.not-allowed)');
+        calendarDays.forEach(day => {
+            day.addEventListener('click', function() {
+                // Reset previous selections
+                document.querySelectorAll('.calendar-grid div').forEach(d => {
+                    d.classList.remove('selected');
+                    d.style.background = d.classList.contains('not-allowed') ? '#f9f9f9' : 'white';
+                    d.style.color = d.classList.contains('not-allowed') ? '#ccc' : '#333';
+                });
+                // Mark as selected
+                this.classList.add('selected');
+                this.style.background = '#2B3990';
+                this.style.color = 'white';
+                document.getElementById('selected_date').value = this.dataset.date;
 
-                    // Update time slot dropdown
-                    const selectedDate = this.dataset.date;
-                    timeSlotSelect.innerHTML = '<option value="">Select a Time Slot</option>';
-                    ['08:00-10:00', '10:00-12:00', '12:00-14:00'].forEach(slot => {
-                        const key = selectedDate + '|' + slot;
-                        const option = document.createElement('option');
-                        option.value = slot;
-                        option.textContent = slot;
-                        option.disabled = confirmedSlots[key] || false;
-                        timeSlotSelect.appendChild(option);
-                    });
+                // Update time slot dropdown based on confirmed slots
+                const selectedDate = this.dataset.date;
+                timeSlotSelect.innerHTML = '<option value="">Select a Time Slot</option>';
+                ['08:00-10:00', '10:00-12:00', '12:00-14:00'].forEach(slot => {
+                    const key = selectedDate + '|' + slot;
+                    const option = document.createElement('option');
+                    option.value = slot;
+                    option.textContent = slot;
+                    if (confirmedSlots[key]) {
+                        option.disabled = true;
+                        option.textContent += ' (Booked)';
+                    }
+                    timeSlotSelect.appendChild(option);
                 });
             });
-        }
+        });
+    }
 
+    // Initial calendar render
+    renderCalendar(currentMonth, currentYear);
+
+    // Navigation buttons
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentMonth--;
+        if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+        }
         renderCalendar(currentMonth, currentYear);
-
-        document.getElementById('prev-month').addEventListener('click', () => {
-            currentMonth--;
-            if (currentMonth < 1) {
-                currentMonth = 12;
-                currentYear--;
-            }
-            renderCalendar(currentMonth, currentYear);
-        });
-
-        document.getElementById('next-month').addEventListener('click', () => {
-            currentMonth++;
-            if (currentMonth > 12) {
-                currentMonth = 1;
-                currentYear++;
-            }
-            renderCalendar(currentMonth, currentYear);
-        });
-
-        function toggleDropdown() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
     });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentMonth++;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        }
+        renderCalendar(currentMonth, currentYear);
+    });
+
+    // Initialize time slot dropdown for current selected date
+    const initialDate = document.getElementById('selected_date').value;
+    timeSlotSelect.innerHTML = '<option value="">Select a Time Slot</option>';
+    ['08:00-10:00', '10:00-12:00', '12:00-14:00'].forEach(slot => {
+        const key = initialDate + '|' + slot;
+        const option = document.createElement('option');
+        option.value = slot;
+        option.textContent = slot;
+        if (confirmedSlots[key]) {
+            option.disabled = true;
+            option.textContent += ' (Booked)';
+        }
+        timeSlotSelect.appendChild(option);
+    });
+});
 </script>
 
 <?php
