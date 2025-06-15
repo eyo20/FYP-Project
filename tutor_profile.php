@@ -1,7 +1,7 @@
 <?php
 // Start session
 session_start();
-ob_start(); // 启用输出缓冲，防止 header 问题
+ob_start(); // Enable output buffering to prevent header issues
 require_once 'db_connection.php';
 
 // Check database connection
@@ -14,11 +14,11 @@ if ($conn->connect_error) {
 error_log("Test log entry at " . date('Y-m-d H:i:s'));
 
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // 防止页面输出错误，记录到日志
+ini_set('display_errors', 0); // Prevent errors from displaying on page, log them instead
 ini_set('log_errors', 1);
 ini_set('error_log', 'C:/xampp/htdocs/FYP-Project/tutor_profile.log');
 
-// Log POST data for debugging
+// Log POST and FILES data for debugging
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     error_log("POST data received: " . print_r($_POST, true));
     error_log("FILES data received: " . print_r($_FILES, true));
@@ -92,7 +92,7 @@ $year = $user['year'] ?? '';
 $bio = $user['bio'] ?? '';
 $qualifications = $user['qualifications'] ?? '';
 $profile_image = $user['profile_image'] ?? '';
-$is_verified = $user['is_verified'] ?? null; // Default to null for pending verification
+$is_verified = $user['is_verified'] ?? null;
 $cgpa_file = $user['cgpa_file'] ?? '';
 
 // Fetch all courses
@@ -135,156 +135,83 @@ if ($result->num_rows > 0) {
 }
 $stmt->close();
 
-// Handle POST requests (consolidated to avoid premature redirects)
+// Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postData = $_POST ? print_r($_POST, true) : 'No POST data';
     $filesData = $_FILES ? print_r($_FILES, true) : 'No FILES data';
     error_log("POST request received at " . date('Y-m-d H:i:s') . " for user_id: $user_id - POST: $postData | FILES: $filesData");
 
-    // Handle profile image upload
-    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
-        error_log("Processing profile image upload for user ID: $user_id");
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $max_size = 5 * 1024 * 1024;
+    // Handle CGPA file upload
+    if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_file']['error'] == 0) {
+        $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+        $max_size = 10 * 1024 * 1024;
 
-        if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
-            $upload_dir = 'Uploads/profile_images/';
-
+        if (in_array($_FILES['cgpa_file']['type'], $allowed_types) && $_FILES['cgpa_file']['size'] <= $max_size) {
+            $upload_dir = 'Uploads/credentials/';
             if (!file_exists($upload_dir)) {
-                if (!mkdir($upload_dir, 0755, true)) {
-                    $_SESSION['error_message'] = "Failed to create upload directory.";
-                    error_log("Failed to create directory: $upload_dir for user ID: $user_id");
-                }
+                mkdir($upload_dir, 0755, true) or error_log("Failed to create directory: $upload_dir for user_id: $user_id");
             }
 
-            // Clean filename to avoid special characters
-            $original_filename = preg_replace('/[^A-Za-z0-9\.\-_]/', '_', $_FILES['profile_image']['name']);
-            $filename = $user_id . '_' . time() . '_' . $original_filename;
+            $filename = uniqid() . '_' . preg_replace('/[^A-Za-z0-9\.\-_]/', '_', $_FILES['cgpa_file']['name']);
             $target_file = $upload_dir . $filename;
 
-            if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
-                // Delete old profile image
-                if (!empty($profile_image) && file_exists($profile_image)) {
-                    if (unlink($profile_image)) {
-                        error_log("Old profile image deleted: $profile_image");
-                    } else {
-                        error_log("Failed to delete old profile image: $profile_image");
-                    }
-                }
+            if (move_uploaded_file($_FILES['cgpa_file']['tmp_name'], $target_file)) {
+                $check_credential = "SELECT * FROM credential_file WHERE user_id = ? AND file_type = 'cgpa'";
+                $stmt = $conn->prepare($check_credential);
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-                $update_query = "UPDATE user SET profile_image = ? WHERE user_id = ?";
-                $stmt = $conn->prepare($update_query);
-                if (!$stmt) {
-                    $_SESSION['error_message'] = "Failed to prepare database query for profile image update.";
-                    error_log("Prepare failed for user ID: $user_id. Error: " . $conn->error);
-                    unlink($target_file);
-                } else {
-                    $stmt->bind_param("si", $target_file, $user_id);
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $old_file = $row['file_path'];
+                    if (!empty($old_file) && file_exists($old_file) && $old_file != $target_file) {
+                        unlink($old_file);
+                        error_log("Old file deleted: $old_file");
+                    }
+                    $update_credential = "UPDATE credential_file SET file_name = ?, file_path = ?, upload_date = NOW(), status = 'pending' WHERE user_id = ? AND file_type = 'cgpa'";
+                    $stmt = $conn->prepare($update_credential);
+                    $file_name = $_FILES['cgpa_file']['name'];
+                    $stmt->bind_param("ssi", $file_name, $target_file, $user_id);
                     if ($stmt->execute()) {
-                        $profile_image = $target_file;
-                        $_SESSION['success_message'] = "Profile image updated successfully!";
-                        error_log("Profile image updated for user ID: $user_id, file: $target_file");
+                        $_SESSION['success_message'] = "CGPA credential file updated successfully. It will be reviewed.";
+                        error_log("CGPA updated for user_id: $user_id, file: $target_file");
                     } else {
-                        $_SESSION['error_message'] = "Failed to update profile image in database. Error: " . $stmt->error;
-                        error_log("Failed to update profile image for user ID: $user_id. SQL Error: " . $stmt->error);
+                        $_SESSION['error_message'] = "Failed to update CGPA. Error: " . $stmt->error;
                         unlink($target_file);
                     }
-                    $stmt->close();
+                } else {
+                    $insert_credential = "INSERT INTO credential_file (user_id, file_name, file_path, file_type, status) VALUES (?, ?, ?, 'cgpa', 'pending')";
+                    $stmt = $conn->prepare($insert_credential);
+                    $file_name = $_FILES['cgpa_file']['name'];
+                    $stmt->bind_param("iss", $user_id, $file_name, $target_file);
+                    if ($stmt->execute()) {
+                        $_SESSION['success_message'] = "CGPA credential file uploaded successfully. It will be reviewed.";
+                        error_log("CGPA inserted for user_id: $user_id, file: $target_file");
+                    } else {
+                        $_SESSION['error_message'] = "Failed to insert CGPA. Error: " . $stmt->error;
+                        unlink($target_file);
+                    }
                 }
+                $stmt->close();
             } else {
-                $_SESSION['error_message'] = "Failed to upload profile image. Please try again.";
-                error_log("Failed to move profile image to $target_file for user ID: $user_id");
+                $_SESSION['error_message'] = "Failed to upload CGPA file.";
+                error_log("Failed to move CGPA file to $target_file for user ID: $user_id");
             }
         } else {
-            $_SESSION['error_message'] = "Please upload a valid image file (JPEG, PNG, GIF, WebP) no larger than 5MB.";
-            error_log("Invalid profile image type ({$_FILES['profile_image']['type']}) or size ({$_FILES['profile_image']['size']}) for user ID: $user_id");
+            $_SESSION['error_message'] = "Invalid file type or size.";
         }
-    } else if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-        $upload_errors = [
-            UPLOAD_ERR_INI_SIZE => 'File size exceeds server limit.',
-            UPLOAD_ERR_FORM_SIZE => 'File size exceeds form limit.',
-            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
-            UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
-            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
-            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-            UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload.'
-        ];
-        $_SESSION['error_message'] = $upload_errors[$_FILES['profile_image']['error']] ?? 'Unknown upload error.';
-        error_log("Upload error for user ID: $user_id, error code: " . $_FILES['profile_image']['error']);
-    }
-
-    // Handle CGPA file upload (Save File)
-if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_file']['error'] == 0) {
-    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
-    $max_size = 10 * 1024 * 1024;
-
-    if (in_array($_FILES['cgpa_file']['type'], $allowed_types) && $_FILES['cgpa_file']['size'] <= $max_size) {
-        $upload_dir = 'Uploads/credentials/';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0755, true) or error_log("Failed to create directory: $upload_dir for user_id: $user_id");
-        }
-
-        $filename = uniqid() . '_' . preg_replace('/[^A-Za-z0-9\.\-_]/', '_', $_FILES['cgpa_file']['name']);
-        $target_file = $upload_dir . $filename;
-
-        if (move_uploaded_file($_FILES['cgpa_file']['tmp_name'], $target_file)) {
-            $check_credential = "SELECT * FROM credential_file WHERE user_id = ? AND file_type = 'cgpa'";
-            $stmt = $conn->prepare($check_credential);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-                $old_file = $row['file_path'];
-                if (!empty($old_file) && file_exists($old_file) && $old_file != $target_file) {
-                    unlink($old_file);
-                    error_log("Old file deleted: $old_file");
-                }
-                $update_credential = "UPDATE credential_file SET file_name = ?, file_path = ?, upload_date = NOW(), status = 'pending' WHERE user_id = ? AND file_type = 'cgpa'";
-                $stmt = $conn->prepare($update_credential);
-                $file_name = $_FILES['cgpa_file']['name'];
-                $stmt->bind_param("ssi", $file_name, $target_file, $user_id);
-                if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "CGPA credential file updated successfully. It will be reviewed.";
-                    error_log("CGPA updated for user_id: $user_id, file: $target_file");
-                } else {
-                    $_SESSION['error_message'] = "Failed to update CGPA. Error: " . $stmt->error;
-                    unlink($target_file);
-                }
-            } else {
-                $insert_credential = "INSERT INTO credential_file (user_id, file_name, file_path, file_type, status) VALUES (?, ?, ?, 'cgpa', 'pending')";
-                $stmt = $conn->prepare($insert_credential);
-                $file_name = $_FILES['cgpa_file']['name'];
-                $stmt->bind_param("iss", $user_id, $file_name, $target_file);
-                if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "CGPA credential file uploaded successfully. It will be reviewed.";
-                    error_log("CGPA inserted for user_id: $user_id, file: $target_file");
-                } else {
-                    $_SESSION['error_message'] = "Failed to insert CGPA. Error: " . $stmt->error;
-                    unlink($target_file);
-                }
-            }
-            $stmt->close();
+        if (!headers_sent()) {
+            header("Location: tutor_profile.php");
+            exit();
         } else {
-            $_SESSION['error_message'] = "Failed to upload CGPA file.";
-            error_log("Failed to move profile image to $target_file for user ID: $user_id");
+            error_log("Headers sent, redirect failed at " . __FILE__ . ":" . __LINE__);
+            echo '<script>window.location.href = "tutor_profile.php";</script>';
+            exit();
         }
-        error_log("CGPA processed for user_id: $user_id - Message: " . ($_SESSION['success_message'] ?? $_SESSION['error_message']));
-    } else {
-        $_SESSION['error_message'] = "Invalid file type or size.";
     }
-    if (!headers_sent()) {
-        header("Location: tutor_profile.php");
-        exit();
-    } else {
-        error_log("Headers sent, redirect failed at " . __FILE__ . ":" . __LINE__);
-        echo '<script>window.location.href = "tutor_profile.php";</script>'; // 后备 JavaScript 重定向
-        exit();
-    }
-}
 
-    // Handle Delete File
+    // Handle Delete CGPA File
     if (isset($_POST['delete_cgpa'])) {
         error_log("Delete CGPA requested for user_id: $user_id");
         $check_credential = "SELECT file_path FROM credential_file WHERE user_id = ? AND file_type = 'cgpa'";
@@ -321,7 +248,85 @@ if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_f
         }
     }
 
-    // Handle profile update (Save Profile)
+    // Handle profile image upload
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] == 0) {
+        error_log("Processing profile image upload for user ID: $user_id");
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $max_size = 5 * 1024 * 1024;
+
+        if (in_array($_FILES['profile_image']['type'], $allowed_types) && $_FILES['profile_image']['size'] <= $max_size) {
+            $upload_dir = 'Uploads/profile_images/';
+
+            if (!file_exists($upload_dir)) {
+                if (!mkdir($upload_dir, 0755, true)) {
+                    $_SESSION['error_message'] = "Failed to create upload directory.";
+                    error_log("Failed to create directory: $upload_dir for user ID: $user_id");
+                }
+            }
+
+            $original_filename = preg_replace('/[^A-Za-z0-9\.\-_]/', '_', $_FILES['profile_image']['name']);
+            $filename = $user_id . '_' . time() . '_' . $original_filename;
+            $target_file = $upload_dir . $filename;
+
+            if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $target_file)) {
+                if (!empty($profile_image) && file_exists($profile_image)) {
+                    if (unlink($profile_image)) {
+                        error_log("Old profile image deleted: $profile_image");
+                    } else {
+                        error_log("Failed to delete old profile image: $profile_image");
+                    }
+                }
+
+                $update_query = "UPDATE user SET profile_image = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($update_query);
+                if (!$stmt) {
+                    $_SESSION['error_message'] = "Failed to prepare database query for profile image update.";
+                    error_log("Prepare failed for user ID: $user_id. Error: " . $conn->error);
+                    unlink($target_file);
+                } else {
+                    $stmt->bind_param("si", $target_file, $user_id);
+                    if ($stmt->execute()) {
+                        $profile_image = $target_file;
+                        $_SESSION['success_message'] = "Profile image updated successfully!";
+                        error_log("Profile image updated for user ID: $user_id, file: $target_file");
+                    } else {
+                        $_SESSION['error_message'] = "Failed to update profile image in database. Error: " . $stmt->error;
+                        error_log("Failed to update profile image for user ID: $user_id. SQL Error: " . $stmt->error);
+                        unlink($target_file);
+                    }
+                    $stmt->close();
+                }
+            } else {
+                $_SESSION['error_message'] = "Failed to upload profile image. Please try again.";
+                error_log("Failed to move profile image to $target_file for user ID: $user_id");
+            }
+        } else {
+            $_SESSION['error_message'] = "Please upload a valid image file (JPEG, PNG, GIF, WebP) no larger than 5MB.";
+            error_log("Invalid profile image type ({$_FILES['profile_image']['type']}) or size ({$_FILES['profile_image']['size']}) for user ID: $user_id");
+        }
+        if (!headers_sent()) {
+            header("Location: tutor_profile.php");
+            exit();
+        }
+    } else if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+        $upload_errors = [
+            UPLOAD_ERR_INI_SIZE => 'File size exceeds server limit.',
+            UPLOAD_ERR_FORM_SIZE => 'File size exceeds form limit.',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+            UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload.'
+        ];
+        $_SESSION['error_message'] = $upload_errors[$_FILES['profile_image']['error']] ?? 'Unknown upload error.';
+        error_log("Upload error for user ID: $user_id, error code: " . $_FILES['profile_image']['error']);
+        if (!headers_sent()) {
+            header("Location: tutor_profile.php");
+            exit();
+        }
+    }
+
+    // Handle profile update
     if (isset($_POST['update_profile'])) {
         error_log("Processing profile update for user_id: $user_id");
         $first_name = trim($_POST['first_name'] ?? '');
@@ -432,7 +437,6 @@ if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_f
             $_SESSION['error_message'] = "Please select a course and enter an hourly rate!";
             error_log("Validation failed: Empty values detected");
         } else {
-            // Check for duplicate course
             $check_query = "SELECT id FROM tutorsubject WHERE tutor_id = ? AND course_id = ?";
             $stmt = $conn->prepare($check_query);
             if (!$stmt) {
@@ -448,7 +452,6 @@ if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_f
                     error_log("Duplicate course detected: tutor_id=$user_id, course_id=$course_id");
                     $stmt->close();
                 } else {
-                    // Validate course_id
                     $check_course = "SELECT id FROM course WHERE id = ?";
                     $stmt = $conn->prepare($check_course);
                     if (!$stmt) {
@@ -572,48 +575,47 @@ if (isset($_POST['save_cgpa']) && isset($_FILES['cgpa_file']) && $_FILES['cgpa_f
         }
     }
 
-    // Refresh user information after updates
-    $stmt = $conn->prepare($user_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
-
-    $first_name = $user['first_name'];
-    $last_name = $user['last_name'];
-    $email = $user['email'];
-    $phone = $user['phone'] ?? '';
-    $major = $user['major'] ?? '';
-    $year = $user['year'] ?? '';
-    $bio = $user['bio'] ?? '';
-    $qualifications = $user['qualifications'] ?? '';
-    $profile_image = $user['profile_image'] ?? '';
-    $is_verified = $user['is_verified'] ?? null;
-    $cgpa_file = $user['cgpa_file'] ?? '';
-
-    // Re-fetch tutor's courses
-    $stmt = $conn->prepare($tutor_courses_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $courses_result = $stmt->get_result();
-    $tutor_courses = [];
-    while ($course = $courses_result->fetch_assoc()) {
-        $tutor_courses[] = $course;
-    }
-    $stmt->close();
-
     // Redirect after all POST processing
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !headers_sent()) {
         header("Location: tutor_profile.php");
         exit();
     }
-
 }
 
-$conn->close();
-?>
+// Refresh user information after updates
+$stmt = $conn->prepare($user_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$stmt->close();
 
+$first_name = $user['first_name'];
+$last_name = $user['last_name'];
+$email = $user['email'];
+$phone = $user['phone'] ?? '';
+$major = $user['major'] ?? '';
+$year = $user['year'] ?? '';
+$bio = $user['bio'] ?? '';
+$qualifications = $user['qualifications'] ?? '';
+$profile_image = $user['profile_image'] ?? '';
+$is_verified = $user['is_verified'] ?? null;
+$cgpa_file = $user['cgpa_file'] ?? '';
+
+// Re-fetch tutor's courses
+$stmt = $conn->prepare($tutor_courses_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$courses_result = $stmt->get_result();
+$tutor_courses = [];
+while ($course = $courses_result->fetch_assoc()) {
+    $tutor_courses[] = $course;
+}
+$stmt->close();
+
+$conn->close();
+ob_end_flush();
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -914,6 +916,19 @@ $conn->close();
             background-color: #c82333;
         }
 
+        .btn-primary {
+            background-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #1e2a6b;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
         .subject-list {
             margin-bottom: 1.5rem;
         }
@@ -935,19 +950,13 @@ $conn->close();
         .subject-rate {
             color: var(--dark-gray);
             text-align: right;
-            /* 右对齐内容 */
             width: 100%;
-            /* 确保 div 填满 td */
             display: inline-block;
-            /* 使 div 表现如内联块元素 */
-
         }
 
         .hourly-rate-cell {
             width: 120px;
-            /* 固定列宽，确保一致性 */
             text-align: right;
-            /* 确保 td 内容右对齐 */
         }
 
         .subject-actions {
@@ -1095,11 +1104,11 @@ $conn->close();
         <h1 class="page-title">Profile</h1>
 
         <?php if (isset($success_message)): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
-    <?php endif; ?>
-    <?php if (isset($error_message)): ?>
-        <div class="alert alert-danger"><?php echo htmlspecialchars($error_message); ?></div>
-    <?php endif; ?>
+            <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
+        <?php endif; ?>
+        <?php if (isset($error_message)): ?>
+            <div class="alert alert-danger"><?php echo htmlspecialchars($error_message); ?></div>
+        <?php endif; ?>
 
         <div class="profile-container">
             <div class="profile-sidebar">
@@ -1119,15 +1128,14 @@ $conn->close();
                 <h2 class="profile-name"><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h2>
                 <p class="profile-role">Tutor</p>
                 <?php
-                // Display verification status
                 $verification_status = 'Pending Verification';
-                $verification_style = 'background-color: #6c757d; color: white;'; // Grey for pending
+                $verification_style = 'background-color: #6c757d; color: white;';
                 if ($is_verified === 1) {
                     $verification_status = 'Verified';
-                    $verification_style = 'background-color: #C4D600; color: white;'; // Green for verified
+                    $verification_style = 'background-color: #C4D600; color: white;';
                 } elseif ($is_verified === 0) {
                     $verification_status = 'Not Verified';
-                    $verification_style = 'background-color: #dc3545; color: white;'; // Red for not verified
+                    $verification_style = 'background-color: #dc3545; color: white;';
                 }
                 ?>
                 <div class="verified-badge" style="<?php echo $verification_style; ?>">
@@ -1181,22 +1189,6 @@ $conn->close();
                             </select>
                         </div>
                         <div class="form-group">
-    <label>CGPA Credentials</label>
-    <?php if ($user_cgpa_file): ?>
-        <p>Current File: <a href="<?php echo htmlspecialchars($user_cgpa_file); ?>" target="_blank"><?php echo htmlspecialchars(basename($user_cgpa_file)); ?></a></p>
-        <form method="POST" action="" class="d-inline">
-            <input type="hidden" name="delete_cgpa" value="1">
-            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file?');">
-                <i class="fas fa-trash"></i> Delete File
-            </button>
-        </form>
-    <?php else: ?>
-        <input type="file" class="form-control" name="cgpa_file" id="cgpa_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-        <small class="form-text text-muted">Upload your CGPA transcripts (PDF, Word, or image files)</small>
-        <button type="submit" name="save_cgpa" class="btn btn-primary mt-2">Save File</button>
-    <?php endif; ?>
-</div>
-                        <div class="form-group">
                             <label for="bio">About me</label>
                             <textarea class="form-control" id="bio" name="bio" placeholder="Introduce yourself, including your teaching style, experience, etc."><?php echo htmlspecialchars($bio); ?></textarea>
                         </div>
@@ -1206,6 +1198,25 @@ $conn->close();
                         </div>
                         <button type="submit" class="btn">Save Profile</button>
                     </form>
+                </div>
+                <div class="profile-section">
+                    <h3 class="section-title">CGPA Credentials</h3>
+                    <p>Upload your academic credentials to build student trust.</p>
+                    <?php if ($user_cgpa_file): ?>
+                        <p>Current File: <a href="<?php echo htmlspecialchars($user_cgpa_file); ?>" target="_blank"><?php echo htmlspecialchars($user_cgpa_filename); ?></a></p>
+                        <form method="post" action="" class="d-inline">
+                            <input type="hidden" name="delete_cgpa" value="1">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file?');">Delete</button>
+                        </form>
+                    <?php else: ?>
+                        <form method="post" action="" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <input type="file" class="form-control" name="cgpa_file" id="cgpa_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                                <small class="form-text text-muted">Supported formats: PDF, Word, JPEG, PNG (max 10MB)</small>
+                            </div>
+                            <button type="submit" name="save_cgpa" class="btn btn-primary">Upload</button>
+                        </form>
+                    <?php endif; ?>
                 </div>
                 <div class="profile-section">
                     <h3 class="section-title">Courses Taught</h3>
@@ -1294,7 +1305,7 @@ $conn->close();
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         // Mobile menu toggle
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
+        document.querySelector('.menu-toggle')?.addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('show');
         });
 

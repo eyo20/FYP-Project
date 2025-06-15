@@ -1545,3 +1545,347 @@
 [15-Jun-2025 12:26:07 Europe/Berlin] Processing profile image upload for user ID: 16
 [15-Jun-2025 12:26:07 Europe/Berlin] Old profile image deleted: Uploads/profile_images/16_1749975508_16_1749401252_OIP.png
 [15-Jun-2025 12:26:07 Europe/Berlin] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1749983167_OIP.jpg_1.jpg
+[15-Jun-2025 18:25:25 Europe/Berlin] Request received at 2025-06-15 18:25:25
+[15-Jun-2025 18:38:08 Europe/Berlin] Request received at 2025-06-15 18:38:08
+[15-Jun-2025 18:45:10 Europe/Berlin] PHP Warning:  Undefined variable $user_id in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 24
+[15-Jun-2025 18:45:10 Europe/Berlin] Request received at 2025-06-15 18:45:10 (User ID: , Method: GET)
+[15-Jun-2025 18:45:17 Europe/Berlin] PHP Warning:  Undefined variable $user_id in C:\xampp\htdocs\FYP-Project\tutor_profile.php on line 24
+[15-Jun-2025 18:45:17 Europe/Berlin] Request received at 2025-06-15 18:45:17 (User ID: , Method: GET)
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen2
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111
+)
+
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:25:59 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen2
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] Processing profile update for user_id: 16
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwen2, last_name: koh, phone: 0123456789
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] Transaction committed for user_id: 16
+[16-Jun-2025 03:25:59 Asia/Kuala_Lumpur] Profile updated for user_id: 16
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen2
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:41:14 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen2
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] Processing profile update for user_id: 16
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwen2, last_name: koh, phone: 0123456789
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] Transaction committed for user_id: 16
+[16-Jun-2025 03:41:14 Asia/Kuala_Lumpur] Profile updated for user_id: 16
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:41:17 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] Delete CGPA requested for user_id: 16
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] File deleted: Uploads/credentials/684d6998a9b8d_OIP.jpeg
+[16-Jun-2025 03:41:17 Asia/Kuala_Lumpur] CGPA deleted for user_id: 16
+[16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpBE2B.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:41:26 for user_id: 16 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => screenshot-1717507504216.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpBE2B.tmp
+            [error] => 0
+            [size] => 692413
+        )
+
+)
+
+[16-Jun-2025 03:41:26 Asia/Kuala_Lumpur] CGPA inserted for user_id: 16, file: Uploads/credentials/684f21e6d36c5_screenshot-1717507504216.png
+[16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [change_password] => 1
+    [current_password] => 1
+    [new_password] => 11111111
+    [confirm_password] => 11111111
+)
+
+[16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:42:01 for user_id: 16 - POST: Array
+(
+    [change_password] => 1
+    [current_password] => 1
+    [new_password] => 11111111
+    [confirm_password] => 11111111
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] Processing password change
+[16-Jun-2025 03:42:01 Asia/Kuala_Lumpur] Incorrect current password for user ID: 16
+[16-Jun-2025 03:42:25 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [change_password] => 1
+    [current_password] => Mingwen123.
+    [new_password] => MMingwen123.
+    [confirm_password] => MMingwen123.
+)
+
+[16-Jun-2025 03:42:25 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:42:25 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:42:25 for user_id: 16 - POST: Array
+(
+    [change_password] => 1
+    [current_password] => Mingwen123.
+    [new_password] => MMingwen123.
+    [confirm_password] => MMingwen123.
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:42:25 Asia/Kuala_Lumpur] Processing password change
+[16-Jun-2025 03:42:25 Asia/Kuala_Lumpur] Password updated for user ID: 16
+[16-Jun-2025 03:43:11 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [change_password] => 1
+    [current_password] => MMingwen123.
+    [new_password] => Mingwen123.
+    [confirm_password] => Mingwen123.
+)
+
+[16-Jun-2025 03:43:11 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:43:11 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:43:11 for user_id: 16 - POST: Array
+(
+    [change_password] => 1
+    [current_password] => MMingwen123.
+    [new_password] => Mingwen123.
+    [confirm_password] => Mingwen123.
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:43:11 Asia/Kuala_Lumpur] Processing password change
+[16-Jun-2025 03:43:11 Asia/Kuala_Lumpur] Password updated for user ID: 16
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 5
+    [hourly_rate] => 100
+)
+
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:43:34 for user_id: 16 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 5
+    [hourly_rate] => 100
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] Processing add course
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] User ID: 16, Course ID: 5, Hourly Rate: 100
+[16-Jun-2025 03:43:34 Asia/Kuala_Lumpur] Course added successfully for user ID: 16, course_id: 5
+[16-Jun-2025 03:43:38 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [remove_subject] => 1
+    [course_id] => 5
+)
+
+[16-Jun-2025 03:43:38 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:43:38 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:43:38 for user_id: 16 - POST: Array
+(
+    [remove_subject] => 1
+    [course_id] => 5
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:43:38 Asia/Kuala_Lumpur] Processing remove course
+[16-Jun-2025 03:43:38 Asia/Kuala_Lumpur] Course removed successfully for user ID: 16
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:43:45 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] Processing profile update for user_id: 16
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwen, last_name: koh, phone: 0123456789
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] Transaction committed for user_id: 16
+[16-Jun-2025 03:43:45 Asia/Kuala_Lumpur] Profile updated for user_id: 16
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 01234567891
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] POST request received at 2025-06-16 03:43:54 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwen
+    [last_name] => koh
+    [phone] => 01234567891
+    [major] => Computer Science
+    [year] => Diploma first year
+    [bio] => hello
+    [qualifications] => 1111111
+)
+ | FILES: No FILES data
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] Processing profile update for user_id: 16
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwen, last_name: koh, phone: 01234567891
+[16-Jun-2025 03:43:54 Asia/Kuala_Lumpur] Invalid phone format. Use 01x-xxxxxxx (10 digits) or 011-xxxxxxxx (11 digits).
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] POST request received at 2025-06-16 04:13:41 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] Delete CGPA requested for user_id: 16
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] File deleted: Uploads/credentials/684f21e6d36c5_screenshot-1717507504216.png
+[16-Jun-2025 04:13:41 Asia/Kuala_Lumpur] CGPA deleted for user_id: 16
+[16-Jun-2025 04:16:15 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[16-Jun-2025 04:16:15 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php9E25.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[16-Jun-2025 04:16:15 Asia/Kuala_Lumpur] POST request received at 2025-06-16 04:16:15 for user_id: 16 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php9E25.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[16-Jun-2025 04:16:15 Asia/Kuala_Lumpur] CGPA inserted for user_id: 16, file: Uploads/credentials/684f2a0fcd831_cgpa.jpeg

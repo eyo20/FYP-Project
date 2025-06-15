@@ -9,10 +9,11 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// 获取用户信息
+// Get user information
 $user_query = "SELECT username, email, role, first_name, last_name, phone, profile_image, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 if (!$stmt) {
+    error_log("Error preparing user query: " . $conn->error);
     die("Error preparing user query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -34,10 +35,11 @@ $profile_image = $user_data['profile_image'];
 $created_at = $user_data['created_at'];
 $stmt->close();
 
-// 获取导师资料
+// Get tutor profile
 $tutor_query = "SELECT major, year, bio, qualifications, is_verified, rating FROM tutorprofile WHERE user_id = ?";
 $stmt = $conn->prepare($tutor_query);
 if (!$stmt) {
+    error_log("Error preparing tutor query: " . $conn->error);
     die("Error preparing tutor query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -62,10 +64,11 @@ if ($tutor_result->num_rows > 0) {
 }
 $stmt->close();
 
-// 获取未读消息数量
+// Get unread messages count
 $unread_messages_query = "SELECT COUNT(*) as unread_count FROM message WHERE receiver_id = ? AND is_read = 0";
 $stmt = $conn->prepare($unread_messages_query);
 if (!$stmt) {
+    error_log("Error preparing messages query: " . $conn->error);
     die("Error preparing messages query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -75,11 +78,12 @@ $messages_data = $messages_result->fetch_assoc();
 $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
-// 获取统计数据
-// 1. 总课程数
+// Get statistics
+// 1. Total sessions
 $total_sessions_query = "SELECT COUNT(*) as total_count FROM session WHERE tutor_id = ?";
 $stmt = $conn->prepare($total_sessions_query);
 if (!$stmt) {
+    error_log("Error preparing total sessions query: " . $conn->error);
     die("Error preparing total sessions query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -89,7 +93,7 @@ $total_data = $total_result->fetch_assoc();
 $total_sessions = $total_data['total_count'];
 $stmt->close();
 
-// 2. 本月预约数
+// 2. Sessions this month
 $month_sessions_query = "SELECT COUNT(*) as month_count
                         FROM session
                         WHERE tutor_id = ? 
@@ -97,6 +101,7 @@ $month_sessions_query = "SELECT COUNT(*) as month_count
                         AND YEAR(start_datetime) = YEAR(CURRENT_DATE())";
 $stmt = $conn->prepare($month_sessions_query);
 if (!$stmt) {
+    error_log("Error preparing month sessions query: " . $conn->error);
     die("Error preparing month sessions query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -106,12 +111,13 @@ $month_data = $month_result->fetch_assoc();
 $month_sessions = $month_data['month_count'];
 $stmt->close();
 
-// 3. 总学生数
+// 3. Total students
 $students_count_query = "SELECT COUNT(DISTINCT student_id) as student_count
                         FROM session
                         WHERE tutor_id = ?";
 $stmt = $conn->prepare($students_count_query);
 if (!$stmt) {
+    error_log("Error preparing students query: " . $conn->error);
     die("Error preparing students query: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -121,30 +127,42 @@ $students_data = $students_result->fetch_assoc();
 $total_students = $students_data['student_count'];
 $stmt->close();
 
-// 4. 待处理的预约请求数量
+// 4. Pending requests count
 $pending_requests_query = "SELECT COUNT(*) as pending_count
-                          FROM session
+                          FROM session_requests
                           WHERE tutor_id = ? AND status = 'pending'";
 $stmt = $conn->prepare($pending_requests_query);
 if (!$stmt) {
-    die("Error preparing pending requests query: " . $conn->error);
+    error_log("Error preparing pending requests query: " . $conn->error);
+    die("Database error: Failed to prepare pending requests query.");
 }
 $stmt->bind_param("i", $user_id);
-$stmt->execute();
+if (!$stmt->execute()) {
+    error_log("Error executing pending requests query: " . $stmt->error);
+    die("Database error: Failed to execute pending requests query.");
+}
 $pending_result = $stmt->get_result();
 $pending_data = $pending_result->fetch_assoc();
-$pending_requests = $pending_data['pending_count'];
+$pending_requests = $pending_data['pending_count'] ?? 0;
+error_log("Pending requests for tutor_id $user_id: $pending_requests");
 $stmt->close();
 
-// 获取已批准的会话（用于日历显示）
-$approved_sessions_query = "SELECT DATE_FORMAT(start_datetime, '%Y-%m-%d') as date,
-                           COUNT(*) as booking_count
-                           FROM session
-                           WHERE tutor_id = ? AND status = 'approved'
-                           AND YEAR(start_datetime) = ? AND MONTH(start_datetime) = ?
-                           GROUP BY DATE_FORMAT(start_datetime, '%Y-%m-%d')";
+// Get approved sessions for calendar with details
+$approved_sessions_query = "
+    SELECT s.session_id, DATE_FORMAT(s.start_datetime, '%Y-%m-%d') as date,
+           s.start_datetime, s.end_datetime, s.student_id, s.course_id, s.location_id,
+           CONCAT(u.first_name, ' ', u.last_name) as student_name,
+           c.course_name, l.location_name as location_name
+    FROM session s
+    JOIN user u ON s.student_id = u.user_id
+    JOIN course c ON s.course_id = c.id
+    JOIN location l ON s.location_id = l.location_id
+    WHERE s.tutor_id = ? AND s.status = 'confirmed'
+    AND YEAR(s.start_datetime) = ? AND MONTH(s.start_datetime) = ?
+    ORDER BY s.start_datetime";
 $stmt = $conn->prepare($approved_sessions_query);
 if (!$stmt) {
+    error_log("Error preparing approved sessions query: " . $conn->error);
     die("Error preparing approved sessions query: " . $conn->error);
 }
 $current_month = isset($_GET['month']) ? (int)$_GET['month'] : date('n');
@@ -154,11 +172,22 @@ $stmt->execute();
 $approved_result = $stmt->get_result();
 $approved_sessions = [];
 while ($row = $approved_result->fetch_assoc()) {
-    $approved_sessions[$row['date']] = $row['booking_count'];
+    $date = $row['date'];
+    if (!isset($approved_sessions[$date])) {
+        $approved_sessions[$date] = [];
+    }
+    $approved_sessions[$date][] = [
+        'session_id' => $row['session_id'],
+        'student_name' => $row['student_name'],
+        'course_name' => $row['course_name'],
+        'location_name' => $row['location_name'],
+        'start_datetime' => $row['start_datetime'],
+        'end_datetime' => $row['end_datetime'],
+    ];
 }
 $stmt->close();
 
-// 获取当前月份的日历数据
+// Get calendar data
 $days_in_month = date('t', mktime(0, 0, 0, $current_month, 1, $current_year));
 $first_day_of_month = date('N', mktime(0, 0, 0, $current_month, 1, $current_year));
 
@@ -280,6 +309,24 @@ $conn->close();
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: rgba(196, 214, 0, 0.1);
+            border-left: 4px solid var(--accent);
+            color: #5a6400;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid #dc3545;
+            color: #dc3545;
         }
 
         .welcome-section {
@@ -481,6 +528,35 @@ $conn->close();
             background-color: rgba(0, 174, 239, 0.2);
             border-left: 3px solid var(--secondary);
             text-align: center;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .booking-indicator:hover {
+            background-color: rgba(0, 174, 239, 0.3);
+        }
+
+        .booking-details {
+            display: none;
+            background-color: white;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .booking-details.active {
+            display: block;
+        }
+
+        .booking-details p {
+            margin-bottom: 0.3rem;
+        }
+
+        .booking-details strong {
+            color: var(--primary);
         }
 
         footer {
@@ -519,11 +595,23 @@ $conn->close();
             .calendar-day {
                 display: flex;
                 flex-direction: column;
+                min-height: auto;
+                padding: 1rem;
             }
 
             .day-number:before {
                 content: attr(data-day);
                 margin-right: 5px;
+            }
+
+            .booking-indicator {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            .booking-details {
+                font-size: 0.85rem;
+                padding: 0.75rem;
             }
         }
     </style>
@@ -533,6 +621,15 @@ $conn->close();
     <?php include 'header/tut_head.php'; ?>
 
     <main>
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['success']); ?></div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger"><?php echo htmlspecialchars($_SESSION['error']); ?></div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
         <div class="welcome-section">
             <div class="profile-image-container">
                 <?php if ($profile_image): ?>
@@ -548,7 +645,7 @@ $conn->close();
                         <span class="verified-badge">Verified</span>
                     <?php endif; ?>
                 </h1>
-                <p>You can manage your tutoring schedule here, view appointment requests, and interact with students.</p>
+                <p>You can view your tutoring schedule here, view appointment requests, and interact with students.</p>
 
                 <div class="stats-container">
                     <div class="stat-card">
@@ -568,8 +665,10 @@ $conn->close();
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🔔</div>
-                        <div class="stat-value"><?php echo $pending_requests; ?></div>
-                        <div class="stat-label">Pending Requests</div>
+                        <a href="tutor_requests.php" style="text-decoration: none; color: inherit;">
+                            <div class="stat-value"><?php echo $pending_requests; ?></div>
+                            <div class="stat-label">Pending Requests</div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -610,11 +709,19 @@ $conn->close();
                     $is_today = ($day == $today && $current_month == date('n') && $current_year == date('Y'));
                     $day_class = $is_today ? 'calendar-day today' : 'calendar-day';
                     $date_string = sprintf("%04d-%02d-%02d", $current_year, $current_month, $day);
-                    echo "<div class=\"$day_class\">";
+                    echo "<div class=\"$day_class\" data-day=\"". date('D', strtotime($date_string)) ."\">";
                     echo "<div class=\"day-number\">$day</div>";
                     if (isset($approved_sessions[$date_string])) {
-                        $count = $approved_sessions[$date_string];
-                        echo "<div class=\"booking-indicator\">$count Booking" . ($count > 1 ? 's' : '') . "</div>";
+                        foreach ($approved_sessions[$date_string] as $index => $session) {
+                            $booking_number = $index + 1;
+                            echo "<div class=\"booking-indicator\" data-session-id=\"{$session['session_id']}\">Booking $booking_number</div>";
+                            echo "<div class=\"booking-details\" id=\"details-{$session['session_id']}\">";
+                            echo "<p><strong>Student:</strong> " . htmlspecialchars($session['student_name']) . "</p>";
+                            echo "<p><strong>Course:</strong> " . htmlspecialchars($session['course_name']) . "</p>";
+                            echo "<p><strong>Time:</strong> " . date('h:i A', strtotime($session['start_datetime'])) . " - " . date('h:i A', strtotime($session['end_datetime'])) . "</p>";
+                            echo "<p><strong>Location:</strong> " . htmlspecialchars($session['location_name']) . "</p>";
+                            echo "</div>";
+                        }
                     }
                     echo "</div>";
                 }
@@ -631,7 +738,7 @@ $conn->close();
     </main>
 
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> PeerLearn Platform. All rights reserved.</p>
+        <p>© <?php echo date('Y'); ?> PeerLearn Platform. All rights reserved.</p>
     </footer>
 
     <script>
@@ -655,7 +762,24 @@ $conn->close();
         function updateCalendar() {
             location.href = `tutor_main_page.php?month=${m}&year=${y}`;
         }
+
+        // Toggle booking details
+        document.querySelectorAll('.booking-indicator').forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                const sessionId = indicator.getAttribute('data-session-id');
+                const details = document.getElementById(`details-${sessionId}`);
+                
+                // Close all other details panels
+                document.querySelectorAll('.booking-details.active').forEach(activeDetails => {
+                    if (activeDetails !== details) {
+                        activeDetails.classList.remove('active');
+                    }
+                });
+
+                // Toggle the clicked details panel
+                details.classList.toggle('active');
+            });
+        });
     </script>
 </body>
-
 </html>
