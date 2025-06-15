@@ -59,7 +59,7 @@ if ($tutor_result->num_rows > 0) {
     $year = 'Not set';
     $bio = '';
     $qualifications = '';
-    $is_verified = 0;
+    $is_verified = null;
     $rating = 0;
 }
 $stmt->close();
@@ -79,7 +79,6 @@ $unread_messages = $messages_data['unread_count'];
 $stmt->close();
 
 // Get statistics
-// 1. Total sessions
 $total_sessions_query = "SELECT COUNT(*) as total_count FROM session WHERE tutor_id = ?";
 $stmt = $conn->prepare($total_sessions_query);
 if (!$stmt) {
@@ -93,12 +92,7 @@ $total_data = $total_result->fetch_assoc();
 $total_sessions = $total_data['total_count'];
 $stmt->close();
 
-// 2. Sessions this month
-$month_sessions_query = "SELECT COUNT(*) as month_count
-                        FROM session
-                        WHERE tutor_id = ? 
-                        AND MONTH(start_datetime) = MONTH(CURRENT_DATE())
-                        AND YEAR(start_datetime) = YEAR(CURRENT_DATE())";
+$month_sessions_query = "SELECT COUNT(*) as month_count FROM session WHERE tutor_id = ? AND MONTH(start_datetime) = MONTH(CURRENT_DATE()) AND YEAR(start_datetime) = YEAR(CURRENT_DATE())";
 $stmt = $conn->prepare($month_sessions_query);
 if (!$stmt) {
     error_log("Error preparing month sessions query: " . $conn->error);
@@ -111,10 +105,7 @@ $month_data = $month_result->fetch_assoc();
 $month_sessions = $month_data['month_count'];
 $stmt->close();
 
-// 3. Total students
-$students_count_query = "SELECT COUNT(DISTINCT student_id) as student_count
-                        FROM session
-                        WHERE tutor_id = ?";
+$students_count_query = "SELECT COUNT(DISTINCT student_id) as student_count FROM session WHERE tutor_id = ?";
 $stmt = $conn->prepare($students_count_query);
 if (!$stmt) {
     error_log("Error preparing students query: " . $conn->error);
@@ -127,10 +118,7 @@ $students_data = $students_result->fetch_assoc();
 $total_students = $students_data['student_count'];
 $stmt->close();
 
-// 4. Pending requests count
-$pending_requests_query = "SELECT COUNT(*) as pending_count
-                          FROM session_requests
-                          WHERE tutor_id = ? AND status = 'pending'";
+$pending_requests_query = "SELECT COUNT(*) as pending_count FROM session_requests WHERE tutor_id = ? AND status = 'pending'";
 $stmt = $conn->prepare($pending_requests_query);
 if (!$stmt) {
     error_log("Error preparing pending requests query: " . $conn->error);
@@ -147,19 +135,7 @@ $pending_requests = $pending_data['pending_count'] ?? 0;
 error_log("Pending requests for tutor_id $user_id: $pending_requests");
 $stmt->close();
 
-// Get approved sessions for calendar with details
-$approved_sessions_query = "
-    SELECT s.session_id, DATE_FORMAT(s.start_datetime, '%Y-%m-%d') as date,
-           s.start_datetime, s.end_datetime, s.student_id, s.course_id, s.location_id,
-           CONCAT(u.first_name, ' ', u.last_name) as student_name,
-           c.course_name, l.location_name as location_name
-    FROM session s
-    JOIN user u ON s.student_id = u.user_id
-    JOIN course c ON s.course_id = c.id
-    JOIN location l ON s.location_id = l.location_id
-    WHERE s.tutor_id = ? AND s.status = 'confirmed'
-    AND YEAR(s.start_datetime) = ? AND MONTH(s.start_datetime) = ?
-    ORDER BY s.start_datetime";
+$approved_sessions_query = "SELECT s.session_id, DATE_FORMAT(s.start_datetime, '%Y-%m-%d') as date, s.start_datetime, s.end_datetime, s.student_id, s.course_id, s.location_id, CONCAT(u.first_name, ' ', u.last_name) as student_name, c.course_name, l.location_name as location_name FROM session s JOIN user u ON s.student_id = u.user_id JOIN course c ON s.course_id = c.id JOIN location l ON s.location_id = l.location_id WHERE s.tutor_id = ? AND s.status = 'confirmed' AND YEAR(s.start_datetime) = ? AND MONTH(s.start_datetime) = ? ORDER BY s.start_datetime";
 $stmt = $conn->prepare($approved_sessions_query);
 if (!$stmt) {
     error_log("Error preparing approved sessions query: " . $conn->error);
@@ -187,7 +163,6 @@ while ($row = $approved_result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Get calendar data
 $days_in_month = date('t', mktime(0, 0, 0, $current_month, 1, $current_year));
 $first_day_of_month = date('N', mktime(0, 0, 0, $current_month, 1, $current_year));
 
@@ -196,7 +171,6 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -342,6 +316,10 @@ $conn->close();
 
         .profile-image-container {
             position: relative;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .profile-image {
@@ -365,6 +343,25 @@ $conn->close();
             border: 3px solid var(--primary);
         }
 
+        .verified-badge {
+            background-color: #6c757d;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 1.5rem; /* Increased to move down one grid unit */
+            text-align: center;
+        }
+
+        .verified-badge.verified {
+            background-color: #C4D600;
+        }
+
+        .verified-badge.not-verified {
+            background-color: #dc3545;
+        }
+
         .welcome-info {
             flex: 1;
         }
@@ -375,15 +372,6 @@ $conn->close();
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .verified-badge {
-            background-color: var(--accent);
-            color: white;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            display: inline-block;
         }
 
         .stats-container {
@@ -637,13 +625,24 @@ $conn->close();
                 <?php else: ?>
                     <div class="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                 <?php endif; ?>
+                <?php
+                $verification_status = 'Pending Verification';
+                $badge_class = '';
+                if ($is_verified === 1) {
+                    $verification_status = 'Verified';
+                    $badge_class = 'verified';
+                } elseif ($is_verified === 0) {
+                    $verification_status = 'Not Verified';
+                    $badge_class = 'not-verified';
+                }
+                ?>
+                <div class="verified-badge <?php echo $badge_class; ?>">
+                    <?php echo htmlspecialchars($verification_status); ?>
+                </div>
             </div>
             <div class="welcome-info">
                 <h1 class="welcome-title">
                     Welcome back, <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>
-                    <?php if ($is_verified): ?>
-                        <span class="verified-badge">Verified</span>
-                    <?php endif; ?>
                 </h1>
                 <p>You can view your tutoring schedule here, view appointment requests, and interact with students.</p>
 
@@ -697,13 +696,11 @@ $conn->close();
                 <div class="calendar-day-header">Sat</div>
 
                 <?php
-                // Fill blanks before first day
                 for ($i = 1; $i < $first_day_of_month; $i++) {
                     $prev_month_day = date('j', strtotime('-' . ($first_day_of_month - $i) . ' days', strtotime("$current_year-$current_month-01")));
                     echo '<div class="calendar-day other-month"><div class="day-number">' . $prev_month_day . '</div></div>';
                 }
 
-                // Fill current month days
                 $today = date('j');
                 for ($day = 1; $day <= $days_in_month; $day++) {
                     $is_today = ($day == $today && $current_month == date('n') && $current_year == date('Y'));
@@ -726,7 +723,6 @@ $conn->close();
                     echo "</div>";
                 }
 
-                // Fill blanks after last day
                 $days_after = (7 - (($first_day_of_month - 1 + $days_in_month) % 7)) % 7;
                 for ($i = 1; $i <= $days_after; $i++) {
                     $next_day = date('j', strtotime("+$i days", strtotime("$current_year-$current_month-$days_in_month")));
@@ -745,17 +741,11 @@ $conn->close();
         let m = <?php echo $current_month; ?>,
             y = <?php echo $current_year; ?>;
         document.getElementById('prev-month').onclick = () => {
-            if (--m < 1) {
-                m = 12;
-                y--;
-            }
+            if (--m < 1) { m = 12; y--; }
             updateCalendar();
         };
         document.getElementById('next-month').onclick = () => {
-            if (++m > 12) {
-                m = 1;
-                y++;
-            }
+            if (++m > 12) { m = 1; y++; }
             updateCalendar();
         };
 
@@ -763,20 +753,13 @@ $conn->close();
             location.href = `tutor_main_page.php?month=${m}&year=${y}`;
         }
 
-        // Toggle booking details
         document.querySelectorAll('.booking-indicator').forEach(indicator => {
             indicator.addEventListener('click', () => {
                 const sessionId = indicator.getAttribute('data-session-id');
                 const details = document.getElementById(`details-${sessionId}`);
-                
-                // Close all other details panels
                 document.querySelectorAll('.booking-details.active').forEach(activeDetails => {
-                    if (activeDetails !== details) {
-                        activeDetails.classList.remove('active');
-                    }
+                    if (activeDetails !== details) activeDetails.classList.remove('active');
                 });
-
-                // Toggle the clicked details panel
                 details.classList.toggle('active');
             });
         });

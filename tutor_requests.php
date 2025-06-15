@@ -1,19 +1,36 @@
 <?php
 session_start();
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 
 require_once 'db_connection.php';
+if (!$conn) {
+    $_SESSION['error'] = "Database connection failed.";
+    header('Location: error.php');
+    exit();
+}
+
 $user_id = $_SESSION['user_id'];
+
+// Handle tab state
+$active_tab = isset($_POST['active_tab']) ? $_POST['active_tab'] : (isset($_SESSION['active_tab']) ? $_SESSION['active_tab'] : 'pending');
+$_SESSION['active_tab'] = $active_tab === 'processed' ? 'processed' : 'pending';
 
 // Check if user is a tutor
 $stmt = $conn->prepare("SELECT role FROM user WHERE user_id = ?");
 if (!$stmt) {
+    $_SESSION['error'] = "Error preparing user query: " . $conn->error;
     error_log("Error preparing user query: " . $conn->error);
-    die("Error preparing user query: " . $conn->error);
+    header('Location: error.php');
+    exit();
 }
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -26,8 +43,10 @@ if ($result->num_rows === 0 || $result->fetch_assoc()['role'] !== 'tutor') {
 // Get user info
 $stmt = $conn->prepare("SELECT first_name, last_name, profile_image FROM user WHERE user_id = ?");
 if (!$stmt) {
+    $_SESSION['error'] = "Error preparing user info query: " . $conn->error;
     error_log("Error preparing user info query: " . $conn->error);
-    die("Error preparing user info query: " . $conn->error);
+    header('Location: error.php');
+    exit();
 }
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -48,10 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
     $request_id = (int)$_POST['request_id'];
 
     // Validate request
-    $stmt_validate = $conn->prepare("SELECT student_id, course_id, selected_date, time_slot FROM session_requests WHERE request_id = ? AND tutor_id = ?");
+    $stmt_validate = $conn->prepare("SELECT student_id, course_id, selected_date, time_slot, location_id FROM session_requests WHERE request_id = ? AND tutor_id = ?");
     if (!$stmt_validate) {
-        $error_message = "Error preparing request validation: " . $conn->error;
-        error_log($error_message);
+        $_SESSION['error'] = "Error preparing request validation: " . $conn->error;
+        error_log("Error preparing request validation: " . $conn->error);
     } else {
         $stmt_validate->bind_param("ii", $request_id, $user_id);
         $stmt_validate->execute();
@@ -97,6 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                         throw new Exception("Invalid date or time format.");
                     }
                     $location_id = (int)$request_data['location_id'];
+                    // Validate location_id
+                    $stmt_loc = $conn->prepare("SELECT location_id FROM location WHERE location_id = ?");
+                    $stmt_loc->bind_param("i", $location_id);
+                    $stmt_loc->execute();
+                    if ($stmt_loc->get_result()->num_rows === 0) {
+                        throw new Exception("Invalid location ID.");
+                    }
+                    $stmt_loc->close();
 
                     // Reject conflicting requests
                     $stmt_conflict = $conn->prepare("
@@ -153,21 +180,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                     $stmt_notify->close();
 
                     $conn->commit();
-                    $success_message = 'Request accepted successfully! Please discuss timing with the student via messages.';
+                    $_SESSION['success'] = 'Request accepted successfully! Please discuss timing with the student via messages.';
                 } catch (Exception $e) {
                     $conn->rollback();
-                    $error_message = 'Failed to accept request: ' . $e->getMessage();
-                    error_log($error_message);
+                    $_SESSION['error'] = 'Failed to accept request: ' . $e->getMessage();
+                    error_log("Failed to accept request: " . $e->getMessage());
                 }
             } elseif ($action === 'reject') {
                 $stmt_reject = $conn->prepare("UPDATE session_requests SET status = 'rejected' WHERE request_id = ?");
                 if (!$stmt_reject) {
-                    $error_message = 'Error preparing reject: ' . $conn->error;
-                    error_log($error_message);
+                    $_SESSION['error'] = 'Error preparing reject: ' . $conn->error;
+                    error_log("Error preparing reject: " . $conn->error);
                 } else {
                     $stmt_reject->bind_param("i", $request_id);
                     if ($stmt_reject->execute()) {
-                        $success_message = 'Request rejected successfully';
+                        $_SESSION['success'] = 'Request rejected successfully';
                         $stmt_notify = $conn->prepare("
                             INSERT INTO notification (user_id, type, title, message, related_id, created_at)
                             VALUES (?, 'session', 'Request Rejected', 'Your tutoring request has been rejected.', ?, NOW())
@@ -178,49 +205,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                             $stmt_notify->close();
                         }
                     } else {
-                        $error_message = 'Failed to reject request: " . $conn->error';
-                        error_log($error_message);
+                        $_SESSION['error'] = 'Failed to reject request: ' . $conn->error;
+                        error_log("Failed to reject request: " . $conn->error);
                     }
                     $stmt_reject->close();
                 }
             } else {
-                $error_message = 'Invalid action.';
-                error_log($error_message);
+                $_SESSION['error'] = 'Invalid action: ' . $action;
+                error_log("Invalid action: " . $action);
             }
         } else {
-            $error_message = 'Invalid request ID or no permission.';
-            error_log($error_message);
+            $_SESSION['error'] = 'Invalid request ID or no permission.';
+            error_log("Invalid request ID: $request_id or no permission for tutor_id: $user_id");
         }
     }
 
-    if ($success_message) {
-        $_SESSION['success'] = $success_message;
-    } elseif ($error_message) {
-        $_SESSION['error'] = $error_message;
-    }
-    header("Location: tutor_requests.php");
+    header("Location: tutor_requests.php?tab=" . urlencode($active_tab));
     exit();
 }
 
 // Handle search
 $search_results = [];
-$search_date = isset($_POST['search_date']) ? $_POST['search_date'] : '';
-$search_time_slot = isset($_POST['search_time_slot']) ? $_POST['search_time_slot'] : '';
+$search_date = isset($_POST['search_date']) ? trim($_POST['search_date']) : '';
+$search_time_slot = isset($_POST['search_time_slot']) ? trim($_POST['search_time_slot']) : '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clear_search'])) {
+    $search_date = '';
+    $search_time_slot = '';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     $stmt_search = $conn->prepare("
         SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image
+               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
         FROM session_requests sr
         JOIN course c ON sr.course_id = c.id
         JOIN user u ON sr.student_id = u.user_id
+        JOIN location l ON sr.location_id = l.location_id
         WHERE sr.tutor_id = ? 
         AND (? = '' OR sr.selected_date = ?)
         AND (? = '' OR sr.time_slot = ?)
     ");
     if (!$stmt_search) {
-        $error_message = "Error preparing search query: " . $conn->error;
-        error_log($error_message);
+        $_SESSION['error'] = "Error preparing search query: " . $conn->error;
+        error_log("Error preparing search query: " . $conn->error);
     } else {
         $stmt_search->bind_param("isssi", $user_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
         $stmt_search->execute();
@@ -231,18 +259,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
         $stmt_search->close();
     }
 } else {
-    // Default view
+    // Default view for pending requests
     $stmt = $conn->prepare("
         SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image
+               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
         FROM session_requests sr
         JOIN course c ON sr.course_id = c.id
         JOIN user u ON sr.student_id = u.user_id
+        JOIN location l ON sr.location_id = l.location_id
         WHERE sr.tutor_id = ? AND sr.status = 'pending'
     ");
     if (!$stmt) {
-        $error_message = "Error preparing pending requests: " . $conn->error;
-        error_log($error_message);
+        $_SESSION['error'] = "Error preparing pending requests: " . $conn->error;
+        error_log("Error preparing pending requests: " . $conn->error);
     } else {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -254,23 +283,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     }
 }
 
-// Get processed requests (excluding cancelled)
+// Get processed requests with search filters if applicable
 $processed_requests = [];
-$stmt = $conn->prepare("
+$processed_query = "
     SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-           sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image
+           sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
     FROM session_requests sr
     JOIN course c ON sr.course_id = c.id
     JOIN user u ON sr.student_id = u.user_id
+    JOIN location l ON sr.location_id = l.location_id
     WHERE sr.tutor_id = ? AND sr.status IN ('confirmed', 'rejected')
-    ORDER BY created_at DESC
-    LIMIT 20
-");
+";
+if ($search_date !== '' || $search_time_slot !== '') {
+    $processed_query .= " AND (? = '' OR sr.selected_date = ?)
+                         AND (? = '' OR sr.time_slot = ?)";
+}
+$processed_query .= " ORDER BY created_at DESC";
+$stmt = $conn->prepare($processed_query);
 if (!$stmt) {
-    $error_message = "Error preparing processed requests: " . $conn->error;
-    error_log($error_message);
+    $_SESSION['error'] = "Error preparing processed requests: " . $conn->error;
+    error_log("Error preparing processed requests: " . $conn->error);
 } else {
-    $stmt->bind_param("i", $user_id);
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $stmt->bind_param("isssi", $user_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+    } else {
+        $stmt->bind_param("i", $user_id);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -428,15 +466,32 @@ $conn->close();
 
         .search-form button {
             padding: 0.5rem 1rem;
-            background-color: var(--secondary);
-            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .search-form button:hover {
+        .search-form .btn-search {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .search-form .btn-search:hover {
             background-color: #0099cc;
+        }
+
+        .search-form .btn-clear {
+            background-color: var(--gray);
+            color: var(--primary);
+        }
+
+        .search-form .btn-clear:hover {
+            background-color: #d0d0d0;
         }
 
         .alert {
@@ -469,6 +524,7 @@ $conn->close();
             font-weight: 500;
             border-bottom: 3px solid transparent;
             color: var(--dark-gray);
+            position: relative;
         }
 
         .tab.active {
@@ -673,84 +729,100 @@ $conn->close();
         <?php endif; ?>
 
         <form method="post" action="tutor_requests.php" class="search-form">
-            <input type="date" name="search_date" value="<?php echo htmlspecialchars($search_date); ?>" required>
-            <select name="search_time_slot" required>
+            <input type="date" name="search_date" value="<?php echo htmlspecialchars($search_date); ?>">
+            <select name="search_time_slot">
                 <option value="">Select Time Slot</option>
                 <option value="08:00-10:00" <?php echo $search_time_slot === '08:00-10:00' ? 'selected' : ''; ?>>08:00 - 10:00</option>
                 <option value="10:00-12:00" <?php echo $search_time_slot === '10:00-12:00' ? 'selected' : ''; ?>>10:00 - 12:00</option>
                 <option value="12:00-14:00" <?php echo $search_time_slot === '12:00-14:00' ? 'selected' : ''; ?>>12:00 - 14:00</option>
             </select>
-            <button type="submit" name="search"><i class="fas fa-search"></i> Search</button>
+            <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
+            <button type="submit" name="search" class="btn-search"><i class="fas fa-search"></i> Search</button>
+            <button type="submit" name="clear_search" class="btn-clear"><i class="fas fa-undo"></i> Clear Search</button>
         </form>
 
         <div class="tabs">
-            <div class="tab active" data-tab="pending">Pending Requests<?php if (count(array_filter($search_results, fn($r) => $r['status'] === 'pending')) > 0): ?>
-                <span class="notification-badge"><?php echo count(array_filter($search_results, fn($r) => $r['status'] === 'pending')); ?></span><?php endif; ?></div>
-            <div class="tab" data-tab="processed">Processed Requests</div>
+            <div class="tab <?php echo $active_tab === 'pending' ? 'active' : ''; ?>" data-tab="pending">Pending Requests
+                <?php if (count(array_filter($search_results, fn($r) => $r['status'] === 'pending')) > 0): ?>
+                    <span class="notification-badge"><?php echo count(array_filter($search_results, fn($r) => $r['status'] === 'pending')); ?></span>
+                <?php endif; ?>
+            </div>
+            <div class="tab <?php echo $active_tab === 'processed' ? 'active' : ''; ?>" data-tab="processed">Processed Requests
+                <?php if (count($processed_requests) > 0): ?>
+                    <span class="notification-badge"><?php echo count($processed_requests); ?></span>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <div id="pending-tab" class="tab-content active">
-            <?php if ($search_results): ?>
+        <div id="pending-tab" class="tab-content <?php echo $active_tab === 'pending' ? 'active' : ''; ?>">
+            <?php $pending_requests = array_filter($search_results, fn($r) => $r['status'] === 'pending'); ?>
+            <?php if ($pending_requests): ?>
                 <div class="request-list">
-                    <?php foreach ($search_results as $request): ?>
-                        <?php if ($request['status'] === 'pending'): ?>
-                            <div class="request-card">
-                                <div class="request-header">
-                                    <div class="student-avatar">
-                                        <?php if ($request['profile_image']): ?>
-                                            <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
-                                        <?php else: ?>
-                                            <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="request-info">
-                                        <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
-                                        <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                    </div>
+                    <?php foreach ($pending_requests as $request): ?>
+                        <div class="request-card">
+                            <div class="request-header">
+                                <div class="student-avatar">
+                                    <?php if ($request['profile_image']): ?>
+                                        <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
+                                    <?php else: ?>
+                                        <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="request-details">
-                                    <div class="detail-item">
-                                        <div class="detail-label">Course:</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Date:</div>
-                                        <div class="detail-value">
-                                            <?php echo !empty($request['selected_date']) 
-                                                ? date('M d, Y', strtotime($request['selected_date'])) 
-                                                : 'Not specified'; ?>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Time Slot:</div>
-                                        <div class="detail-value">
-                                            <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Requested On:</div>
-                                        <div class="detail-value">
-                                            <?php echo !empty($request['created_at']) 
-                                                ? date('M d, Y', strtotime($request['created_at'])) 
-                                                : 'Not specified'; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="request-actions">
-                                    <form method="post" action="tutor_requests.php">
-                                        <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($request['request_id'] ?? ''); ?>">
-                                        <input type="hidden" name="action" value="accept">
-                                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Accept</button>
-                                    </form>
-                                    <form method="post" action="tutor_requests.php">
-                                        <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($request['request_id'] ?? ''); ?>">
-                                        <input type="hidden" name="action" value="reject">
-                                        <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Reject</button>
-                                    </form>
-                                    <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                                <div class="request-info">
+                                    <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
+                                    <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                            <div class="request-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Course:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Date:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($request['selected_date']) 
+                                            ? date('M d, Y', strtotime($request['selected_date'])) 
+                                            : 'Not specified'; ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Time Slot:</div>
+                                    <div class="detail-value">
+                                        <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Location:</div>
+                                    <div class="detail-value">
+                                        <?php echo htmlspecialchars($request['location_name'] ?? 'Not specified'); ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Requested On:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($request['created_at']) 
+                                            ? date('M d, Y', strtotime($request['created_at'])) 
+                                            : 'Not specified'; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="request-actions">
+                                <form method="post" action="tutor_requests.php">
+                                    <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($request['request_id'] ?? ''); ?>">
+                                    <input type="hidden" name="action" value="accept">
+                                    <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
+                                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Accept</button>
+                                </form>
+                                <form method="post" action="tutor_requests.php">
+                                    <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($request['request_id'] ?? ''); ?>">
+                                    <input type="hidden" name="action" value="reject">
+                                    <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Reject</button>
+                                </form>
+                                <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                            </div>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
@@ -762,77 +834,79 @@ $conn->close();
             <?php endif; ?>
         </div>
 
-        <div id="processed-tab" class="tab-content">
-            <?php if ($search_results || $processed_requests): ?>
+        <div id="processed-tab" class="tab-content <?php echo $active_tab === 'processed' ? 'active' : ''; ?>">
+            <?php if ($processed_requests): ?>
                 <div class="request-list">
-                    <?php 
-                    $all_processed = $search_results ? array_filter($search_results, fn($r) => in_array($r['status'], ['confirmed', 'rejected'])) : $processed_requests;
-                    foreach ($all_processed as $request): ?>
-                        <?php if (in_array($request['status'], ['confirmed', 'rejected'])): ?>
-                            <div class="request-card">
-                                <div class="request-header">
-                                    <div class="student-avatar">
-                                        <?php if ($request['profile_image']): ?>
-                                            <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
-                                        <?php else: ?>
-                                            <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="request-info">
-                                        <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
-                                        <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                    </div>
-                                    <?php
-                                    $statusClass = $statusText = '';
-                                    switch ($request['status'] ?? '') {
-                                        case 'confirmed':
-                                            $statusClass = 'status-confirmed';
-                                            $statusText = 'Confirmed';
-                                            break;
-                                        case 'rejected':
-                                            $statusClass = 'status-rejected';
-                                            $statusText = 'Rejected';
-                                            break;
-                                        default:
-                                            $statusClass = 'status-pending';
-                                            $statusText = $request['status'] ?? 'Unknown';
-                                    }
-                                    ?>
-                                    <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                    <?php foreach ($processed_requests as $request): ?>
+                        <div class="request-card">
+                            <div class="request-header">
+                                <div class="student-avatar">
+                                    <?php if ($request['profile_image']): ?>
+                                        <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
+                                    <?php else: ?>
+                                        <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="request-details">
-                                    <div class="detail-item">
-                                        <div class="detail-label">Course:</div>
-                                        <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Date:</div>
-                                        <div class="detail-value">
-                                            <?php echo !empty($request['selected_date']) 
-                                                ? date('M d, Y', strtotime($request['selected_date'])) 
-                                                : 'Not specified'; ?>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Time Slot:</div>
-                                        <div class="detail-value">
-                                            <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Requested On:</div>
-                                        <div class="detail-value">
-                                            <?php echo !empty($request['created_at']) 
-                                                ? date('M d, Y', strtotime($request['created_at'])) 
-                                                : 'Not specified'; ?>
-                                        </div>
+                                <div class="request-info">
+                                    <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
+                                    <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                </div>
+                                <?php
+                                $statusClass = $statusText = '';
+                                switch ($request['status'] ?? '') {
+                                    case 'confirmed':
+                                        $statusClass = 'status-confirmed';
+                                        $statusText = 'Confirmed';
+                                        break;
+                                    case 'rejected':
+                                        $statusClass = 'status-rejected';
+                                        $statusText = 'Rejected';
+                                        break;
+                                    default:
+                                        $statusClass = 'status-pending';
+                                        $statusText = $request['status'] ?? 'Unknown';
+                                }
+                                ?>
+                                <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                            </div>
+                            <div class="request-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Course:</div>
+                                    <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Date:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($request['selected_date']) 
+                                            ? date('M d, Y', strtotime($request['selected_date'])) 
+                                            : 'Not specified'; ?>
                                     </div>
                                 </div>
-                                <div class="request-actions">
-                                    <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                                <div class="detail-item">
+                                    <div class="detail-label">Time Slot:</div>
+                                    <div class="detail-value">
+                                        <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Location:</div>
+                                    <div class="detail-value">
+                                        <?php echo htmlspecialchars($request['location_name'] ?? 'Not specified'); ?>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Requested On:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($request['created_at']) 
+                                            ? date('M d, Y', strtotime($request['created_at'])) 
+                                            : 'Not specified'; ?>
+                                    </div>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                            <div class="request-actions">
+                                <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                            </div>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
@@ -848,12 +922,25 @@ $conn->close();
     <script>
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
+
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById(`${tab.getAttribute('data-tab')}-tab`).classList.add('active');
+
+                // Update session via form submission
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'tutor_requests.php';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'active_tab';
+                input.value = tab.getAttribute('data-tab');
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
             });
         });
     </script>
