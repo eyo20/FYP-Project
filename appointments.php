@@ -33,18 +33,17 @@ while ($row = $courses_result->fetch_assoc()) {
     $courses[] = $row;
 }
 
-// Fetch session count per date and time slot
-$session_query = "SELECT selected_date, time_slot, COUNT(*) as session_count 
+// Fetch session status per date and time slot
+$session_query = "SELECT selected_date, time_slot, status 
                  FROM session_requests 
-                 WHERE tutor_id = ? AND status != 'cancelled'
-                 GROUP BY selected_date, time_slot";
+                 WHERE tutor_id = ? AND status = 'confirmed'";
 $stmt = $conn->prepare($session_query);
 $stmt->bind_param("i", $tutor_id);
 $stmt->execute();
 $session_result = $stmt->get_result();
-$session_counts = [];
+$confirmed_slots = [];
 while ($row = $session_result->fetch_assoc()) {
-    $session_counts[$row['selected_date'] . '|' . $row['time_slot']] = $row['session_count'];
+    $confirmed_slots[$row['selected_date'] . '|' . $row['time_slot']] = true;
 }
 
 // Fetch reviews
@@ -253,12 +252,13 @@ $page_title = "Book a Study Partner - PeerLearn";
         updatePrice();
         courseSelect.addEventListener('change', updatePrice);
 
-        const sessionCounts = <?php echo json_encode($session_counts); ?>;
+        const confirmedSlots = <?php echo json_encode($confirmed_slots); ?>;
         let currentMonth = <?php echo $current_month; ?>;
         let currentYear = <?php echo $current_year; ?>;
         const today = new Date('<?php echo $today; ?>');
         const calendarGrid = document.querySelector('.calendar-grid');
         const calendarHeader = document.querySelector('.calendar-header h4');
+        const timeSlotSelect = document.getElementById('time_slot');
 
         function renderCalendar(month, year) {
             calendarGrid.innerHTML = `
@@ -284,8 +284,7 @@ $page_title = "Book a Study Partner - PeerLearn";
                 const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                 const date = new Date(year, month - 1, day);
                 const isPast = date < today.setHours(0, 0, 0, 0);
-                const sessionCount = sessionCounts[dateStr] || 0;
-                const isUnavailable = sessionCount >= 3;
+                const isUnavailable = ['08:00-10:00', '10:00-12:00', '12:00-14:00'].some(slot => confirmedSlots[dateStr + '|' + slot]);
                 const isSelected = dateStr === document.getElementById('selected_date').value;
                 const className = isPast || isUnavailable ? 'disabled' : (isSelected ? 'selected' : '');
                 const style = `
@@ -312,7 +311,7 @@ $page_title = "Book a Study Partner - PeerLearn";
                 year: 'numeric'
             });
 
-            // Bind click events
+            // Update time slot options based on selected date
             const calendarDays = document.querySelectorAll('.calendar-grid div:not(.disabled)');
             calendarDays.forEach(day => {
                 day.addEventListener('click', function() {
@@ -325,6 +324,18 @@ $page_title = "Book a Study Partner - PeerLearn";
                     this.style.background = '#2B3990';
                     this.style.color = 'white';
                     document.getElementById('selected_date').value = this.dataset.date;
+
+                    // Update time slot dropdown
+                    const selectedDate = this.dataset.date;
+                    timeSlotSelect.innerHTML = '<option value="">Select a Time Slot</option>';
+                    ['08:00-10:00', '10:00-12:00', '12:00-14:00'].forEach(slot => {
+                        const key = selectedDate + '|' + slot;
+                        const option = document.createElement('option');
+                        option.value = slot;
+                        option.textContent = slot;
+                        option.disabled = confirmedSlots[key] || false;
+                        timeSlotSelect.appendChild(option);
+                    });
                 });
             });
         }
@@ -353,7 +364,6 @@ $page_title = "Book a Study Partner - PeerLearn";
             const dropdown = document.getElementById('userDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
-        
     });
 </script>
 
