@@ -1,9 +1,9 @@
 <?php
-// Database connection setup (should be in a separate config file in production)
+// Database connection setup
 $servername = "localhost";
-$username = "root"; // Replace with your MySQL username
-$password = ""; // Replace with your MySQL password
-$dbname = "peer_tutoring_platform";   // Replace with your database name
+$username = "root";
+$password = "";
+$dbname = "peer_tutoring_platform";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -11,6 +11,34 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
+}
+
+// Process actions if any
+$message = '';
+if (isset($_GET['id']) && isset($_GET['action'])) {
+    $tutor_id = intval($_GET['id']);
+    $action = $_GET['action'];
+    
+    if ($tutor_id > 0 && in_array($action, ['approve', 'reject'])) {
+        if ($action === 'approve') {
+            $sql = "UPDATE tutorprofile SET status = 'approved' WHERE user_id = ?";
+        } elseif ($action === 'reject') {
+            $sql = "UPDATE tutorprofile SET status = 'rejected' WHERE user_id = ?";
+        }
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $tutor_id);
+        
+        if ($stmt->execute()) {
+            $message = "Action completed successfully!";
+            // Refresh the page to show updated status
+            header("Location: ".$_SERVER['PHP_SELF']);
+            exit();
+        } else {
+            $message = "Error: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 ?>
 
@@ -116,7 +144,7 @@ if ($conn->connect_error) {
             font-size: 14px;
         }
 
-                .back-btn {
+        .back-btn {
             display: inline-flex;
             align-items: center;
             margin-top: 30px;
@@ -138,16 +166,28 @@ if ($conn->connect_error) {
             font-size: 20px;
         }
         
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
     </style>
 </head>
 <body>
     <div class="current_students">
-        <h2>Tutor Management</h2>
+        <?php if (!empty($message)): ?>
+            <div class="message"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+        
+        <h2>Tutors Management</h2>
         
         <!-- Tab Navigation -->
         <div class="tab-container">
             <div class="tab active" onclick="showTab('approved')">Approved Tutors</div>
             <div class="tab" onclick="showTab('pending')">Pending Approval</div>
+            <div class="tab" onclick="showTab('rejected')">Rejected Tutors</div>
         </div>
         
         <!-- Approved Tutors Tab -->
@@ -166,20 +206,22 @@ if ($conn->connect_error) {
                 </thead>
                 <tbody>
                     <?php
-                    $sql = "SELECT * FROM tutors WHERE status = 'approved'";
+                    $sql = "SELECT tp.*, u.username 
+                            FROM tutorprofile tp
+                            JOIN user u ON tp.user_id = u.user_id
+                            WHERE tp.status = 'approved'";
                     $result = $conn->query($sql);
                     
                     if ($result && $result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             echo "<tr>
-                                <td>".htmlspecialchars($row["tutor_name"])."</td>
-                                <td>".htmlspecialchars($row["level"])."</td>
+                                <td>".htmlspecialchars($row["username"])."</td>
+                                <td>".htmlspecialchars($row["year"])."</td>
                                 <td>".htmlspecialchars($row["program"])."</td>
-                                <td>".htmlspecialchars($row["course_year"])."</td>
-                                <td><a href='tutor_details.php?id=".$row["id"]."' class='details-btn'>Details</a></td>
+                                <td>".htmlspecialchars($row["major"])."</td>
+                                <td><a href='tutor_details.php?id=".$row["user_id"]."' class='details-btn'>Details</a></td>
                                 <td>
-                                    <span class='status-badge'>Approved</span>
-                                    <a href='tutor_action.php?id=".$row["id"]."&action=reject' class='reject-btn'>Remove</a>
+                                    <a href='?id=".$row["user_id"]."&action=reject' class='reject-btn' onclick='return confirm(\"Are you sure you want to reject this Tutor?\");'>Remove</a>
                                 </td>
                             </tr>";
                         }
@@ -207,74 +249,82 @@ if ($conn->connect_error) {
                 </thead>
                 <tbody>
                     <?php
-                    $sql = "SELECT * FROM tutors WHERE status = 'pending'";
+                    $sql = "SELECT tp.*, u.username 
+                            FROM tutorprofile tp
+                            JOIN user u ON tp.user_id = u.user_id
+                            WHERE tp.status = 'pending'";
                     $result = $conn->query($sql);
                     
                     if ($result && $result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             echo "<tr>
-                                <td>".htmlspecialchars($row["tutor_name"])."</td>
-                                <td>".htmlspecialchars($row["level"])."</td>
+                                <td>".htmlspecialchars($row["username"])."</td>
+                                <td>".htmlspecialchars($row["year"])."</td>
                                 <td>".htmlspecialchars($row["program"])."</td>
-                                <td>".htmlspecialchars($row["course_year"])."</td>
-                                <td><a href='tutor_details.php?id=".$row["id"]."' class='details-btn'>Details</a></td>
+                                <td>".htmlspecialchars($row["major"])."</td>
+                                <td><a href='tutor_details.php?id=".$row["user_id"]."' class='details-btn'>Details</a></td>
                                 <td>
-                                     <a href='tutor_action.php?id=".$row["id"]."&action=approve' class='approve-btn'>Approve</a>
-                                    <a href='tutor_action.php?id=".$row["id"]."&action=delete' class='reject-btn' onclick='return confirm(\"Are you sure you want to delete this tutor?\");'>Delete</a>
+                                    <a href='?id=".$row["user_id"]."&action=approve' class='approve-btn'>Approve</a>
+                                    <a href='?id=".$row["user_id"]."&action=reject' class='reject-btn' onclick='return confirm(\"Are you sure you want to reject this tutor?\");'>Reject</a>
                                 </td>
                             </tr>";
                         }
                     } else {
                         echo "<tr><td colspan='6'>No pending tutors found</td></tr>";
                     }
-                    
-                    if ($conn->connect_error) {
-                    die("Connection failed: " . $conn->connect_error);
-                }
-
-                // Get the tutor ID and action from the URL
-                $tutor_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-                $action = isset($_GET['action']) ? $_GET['action'] : '';
-
-                if ($tutor_id > 0 && in_array($action, ['approve', 'delete'])) {
-                    if ($action === 'approve') {
-                        // Update the tutor's status to 'approved'
-                        $sql = "UPDATE tutors SET status = 'approved' WHERE id = ?";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("i", $tutor_id);
-                        
-                        if ($stmt->execute()) {
-                            $message = "Tutor approved successfully!";
-                        } else {
-                            $message = "Error approving tutor: " . $conn->error;
-                        }
-                        $stmt->close();
-                    } elseif ($action === 'delete') {
-                        // Delete the tutor record
-                        $sql = "DELETE FROM tutors WHERE id = ?";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("i", $tutor_id);
-                        
-                        if ($stmt->execute()) {
-                            $message = "Tutor deleted successfully!";
-                        } else {
-                            $message = "Error deleting tutor: " . $conn->error;
-                        }
-                        $stmt->close();
-                    }
-                } else {
-                    $message = "Invalid request!";
-                }
-
                     ?>
-
-                    
                 </tbody>
             </table>
         </div>
+        
+        <!-- Rejected Tutors Tab -->
+        <div id="rejected-tab" class="tab-content">
+            <h3>Rejected Tutors</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>TUTOR NAME</th>
+                        <th>LEVEL</th>
+                        <th>PROGRAM</th>
+                        <th>COURSE</th>
+                        <th>DETAILS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $sql = "SELECT tp.*, u.username 
+                            FROM tutorprofile tp
+                            JOIN user u ON tp.user_id = u.user_id
+                            WHERE tp.status = 'rejected'";
+                    $result = $conn->query($sql);
+                    
+                    if ($result && $result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            echo "<tr>
+                                <td>".htmlspecialchars($row["username"])."</td>
+                                <td>".htmlspecialchars($row["year"])."</td>
+                                <td>".htmlspecialchars($row["program"])."</td>
+                                <td>".htmlspecialchars($row["major"])."</td>
+                                <td><a href='tutor_details.php?id=".$row["user_id"]."' class='details-btn'>Details</a></td>
+                                <td>
+                                    <span class='status-badge' style='background-color:#f44336;'>Rejected</span>
+                                    <a href='?id=".$row["user_id"]."&action=approve' class='approve-btn'>Approve</a>
+                                </td>
+                            </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='6'>No rejected tutors found</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <a href="admin_tutors.php" class="back-btn">
+            Back to Tutors List
+        </a>
     </div>
-
-    <?php $conn->close(); ?>
     
     <script>
         function showTab(tabName) {
@@ -292,7 +342,4 @@ if ($conn->connect_error) {
         }
     </script>
 </body>
-            <a href="admin_tutors.php" class="back-btn">
-                Back to Tutors List
-            </a>
 </html>
