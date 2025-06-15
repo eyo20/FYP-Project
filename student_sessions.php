@@ -12,6 +12,19 @@ $student_id = $_SESSION['user_id'];
 $success_message = '';
 $error_message = '';
 
+// Handle tab state
+$active_tab = isset($_POST['active_tab']) ? $_POST['active_tab'] : (isset($_SESSION['active_tab']) ? $_SESSION['active_tab'] : 'pending');
+$_SESSION['active_tab'] = in_array($active_tab, ['pending', 'current', 'history']) ? $active_tab : 'pending';
+
+// Handle search
+$search_date = isset($_POST['search_date']) ? trim($_POST['search_date']) : '';
+$search_time_slot = isset($_POST['search_time_slot']) ? trim($_POST['search_time_slot']) : '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clear_search'])) {
+    $search_date = '';
+    $search_time_slot = '';
+}
+
 // Handle session cancellation (for both session and session_requests)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
     $session_id = (int)$_POST['session_id'];
@@ -98,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
 
 // Get pending session requests
 try {
-    $stmt = $conn->prepare("
+    $query = "
         SELECT sr.request_id, sr.selected_date, sr.time_slot, sr.status, sr.notes,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
@@ -109,13 +122,22 @@ try {
         JOIN course c ON sr.course_id = c.id
         LEFT JOIN location l ON sr.location_id = l.location_id
         WHERE sr.student_id = ? AND sr.status = 'pending'
-        ORDER BY sr.created_at ASC
-    ");
+    ";
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $query .= " AND (? = '' OR sr.selected_date = ?)
+                    AND (? = '' OR sr.time_slot = ?)";
+    }
+    $query .= " ORDER BY sr.created_at ASC";
+    $stmt = $conn->prepare($query);
     if (!$stmt) {
         error_log("Pending requests prepare failed: " . $conn->error);
         throw new Exception("Database error: Unable to fetch pending requests.");
     }
-    $stmt->bind_param("i", $student_id);
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $stmt->bind_param("isssi", $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+    } else {
+        $stmt->bind_param("i", $student_id);
+    }
     $stmt->execute();
     $pending_requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -127,7 +149,7 @@ try {
 
 // Get current/upcoming sessions
 try {
-    $stmt = $conn->prepare("
+    $query = "
         SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
@@ -140,13 +162,22 @@ try {
         LEFT JOIN location l ON s.location_id = l.location_id
         LEFT JOIN review r ON s.session_id = r.session_id
         WHERE s.student_id = ? AND s.start_datetime >= NOW()
-        ORDER BY s.start_datetime ASC
-    ");
+    ";
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $query .= " AND (? = '' OR DATE(s.start_datetime) = ?)
+                    AND (? = '' OR TIME_FORMAT(TIME(s.start_datetime), '%H:%i') = SUBSTRING_INDEX(?, '-', 1))";
+    }
+    $query .= " ORDER BY s.start_datetime ASC";
+    $stmt = $conn->prepare($query);
     if (!$stmt) {
         error_log("Current sessions prepare failed: " . $conn->error);
         throw new Exception("Database error: Unable to fetch current sessions.");
     }
-    $stmt->bind_param("i", $student_id);
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $stmt->bind_param("isssi", $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+    } else {
+        $stmt->bind_param("i", $student_id);
+    }
     $stmt->execute();
     $current_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -158,7 +189,7 @@ try {
 
 // Get session history (past sessions)
 try {
-    $stmt = $conn->prepare("
+    $query = "
         SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
                u.user_id as tutor_id, u.first_name as tutor_first_name, u.last_name as tutor_last_name, 
                u.email as tutor_email, u.profile_image as tutor_image,
@@ -171,13 +202,22 @@ try {
         LEFT JOIN location l ON s.location_id = l.location_id
         LEFT JOIN review r ON s.session_id = r.session_id
         WHERE s.student_id = ? AND (s.start_datetime < NOW() OR s.status IN ('completed', 'cancelled'))
-        ORDER BY s.start_datetime DESC
-    ");
+    ";
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $query .= " AND (? = '' OR DATE(s.start_datetime) = ?)
+                    AND (? = '' OR TIME_FORMAT(TIME(s.start_datetime), '%H:%i') = SUBSTRING_INDEX(?, '-', 1))";
+    }
+    $query .= " ORDER BY s.start_datetime DESC";
+    $stmt = $conn->prepare($query);
     if (!$stmt) {
         error_log("Past sessions prepare failed: " . $conn->error);
         throw new Exception("Database error: Unable to fetch past sessions.");
     }
-    $stmt->bind_param("i", $student_id);
+    if ($search_date !== '' || $search_time_slot !== '') {
+        $stmt->bind_param("isssi", $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+    } else {
+        $stmt->bind_param("i", $student_id);
+    }
     $stmt->execute();
     $past_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -250,7 +290,6 @@ if (!empty($tutor_stats)) {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -258,10 +297,8 @@ if (!empty($tutor_stats)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/stud_session.css">
 </head>
-
 <body>
     <?php include 'header/stud_head.php'; ?>
-
 
     <!-- Main Content -->
     <main class="main">
@@ -277,7 +314,6 @@ if (!empty($tutor_stats)) {
                 <?php echo htmlspecialchars($success_message); ?>
             </div>
         <?php endif; ?>
-
         <?php if ($error_message): ?>
             <div class="alert alert-error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -285,24 +321,38 @@ if (!empty($tutor_stats)) {
             </div>
         <?php endif; ?>
 
+        <!-- Search Form -->
+        <form method="post" action="student_sessions.php" class="search-form">
+            <input type="date" name="search_date" value="<?php echo htmlspecialchars($search_date); ?>">
+            <select name="search_time_slot">
+                <option value="">Select Time Slot</option>
+                <option value="08:00-10:00" <?php echo $search_time_slot === '08:00-10:00' ? 'selected' : ''; ?>>08:00 - 10:00</option>
+                <option value="10:00-12:00" <?php echo $search_time_slot === '10:00-12:00' ? 'selected' : ''; ?>>10:00 - 12:00</option>
+                <option value="12:00-14:00" <?php echo $search_time_slot === '12:00-14:00' ? 'selected' : ''; ?>>12:00 - 14:00</option>
+            </select>
+            <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
+            <button type="submit" name="search" class="btn-search"><i class="fas fa-search"></i> Search</button>
+            <button type="submit" name="clear_search" class="btn-clear"><i class="fas fa-undo"></i> Clear Search</button>
+        </form>
+
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="showTab('pending')">
+            <button class="tab <?php echo $active_tab === 'pending' ? 'active' : ''; ?>" onclick="showTab('pending')">
                 <i class="fas fa-hourglass-half"></i>
                 Pending Requests (<?php echo count($pending_requests); ?>)
             </button>
-            <button class="tab" onclick="showTab('current')">
+            <button class="tab <?php echo $active_tab === 'current' ? 'active' : ''; ?>" onclick="showTab('current')">
                 <i class="fas fa-clock"></i>
                 Current & Upcoming (<?php echo count($current_sessions); ?>)
             </button>
-            <button class="tab" onclick="showTab('history')">
+            <button class="tab <?php echo $active_tab === 'history' ? 'active' : ''; ?>" onclick="showTab('history')">
                 <i class="fas fa-history"></i>
                 Session History (<?php echo count($past_sessions); ?>)
             </button>
         </div>
 
         <!-- Pending Requests Tab -->
-        <div id="pending-tab" class="tab-content active">
+        <div id="pending-tab" class="tab-content <?php echo $active_tab === 'pending' ? 'active' : ''; ?>">
             <div class="session-list">
                 <?php if (empty($pending_requests)): ?>
                     <div class="empty-state">
@@ -371,7 +421,7 @@ if (!empty($tutor_stats)) {
         </div>
 
         <!-- Current Sessions Tab -->
-        <div id="current-tab" class="tab-content">
+        <div id="current-tab" class="tab-content <?php echo $active_tab === 'current' ? 'active' : ''; ?>">
             <div class="session-list">
                 <?php if (empty($current_sessions)): ?>
                     <div class="empty-state">
@@ -400,7 +450,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
                                 <div class="session-course">
@@ -440,7 +490,7 @@ if (!empty($tutor_stats)) {
         </div>
 
         <!-- Session History Tab -->
-        <div id="history-tab" class="tab-content">
+        <div id="history-tab" class="tab-content <?php echo $active_tab === 'history' ? 'active' : ''; ?>">
             <div class="session-list">
                 <?php if (empty($past_sessions)): ?>
                     <div class="empty-state">
@@ -465,7 +515,7 @@ if (!empty($tutor_stats)) {
                                 <h3><?php echo htmlspecialchars($session['tutor_first_name'] . ' ' . $session['tutor_last_name']); ?></h3>
                                 <div class="session-time">
                                     <i class="fas fa-clock"></i>
-                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> -
+                                    <span><?php echo date('M j, Y g:i A', strtotime($session['start_datetime'])); ?> - 
                                         <?php echo date('g:i A', strtotime($session['end_datetime'])); ?></span>
                                 </div>
                                 <div class="session-course">
@@ -497,12 +547,10 @@ if (!empty($tutor_stats)) {
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-
                                 <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
                                     <i class="fas fa-star"></i>
                                     Rate Session
                                 </button>
-
                                 <a href="messages.php?tutor_id=<?php echo $session['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -606,7 +654,19 @@ if (!empty($tutor_stats)) {
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                 document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
                 document.getElementById(tabName + '-tab').classList.add('active');
-                event.target.classList.add('active');
+                document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+
+                // Update session via form submission
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'student_sessions.php';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'active_tab';
+                input.value = tabName;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
             }
 
             function toggleDropdown() {
@@ -674,6 +734,5 @@ if (!empty($tutor_stats)) {
             });
         </script>
 </body>
-
 </html>
 <?php $conn->close(); ?>
