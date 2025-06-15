@@ -296,6 +296,45 @@ if (!empty($tutor_stats)) {
     <title>My Sessions - Peer Tutoring Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/stud_session.css">
+    <style>
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-form input[type="date"],
+        .search-form select {
+            padding: 0.5rem;
+            border: 1px solid #e0e0e0; /* --gray */
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .search-form button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .search-form .btn-search {
+            background-color: #00AEEF; /* --secondary */
+            color: white;
+        }
+        .search-form .btn-search:hover {
+            background-color: #0099cc;
+        }
+        .search-form .btn-clear {
+            background-color: #e0e0e0; /* --gray */
+            color: #2B3990; /* --primary */
+        }
+        .search-form .btn-clear:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
 </head>
 <body>
     <?php include 'header/stud_head.php'; ?>
