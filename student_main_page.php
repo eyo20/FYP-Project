@@ -8,87 +8,70 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-// Fetch user info
-$user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
+
+// Fetch user info including first_name, last_name, and profile_image
+$user_query = "SELECT username, email, role, first_name, last_name, profile_image, created_at FROM user WHERE user_id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user_result = $stmt->get_result();
 $user_data = $user_result->fetch_assoc();
-$username = $user_data['username'];
-$stmt->close();
 
-// Verify session again (redundant check preserved)
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$user_id = $_SESSION['user_id'];
-$username = $email = $role = $created_at = '';
-$major = $year = 'Not set';  // default values
-
-// Fetch user details
-$user_query = "SELECT username, email, role, created_at FROM user WHERE user_id = ?";
-$stmt = $conn->prepare($user_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$user_result = $stmt->get_result();
-
-if ($user_result->num_rows > 0) {
-    $user_data = $user_result->fetch_assoc();
-    $username   = $user_data['username'];
-    $email      = $user_data['email'];
-    $role       = $user_data['role'];
-    $created_at = $user_data['created_at'];
-} else {
-    // User not found, redirect to login
+if (!$user_data) {
     session_destroy();
     header("Location: login.php");
     exit();
 }
+
+$username = $user_data['username'];
+$email = $user_data['email'];
+$role = $user_data['role'];
+$first_name = $user_data['first_name'] ?: '';
+$last_name = $user_data['last_name'] ?: '';
+$profile_image = $user_data['profile_image'];
+$created_at = $user_data['created_at'];
 $stmt->close();
 
 // Check if studentprofile table exists
-$table_check   = $conn->query("SHOW TABLES LIKE 'studentprofile'");
-$table_exists  = $table_check->num_rows > 0;
+$table_check = $conn->query("SHOW TABLES LIKE 'studentprofile'");
+$table_exists = $table_check->num_rows > 0;
 
 // If table exists, fetch student profile if any
+$major = $year = 'Not set'; // default values
 if ($table_exists) {
-    $student_query  = "SELECT major, year FROM studentprofile WHERE user_id = ?";
-    $stmt           = $conn->prepare($student_query);
+    $student_query = "SELECT major, year FROM studentprofile WHERE user_id = ?";
+    $stmt = $conn->prepare($student_query);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $student_result = $stmt->get_result();
 
     if ($student_result->num_rows > 0) {
         $student_data = $student_result->fetch_assoc();
-        $major        = $student_data['major'] ?: 'Not set';
-        $year         = $student_data['year'] ?: 'Not set';
+        $major = $student_data['major'] ?: 'Not set';
+        $year = $student_data['year'] ?: 'Not set';
     }
     $stmt->close();
 }
 
 // Initialize variables
-$upcoming_sessions   = [];
-$completed_sessions  = 0;
-$subjects_count      = 0;
+$upcoming_sessions = [];
+$completed_sessions = 0;
+$subjects_count = 0;
 
 // Fetch upcoming tutoring sessions
 $upcoming_sessions_query = "
     SELECT s.session_id,
            s.created_at AS session_date,
            s.status,
-           c.course_title AS subject,
+           c.course_name AS subject,
            u.username AS tutor_name,
-           sl.start_time
+           s.start_datetime
     FROM session s
-    JOIN user u       ON s.tutor_id = u.user_id
-    JOIN course c    ON s.course_id = c.courses_id
-    JOIN time_slots sl ON s.slot_id = sl.slot_id
+    JOIN user u ON s.tutor_id = u.user_id
+    JOIN course c ON s.course_id = c.id
     WHERE s.student_id = ? 
-      AND s.status = 'scheduled'
-    ORDER BY s.created_at, sl.start_time
+      AND s.status = 'confirmed'
+    ORDER BY s.start_datetime
     LIMIT 5";
 
 try {
@@ -122,7 +105,7 @@ try {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $completed_result = $stmt->get_result();
-        $completed_data   = $completed_result->fetch_assoc();
+        $completed_data = $completed_result->fetch_assoc();
         $completed_sessions = $completed_data['completed_count'];
         $stmt->close();
     } else {
@@ -144,8 +127,8 @@ try {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $subjects_result = $stmt->get_result();
-        $subjects_data   = $subjects_result->fetch_assoc();
-        $subjects_count  = $subjects_data['subjects_count'];
+        $subjects_data = $subjects_result->fetch_assoc();
+        $subjects_count = $subjects_data['subjects_count'];
         $stmt->close();
     } else {
         error_log("Failed to prepare subjects count query: " . $conn->error);
@@ -155,128 +138,64 @@ try {
 }
 
 // Initialize variables
-$goals_completion   = 0;
-$unread_messages    = 0;
+$unread_messages = 0;
 $recommended_tutors = [];
 
-// Calculate completion rate
-$goals_query = "
-    SELECT 
-        CASE 
-            WHEN COUNT(*) = 0 THEN 0
-            ELSE ROUND((SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) / COUNT(*)) * 100)
-        END AS completion_rate
-    FROM session
-    WHERE student_id = ? 
-      AND status IN ('completed', 'cancelled')";
-
-$stmt = $conn->prepare($goals_query);
-if ($stmt === false) {
-    error_log("Prepare failed for goals query: " . $conn->error);
-} else {
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $goals_result = $stmt->get_result();
-    $goals_data   = $goals_result->fetch_assoc();
-    $goals_completion = $goals_data['completion_rate'];
-    $stmt->close();
-}
-
 // Fetch unread message count
-$unread_messages = 0; // Default value
+$unread_messages_query = "SELECT COUNT(*) AS unread_count 
+                         FROM message 
+                         WHERE receiver_id = ? AND is_read = 0";
 
 try {
-    $unread_messages_query = "SELECT COUNT(*) AS unread_count 
-                             FROM message 
-                             WHERE receiver_id = ? AND is_read = 0";
-    
-    if ($stmt = $conn->prepare($unread_messages_query)) {
+    $stmt = $conn->prepare($unread_messages_query);
+    if ($stmt) {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $unread_messages = (int)$row['unread_count'];
-        }
+        $messages_result = $stmt->get_result();
+        $messages_data = $messages_result->fetch_assoc();
+        $unread_messages = $messages_data['unread_count'];
         $stmt->close();
     } else {
         error_log("Failed to prepare unread messages query: " . $conn->error);
     }
 } catch (Exception $e) {
-    error_log("Error fetching unread messages: " . $e->getMessage());
+    error_log("Error in unread messages query: " . $e->getMessage());
 }
 
-$stmt = $conn->prepare($unread_messages_query);
-if ($stmt === false) {
-    error_log("Prepare failed for unread messages query: " . $conn->error);
-} else {
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $messages_result = $stmt->get_result();
-    $messages_data   = $messages_result->fetch_assoc();
-    $unread_messages = $messages_data['unread_count'];
-    $stmt->close();
-}
-
-// Fetch recommended tutors (expertise match)
+// Fetch recommended tutors sorted by average rating
 $recommended_tutors_query = "
-    SELECT t.tutor_id, u.username, t.expertise AS subject, t.availability
-    FROM tutor t
-    JOIN user u ON t.user_id = u.user_id
-    WHERE t.expertise LIKE ?
+    SELECT 
+        u.user_id AS tutor_id, 
+        u.username, 
+        c.course_name AS subject,
+        COALESCE(AVG(tr.rating), 0) AS avg_rating
+    FROM tutorsubject ts
+    JOIN user u ON ts.tutor_id = u.user_id
+    JOIN course c ON ts.course_id = c.id
+    LEFT JOIN tutorrating tr ON u.user_id = tr.tutor_id
+    WHERE c.course_name LIKE ?
+    GROUP BY u.user_id, u.username, c.course_name
+    ORDER BY avg_rating DESC, u.username ASC
     LIMIT 3";
 
-// If no major, use wildcard
-$major_search = !empty($major) ? "%$major%" : "%";
+$major_search = !empty($major) && $major != 'Not set' ? "%$major%" : "%";
 
-// $stmt = $conn->prepare($recommended_tutors_query);
-// if ($stmt === false) {
-//     error_log("Prepare failed for recommended tutors query: " . $conn->error);
-// } else {
-//     $stmt->bind_param("s", $major_search);
-//     $stmt->execute();
-//     $tutors_result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare($recommended_tutors_query);
+    if ($stmt) {
+        $stmt->bind_param("s", $major_search);
+        $stmt->execute();
+        $tutors_result = $stmt->get_result();
 
-//     while ($row = $tutors_result->fetch_assoc()) {
-//         $recommended_tutors[] = $row;
-//     }
-//     $stmt->close();
-// }
-
-// If no direct matches, fetch backup recommendations
-if (count($recommended_tutors) == 0) {
-    $backup_tutors_query = "
-        SELECT 
-            s.tutor_id,
-            u.username,
-            COUNT(s.session_id) AS session_count,
-            GROUP_CONCAT(DISTINCT c.course_title) AS subjects
-        FROM session s
-        JOIN user u ON s.tutor_id = u.user_id
-        JOIN courses c ON s.course_id = c.courses_id
-        WHERE c.course_title LIKE ?
-        GROUP BY s.tutor_id
-        ORDER BY session_count DESC
-        LIMIT 3
-    ";
-
-    $major_search = !empty($major) ? "%$major%" : "%";
-
-    // $stmt = $conn->prepare($backup_tutors_query);
-    // if ($stmt === false) {
-    //     error_log("Prepare failed for backup tutors query: " . $conn->error);
-    // } else {
-    //     $stmt->bind_param("s", $major_search);
-    //     $stmt->execute();
-    //     $backup_result = $stmt->get_result();
-
-    //     while ($row = $backup_result->fetch_assoc()) {
-    //         $row['availability'] = "Please contact for availability";
-    //         $recommended_tutors[] = $row;
-    //     }
-    //     $stmt->close();
-    // }
+        while ($row = $tutors_result->fetch_assoc()) {
+            $recommended_tutors[] = $row;
+        }
+        $stmt->close();
+    } else {
+        error_log("Failed to prepare recommended tutors query: " . $conn->error);
+    }
+} catch (Exception $e) {
+    error_log("Error in recommended tutors query: " . $e->getMessage());
 }
 
 $conn->close();
@@ -297,6 +216,7 @@ $conn->close();
             --light-gray: #f5f7fa;
             --gray: #e9ecef;
             --dark-gray: #6c757d;
+            --success: #28a745;
         }
 
         * {
@@ -374,6 +294,13 @@ $conn->close();
             justify-content: center;
             color: white;
             font-weight: bold;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .notification-badge {
@@ -400,11 +327,47 @@ $conn->close();
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-image-container {
+            position: relative;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+        }
+
+        .profile-image-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            border: 3px solid var(--primary);
+        }
+
+        .welcome-info {
+            flex: 1;
         }
 
         .welcome-title {
             color: var(--primary);
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .stats-container {
@@ -510,6 +473,14 @@ $conn->close();
             font-size: 0.9rem;
         }
 
+        .rating {
+            color: var(--accent);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
         .btn {
             background-color: var(--accent);
             color: white;
@@ -538,35 +509,69 @@ $conn->close();
 
         .session-list {
             margin-top: 1rem;
+            display: grid;
+            gap: 1rem;
         }
 
-        .session-item {
+        .session-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
             display: flex;
             align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--gray);
+            gap: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
         }
 
-        .session-item:last-child {
-            border-bottom: none;
+        .session-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .session-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success);
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
         }
 
         .session-time {
-            background-color: var(--light-gray);
-            padding: 0.5rem;
-            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             min-width: 100px;
             text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .session-time .date {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .session-time .time {
+            color: var(--dark-gray);
+        }
+
+        .session-time .icon {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-bottom: 0.25rem;
         }
 
         .session-info {
-            margin-left: 1rem;
             flex-grow: 1;
         }
 
         .session-subject {
+            font-size: 1.1rem;
             font-weight: 600;
             color: var(--primary);
+            margin-bottom: 0.25rem;
         }
 
         .session-tutor {
@@ -580,16 +585,18 @@ $conn->close();
         }
 
         .session-actions button {
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             border: none;
             border-radius: 4px;
-            background-color: var(--light-gray);
+            background-color: var(--secondary);
+            color: white;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 0.9rem;
         }
 
         .session-actions button:hover {
-            background-color: var(--gray);
+            background-color: #0099d9;
         }
 
         footer {
@@ -610,7 +617,6 @@ $conn->close();
             margin-bottom: 1rem;
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
@@ -628,10 +634,20 @@ $conn->close();
                 grid-template-columns: 1fr;
             }
 
-            .logo img {
-                height: 70px;
+            .welcome-section {
+                flex-direction: column;
+                text-align: center;
             }
 
+            .session-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .session-time {
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -639,46 +655,47 @@ $conn->close();
 <body>
     <?php include 'header/stud_head.php'; ?>
 
-
-
     <main>
         <section class="welcome-section">
-            <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($username); ?>!</h1>
-            <p>You are a <?php echo htmlspecialchars($major); ?> major in Year <?php echo htmlspecialchars($year); ?>.
-                <?php if (count($upcoming_sessions) > 0): ?>
-                    You have <?php echo count($upcoming_sessions); ?> upcoming tutoring sessions. Keep it up!
+            <div class="profile-image-container">
+                <?php if ($profile_image): ?>
+                    <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="profile-image">
                 <?php else: ?>
-                    You currently have no scheduled sessions. Would you like to find a tutor to get started?
+                    <div class="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                 <?php endif; ?>
-            </p>
+            </div>
+            <div class="welcome-info">
+                <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>!</h1>
+                <p>Welcome to your student dashboard! Here you can view your upcoming tutoring sessions, find and book tutors, manage your appointments, and communicate with tutors via messages.</p>
 
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon">📚</div>
-                    <div class="stat-value"><?php echo $completed_sessions; ?></div>
-                    <div class="stat-label">Completed Sessions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📝</div>
-                    <div class="stat-value"><?php echo $subjects_count; ?></div>
-                    <div class="stat-label">Courses Learned</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-value"><?php echo $goals_completion; ?>%</div>
-                    <div class="stat-label">Goal Completion Rate</div>
-                </div>
-                <div class="stat-card" onclick="window.location.href='messages.php'" 
-                    title="Click to view messages">
-                    <div class="stat-icon">💬</div>
-                    <div class="stat-value" style="color: <?php echo ($unread_messages > 0) ? 'var(--accent)' : 'var(--dark-gray)'; ?>">
-                        <?php echo ($unread_messages > 0) ? $unread_messages : '-'; ?>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-value"><?php echo $completed_sessions; ?></div>
+                        <div class="stat-label">Completed Sessions</div>
                     </div>
-                    <div class="stat-label">
-                        Unread Messages
-                        <?php if ($unread_messages > 0): ?>
-                            <span style="font-size: 0.8rem; color: var(--accent)">(New!)</span>
-                        <?php endif; ?>
+                    <div class="stat-card">
+                        <div class="stat-icon">📖</div>
+                        <div class="stat-value"><?php echo $subjects_count; ?></div>
+                        <div class="stat-label">Courses Learned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-value"><?php echo count($upcoming_sessions); ?></div>
+                        <div class="stat-label">Upcoming Sessions</div>
+                    </div>
+                    <div class="stat-card" onclick="window.location.href='messages.php'" 
+                        title="Click to view messages">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-value" style="color: <?php echo ($unread_messages > 0) ? 'var(--accent)' : 'var(--dark-gray)'; ?>">
+                            <?php echo ($unread_messages > 0) ? $unread_messages : '-'; ?>
+                        </div>
+                        <div class="stat-label">
+                            Unread Messages
+                            <?php if ($unread_messages > 0): ?>
+                                <span style="font-size: 0.8rem; color: var(--accent)">(New!)</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -692,7 +709,7 @@ $conn->close();
                     <div class="action-title">Edit Profile</div>
                 </div>
                 <p class="action-description">Add your personal information and related settings.</p>
-                <a href="reviews.php" class="btn">Edit Now</a>
+                <a href="student_profile.php" class="btn">Edit Now</a>
             </div>
 
             <div class="action-card" onclick="window.location.href='find_tutors.php'">
@@ -700,7 +717,7 @@ $conn->close();
                     <div class="action-icon">🔍</div>
                     <div class="action-title">Find Tutors</div>
                 </div>
-                <p class="action-description">Filter tutors by subject, availability,reviews and booking a new session.</p>
+                <p class="action-description">Filter tutors by subject, availability, reviews and book a new session.</p>
                 <a href="find_tutors.php" class="btn">Search Now</a>
             </div>
 
@@ -710,10 +727,10 @@ $conn->close();
                     <div class="action-title">Manage Appointment</div>
                 </div>
                 <p class="action-description">Manage the booking sessions and view the completed sessions.</p>
-                <a href="find_tutors.php" class="btn">Manage Now</a>
+                <a href="manage_appointment.php" class="btn">Manage Now</a>
             </div>
 
-            <div class="action-card" onclick="window.location.href='chat.php'">
+            <div class="action-card" onclick="window.location.href='messages.php'">
                 <div class="action-header">
                     <div class="action-icon">💬</div>
                     <div class="action-title">Messages</div>
@@ -729,7 +746,7 @@ $conn->close();
                 <?php if (count($upcoming_sessions) > 0): ?>
                     <?php foreach ($upcoming_sessions as $session): ?>
                         <?php
-                        $session_date = new DateTime($session['session_date']);
+                        $session_date = new DateTime($session['start_datetime']);
                         $today = new DateTime('today');
                         $tomorrow = new DateTime('tomorrow');
 
@@ -741,22 +758,22 @@ $conn->close();
                             $date_display = $session_date->format('M d');
                         }
                         ?>
-                        <div class="session-item">
+                        <div class="session-card">
+                            <div class="session-status"></div>
                             <div class="session-time">
-                                <div><?php echo $date_display; ?></div>
-                                <div><?php echo substr($session['start_time'], 0, 5); ?></div>
+                                <span class="icon">📅</span>
+                                <div class="date"><?php echo $date_display; ?></div>
+                                <div class="time"><?php echo $session_date->format('H:i'); ?></div>
                             </div>
                             <div class="session-info">
                                 <div class="session-subject"><?php echo htmlspecialchars($session['subject']); ?></div>
                                 <div class="session-tutor">with <?php echo htmlspecialchars($session['tutor_name']); ?></div>
                             </div>
-                            <div class="session-actions">
-                                <?php if ($date_display == "Today"): ?>
+                            <?php if ($date_display == "Today"): ?>
+                                <div class="session-actions">
                                     <button onclick="joinSession(<?php echo $session['session_id']; ?>)">Join</button>
-                                <?php endif; ?>
-                                <button onclick="rescheduleSession(<?php echo $session['session_id']; ?>)">Reschedule</button>
-                                <button onclick="cancelSession(<?php echo $session['session_id']; ?>)">Cancel</button>
-                            </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -777,10 +794,17 @@ $conn->close();
                             <div class="action-icon" style="background-color: var(--primary);">👨‍🏫</div>
                             <div class="action-title"><?php echo htmlspecialchars($tutor['username']); ?></div>
                         </div>
-                        <p class="action-description"><?php echo htmlspecialchars($tutor['subjects'] ?? $tutor['subject']); ?></p>
-                        <?php if (isset($tutor['availability'])): ?>
-                            <p class="action-description">Availability: <?php echo htmlspecialchars($tutor['availability']); ?></p>
-                        <?php endif; ?>
+                        <p class="action-description"><?php echo htmlspecialchars($tutor['subject']); ?></p>
+                        <p class="rating">
+                            ⭐ 
+                            <?php 
+                            if ($tutor['avg_rating'] > 0) {
+                                echo number_format($tutor['avg_rating'], 1) . '/5';
+                            } else {
+                                echo 'No ratings yet';
+                            }
+                            ?>
+                        </p>
                         <a href="tutor_profile.php?id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
                     </div>
                 <?php endforeach; ?>
@@ -794,41 +818,18 @@ $conn->close();
     </main>
 
     <footer>
-        <p>&copy; <?php echo date('Y'); ?> PeerTutor Platform. All rights reserved.</p>
+        <p>© <?php echo date('Y'); ?> PeerTutor Platform. All rights reserved.</p>
     </footer>
 
     <script>
-        //header dropdown
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
 
-
         function joinSession(sessionId) {
             alert("Joining session #" + sessionId);
         }
-
-        function rescheduleSession(sessionId) {
-            alert("Rescheduling session #" + sessionId);
-        }
-
-        function cancelSession(sessionId) {
-            if (confirm("Are you sure you want to cancel this session?")) {
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "cancel_session.php", true);
-                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                xhr.onreadystatechange = function() {
-                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                        alert("Session canceled");
-                        location.reload();
-                    }
-                }
-                xhr.send("session_id=" + sessionId);
-            }
-        }
     </script>
-    
 </body>
-
 </html>
