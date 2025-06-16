@@ -26,11 +26,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Check if user is logged in and has tutor role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'tutor') {
+    error_log("Unauthorized access attempt: user_id=" . ($_SESSION['user_id'] ?? 'unset') . ", role=" . ($_SESSION['role'] ?? 'unset'));
     header('Location: login.php');
     exit;
 }
 
 $user_id = $_SESSION['user_id'] ?? 0;
+error_log("Processing for user_id: $user_id");
+
+// Verify user_id exists in user table
+$verify_user_query = "SELECT user_id FROM user WHERE user_id = ?";
+$stmt = $conn->prepare($verify_user_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+if ($stmt->get_result()->num_rows === 0) {
+    error_log("Invalid user_id: $user_id not found in user table");
+    header('Location: logout.php');
+    exit;
+}
+$stmt->close();
 
 // Get notification counts for navbar
 $pending_requests = 0;
@@ -76,6 +90,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
+    error_log("User not found for user_id: $user_id");
     header('Location: logout.php');
     exit;
 }
@@ -369,52 +384,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $stmt->close();
 
-        if (!$conn->begin_transaction()) {
-            error_log("Transaction start failed for user_id: $user_id - " . $conn->error);
-            $_SESSION['error_message'] = "Database transaction error.";
+        // Update user table
+        $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
+        $stmt = $conn->prepare($update_user);
+        $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
+        if (!$stmt->execute()) {
+            $_SESSION['error_message'] = "Failed to update user profile: " . $stmt->error;
+            error_log("User update failed for user_id: $user_id - " . $stmt->error);
+            $stmt->close();
             goto redirect;
         }
+        $stmt->close();
 
-        try {
-            $update_user = "UPDATE user SET first_name = ?, last_name = ?, phone = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_user);
-            $stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-            if (!$stmt->execute()) {
-                error_log("SQL Error: " . $stmt->error . " for query: " . $update_user);
-                throw new Exception("User update failed: " . $stmt->error);
-            }
-            $stmt->close();
+        // Check if tutorprofile exists
+        $check_tutor = "SELECT user_id FROM tutorprofile WHERE user_id = ?";
+        $stmt = $conn->prepare($check_tutor);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $exists = $stmt->get_result()->num_rows > 0;
+        $stmt->close();
 
-            $check_tutor = "SELECT user_id FROM tutorprofile WHERE user_id = ?";
-            $stmt = $conn->prepare($check_tutor);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $exists = $stmt->get_result()->num_rows > 0;
-            $stmt->close();
-
-            if ($exists) {
-                $update_tutor = "UPDATE tutorprofile SET major = ?, year = ?, bio = ?, qualifications = ? WHERE user_id = ?";
-                $stmt = $conn->prepare($update_tutor);
-            } else {
-                $update_tutor = "INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)";
-                $stmt = $conn->prepare($update_tutor);
-            }
+        // Update or insert tutorprofile
+        if ($exists) {
+            $update_tutor = "UPDATE tutorprofile SET major = ?, year = ?, bio = ?, qualifications = ? WHERE user_id = ?";
+            $stmt = $conn->prepare($update_tutor);
             $stmt->bind_param("ssssi", $major, $year, $bio, $qualifications, $user_id);
-            if (!$stmt->execute()) {
-                error_log("SQL Error: " . $stmt->error . " for query: " . $update_tutor);
-                throw new Exception("Tutor update failed: " . $stmt->error);
-            }
-            $stmt->close();
-
-            $conn->commit();
-            error_log("Transaction committed for user_id: $user_id");
-            $_SESSION['success_message'] = "Profile updated successfully!";
-            error_log("Profile updated for user_id: $user_id");
-        } catch (Exception $e) {
-            $conn->rollback();
-            $_SESSION['error_message'] = "Database error: " . $e->getMessage();
-            error_log("Profile update failed for user_id: $user_id - " . $e->getMessage());
+        } else {
+            $insert_tutor = "INSERT INTO tutorprofile (user_id, major, year, bio, qualifications, program, status) VALUES (?, ?, ?, ?, ?, 'IT', 'pending')";
+            $stmt = $conn->prepare($insert_tutor);
+            $stmt->bind_param("issss", $user_id, $major, $year, $bio, $qualifications);
         }
+
+        if (!$stmt->execute()) {
+            $_SESSION['error_message'] = "Failed to update tutor profile: " . $stmt->error;
+            error_log("Tutor profile update/insert failed for user_id: $user_id - " . $stmt->error);
+        } else {
+            $_SESSION['success_message'] = "Profile updated successfully!";
+            error_log("Tutor profile updated/inserted for user_id: $user_id");
+        }
+        $stmt->close();
 
         redirect:
         if (!headers_sent()) {
@@ -1241,7 +1249,7 @@ ob_end_flush();
                             </select>
                         </div>
                         <div class="form-group">
-                            <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="1" required>
+                            <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="0.01" required>
                         </div>
                         <div class="form-group">
                             <button type="submit" class="btn btn-secondary">Add Course</button>

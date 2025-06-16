@@ -1,10 +1,21 @@
 <?php
 session_start();
-require_once "db_connection.php";
 
-// 检查用户是否登录
-if (!isset($_SESSION['user_id'])) {
+$user_id = isset($_SESSION['user_id']) && is_numeric($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+if ($user_id <= 0) {
     header("Location: login.php");
+    exit();
+}
+
+require_once "db_connection.php";
+if ($conn->connect_error) {
+    handle_db_error($conn, "Database connection failed");
+}
+
+function handle_db_error($conn, $message) {
+    error_log($message . ": " . $conn->error);
+    $_SESSION['error'] = "An unexpected error occurred. Please try again later.";
+    header("Location: error.php");
     exit();
 }
 
@@ -59,66 +70,84 @@ if ($stmt) {
 }
 
 // 获取当前预约的学生列表（状态为 confirmed）
-$current_sessions = [];
-$stmt = $conn->prepare("
-    SELECT s.session_id, s.start_datetime, s.end_datetime, s.status,
-           u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
-           c.course_name, l.location_name,
-           sr.time_slot
-    FROM session s
-    JOIN user u ON s.student_id = u.user_id
-    JOIN course c ON s.course_id = c.id
-    LEFT JOIN location l ON s.location_id = l.location_id
-    LEFT JOIN session_requests sr ON s.tutor_id = sr.tutor_id 
-        AND s.student_id = sr.student_id 
-        AND s.course_id = sr.course_id 
-        AND DATE(s.start_datetime) = sr.selected_date
-    WHERE s.tutor_id = ? AND s.status = 'confirmed'
-    ORDER BY s.start_datetime ASC
-");
-if (!$stmt) {
-    error_log("Error preparing current sessions query: " . $conn->error);
-    $_SESSION['error'] = "Error preparing current sessions query: " . $conn->error;
-} else {
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
-        $current_sessions[] = $row;
-    }
-    $stmt->close();
-}
-
-// 获取历史预约的学生列表（状态为 completed 或 cancelled）
-$past_sessions = [];
+$current_datetime = date('Y-m-d H:i:00');
 $stmt = $conn->prepare("
     SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
            u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
            c.course_name, l.location_name,
            r.rating, r.comment,
-           sr.time_slot
+           CONCAT(DATE_FORMAT(s.start_datetime, '%H:%i'), '-', DATE_FORMAT(s.end_datetime, '%H:%i')) as time_slot
     FROM session s
     JOIN user u ON s.student_id = u.user_id
     JOIN course c ON s.course_id = c.id
     LEFT JOIN location l ON s.location_id = l.location_id
     LEFT JOIN review r ON s.session_id = r.session_id AND r.tutor_id = s.tutor_id
-    LEFT JOIN session_requests sr ON s.tutor_id = sr.tutor_id 
-        AND s.student_id = sr.student_id 
-        AND s.course_id = sr.course_id 
-        AND DATE(s.start_datetime) = sr.selected_date
-    WHERE s.tutor_id = ? AND (s.status = 'completed' OR s.status = 'cancelled')
+    WHERE s.tutor_id = ? AND s.status = 'confirmed'
+    AND s.start_datetime >= ?  -- 只显示当前时间之后的会话
+    ORDER BY s.start_datetime ASC
+");
+if (!$stmt) {
+    handle_db_error($conn, "Error preparing current sessions query");
+} else {
+    $stmt->bind_param("is", $user_id, $current_datetime);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png';
+        $current_sessions[] = $row;
+    }
+    $stmt->close();
+}
+
+$current_datetime = date('Y-m-d H:i:00');
+$stmt_check = $conn->prepare("
+    SELECT session_id, start_datetime, end_datetime
+    FROM session
+    WHERE tutor_id = ? AND status = 'confirmed' AND end_datetime < ?
+");
+if ($stmt_check) {
+    $stmt_check->bind_param("is", $user_id, $current_datetime);
+    $stmt_check->execute();
+    $result = $stmt_check->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $stmt_update = $conn->prepare("
+            UPDATE session 
+            SET status = 'completed'
+            WHERE session_id = ?
+        ");
+        if ($stmt_update) {
+            $stmt_update->bind_param("i", $row['session_id']);
+            $stmt_update->execute();
+            $stmt_update->close();
+        }
+    }
+    $stmt_check->close();
+}
+
+// 获取历史预约的学生列表（状态为 completed 或 cancelled）
+$stmt = $conn->prepare("
+    SELECT DISTINCT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
+           u.user_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image,
+           c.course_name, l.location_name,
+           r.rating, r.comment,
+           CONCAT(DATE_FORMAT(s.start_datetime, '%H:%i'), '-', DATE_FORMAT(s.end_datetime, '%H:%i')) as time_slot
+    FROM session s
+    JOIN user u ON s.student_id = u.user_id
+    JOIN course c ON s.course_id = c.id
+    LEFT JOIN location l ON s.location_id = l.location_id
+    LEFT JOIN review r ON s.session_id = r.session_id AND r.tutor_id = s.tutor_id
+    WHERE s.tutor_id = ? AND s.status = 'completed'
     ORDER BY s.start_datetime DESC
 ");
 if (!$stmt) {
-    error_log("Error preparing past sessions query: " . $conn->error);
-    $_SESSION['error'] = "Error preparing past sessions query: " . $conn->error;
+    handle_db_error($conn, "Error preparing past sessions query");
 } else {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png'; // 默认头像
+        error_log("Past session row: " . print_r($row, true));
+        $row['profile_image'] = $row['profile_image'] ?: 'assets/default-avatar.png';
         $past_sessions[] = $row;
     }
     $stmt->close();

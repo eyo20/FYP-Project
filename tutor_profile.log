@@ -2021,3 +2021,469 @@
 [16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
 [16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Transaction committed for user_id: 16
 [16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Profile updated for user_id: 16
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 01234567891
+    [major] => AI
+    [year] => Degree first year
+    [bio] => nice to meet you.
+    [qualifications] => 
+)
+
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:20:31 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 01234567891
+    [major] => AI
+    [year] => Degree first year
+    [bio] => nice to meet you.
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 01234567891
+[16-Jun-2025 16:20:31 Asia/Kuala_Lumpur] Invalid phone format. Use 01x-xxxxxxx (10 digits) or 011-xxxxxxxx (11 digits).
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770231
+    [major] => AI
+    [year] => Degree first year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:20:45 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770231
+    [major] => AI
+    [year] => Degree first year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0127770231
+[16-Jun-2025 16:20:45 Asia/Kuala_Lumpur] Phone already in use!
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => AI
+    [year] => Degree first year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:20:56 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => AI
+    [year] => Degree first year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0127770232
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:20:56 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => AI
+    [year] => Degree second year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:21:42 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => AI
+    [year] => Degree second year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0127770232
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:21:42 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 
+    [major] => 
+    [year] => 
+    [bio] => 1
+    [qualifications] => 1
+)
+
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:23:06 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 
+    [major] => 
+    [year] => 
+    [bio] => 1
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:23:06 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => ai
+    [year] => Diploma first year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:35:16 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0127770232
+    [major] => ai
+    [year] => Diploma first year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0127770232
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:35:16 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 16:36:54 Asia/Kuala_Lumpur] POST data received: Array
+(
+)
+
+[16-Jun-2025 16:36:54 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => MMUlogo.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpB12D.tmp
+            [error] => 0
+            [size] => 19228
+        )
+
+)
+
+[16-Jun-2025 16:36:54 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:36:54 for user_id: 26 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => MMUlogo.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpB12D.tmp
+            [error] => 0
+            [size] => 19228
+        )
+
+)
+
+[16-Jun-2025 16:36:54 Asia/Kuala_Lumpur] Processing profile image upload for user ID: 26
+[16-Jun-2025 16:36:54 Asia/Kuala_Lumpur] Profile image updated for user ID: 26, file: Uploads/profile_images/26_1750063014_MMUlogo.png
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122234563
+    [major] => ai
+    [year] => Diploma first year
+    [bio] => 1
+    [qualifications] => 1
+)
+
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:37:20 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122234563
+    [major] => ai
+    [year] => Diploma first year
+    [bio] => 1
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0122234563
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:37:20 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 16:37:28 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[16-Jun-2025 16:37:28 Asia/Kuala_Lumpur] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => maxresdefault.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php36F8.tmp
+            [error] => 0
+            [size] => 47011
+        )
+
+)
+
+[16-Jun-2025 16:37:28 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:37:28 for user_id: 26 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => maxresdefault.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php36F8.tmp
+            [error] => 0
+            [size] => 47011
+        )
+
+)
+
+[16-Jun-2025 16:37:28 Asia/Kuala_Lumpur] CGPA inserted for user_id: 26, file: Uploads/credentials/684fd7c85257d_maxresdefault.jpg
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 3
+    [hourly_rate] => 20
+)
+
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:37:35 for user_id: 26 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 3
+    [hourly_rate] => 20
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] Processing add course
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] User ID: 26, Course ID: 3, Hourly Rate: 20
+[16-Jun-2025 16:37:35 Asia/Kuala_Lumpur] Course added successfully for user ID: 26, course_id: 3
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0134566343
+    [major] => ai
+    [year] => Diploma second year
+    [bio] => 1
+    [qualifications] => 1
+)
+
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] POST request received at 2025-06-16 16:41:47 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0134566343
+    [major] => ai
+    [year] => Diploma second year
+    [bio] => 1
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0134566343
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 16:41:47 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0126445321
+    [major] => ai
+    [year] => Degree second year
+    [bio] => 1
+    [qualifications] => 1
+)
+
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] POST request received at 2025-06-16 20:49:00 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0126445321
+    [major] => ai
+    [year] => Degree second year
+    [bio] => 1
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0126445321
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] SQL Error: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE) for query: INSERT INTO tutorprofile (user_id, major, year, bio, qualifications) VALUES (?, ?, ?, ?, ?)
+[16-Jun-2025 20:49:00 Asia/Kuala_Lumpur] Profile update failed for user_id: 26 - Tutor update failed: Cannot add or update a child row: a foreign key constraint fails (`peer_tutoring_platform`.`tutorprofile`, CONSTRAINT `fk_tutor_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE)
+[16-Jun-2025 20:59:54 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122124345
+    [major] => 
+    [year] => Diploma second year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] POST request received at 2025-06-16 21:00:02 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122124345
+    [major] => 
+    [year] => Diploma second year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0122124345
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] Tutor profile updated/inserted for user_id: 26
+[16-Jun-2025 21:00:02 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122124345
+    [major] => ai
+    [year] => Diploma second year
+    [bio] => 
+    [qualifications] => 
+)
+
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] POST request received at 2025-06-16 21:00:11 for user_id: 26 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => enyong
+    [last_name] => ong
+    [phone] => 0122124345
+    [major] => ai
+    [year] => Diploma second year
+    [bio] => 
+    [qualifications] => 
+)
+ | FILES: No FILES data
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] Processing profile update for user_id: 26
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] Before user update for user_id: 26, first_name: enyong, last_name: ong, phone: 0122124345
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] Tutor profile updated/inserted for user_id: 26
+[16-Jun-2025 21:00:11 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:01:00 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 30
+)
+
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] Processing for user_id: 26
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] POST request received at 2025-06-16 21:01:05 for user_id: 26 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 30
+)
+ | FILES: No FILES data
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] Processing add course
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] User ID: 26, Course ID: 6, Hourly Rate: 30
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] Course added successfully for user ID: 26, course_id: 6
+[16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] Processing for user_id: 26
