@@ -1989,3 +1989,35 @@
 [16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Processing profile image upload for user ID: 16
 [16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Old profile image deleted: Uploads/profile_images/16_1750019690_imgstudent.png
 [16-Jun-2025 04:34:54 Asia/Kuala_Lumpur] Profile image updated for user ID: 16, file: Uploads/profile_images/16_1750019694_Multimedia-University-MMU-Cyberjaya-Malaysia.jpg
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => helloo
+    [qualifications] => 1
+)
+
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] FILES data received: Array
+(
+)
+
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] POST request received at 2025-06-16 14:45:28 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => 
+    [bio] => helloo
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Processing profile update for user_id: 16
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Transaction committed for user_id: 16
+[16-Jun-2025 14:45:28 Asia/Kuala_Lumpur] Profile updated for user_id: 16

@@ -1,16 +1,22 @@
 <?php
 session_start();
 require_once 'db_connection.php';
+error_log("Starting student_sessions.php: user_id=" . ($_SESSION['user_id'] ?? 'unset') . ", role=" . ($_SESSION['role'] ?? 'unset'));
 
 // Check if user is logged in and is a student
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+    error_log("Session check failed: redirecting to login.php");
     header('Location: login.php');
     exit();
 }
 
 $student_id = $_SESSION['user_id'];
-$success_message = '';
-$error_message = '';
+
+// Retrieve session messages
+$success_message = isset($_SESSION['success']) ? $_SESSION['success'] : '';
+$error_message = isset($_SESSION['error']) ? $_SESSION['error'] : '';
+unset($_SESSION['success'], $_SESSION['error']); // Clear messages after retrieval
+error_log("Messages retrieved: success_message='$success_message', error_message='$error_message'");
 
 // Handle tab state
 $active_tab = isset($_POST['active_tab']) ? $_POST['active_tab'] : (isset($_SESSION['active_tab']) ? $_SESSION['active_tab'] : 'pending');
@@ -65,8 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                 $stmt->close();
 
                 $success_message = "Session cancelled successfully.";
+                $_SESSION['success'] = $success_message;
             } else {
                 $error_message = "Cannot cancel this session.";
+                $_SESSION['error'] = $error_message;
             }
         } elseif ($type === 'request') {
             $stmt = $conn->prepare("
@@ -99,13 +107,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_session'])) {
                 $stmt->close();
 
                 $success_message = "Session request cancelled successfully.";
+                $_SESSION['success'] = $success_message;
             } else {
                 $error_message = "Cannot cancel this session request.";
+                $_SESSION['error'] = $error_message;
             }
         }
     } catch (Exception $e) {
         error_log("Cancellation error: " . $e->getMessage());
         $error_message = "An error occurred while cancelling the session.";
+        $_SESSION['error'] = $error_message;
     }
 }
 
@@ -145,6 +156,7 @@ try {
     error_log("Pending requests error: " . $e->getMessage());
     $pending_requests = [];
     $error_message = $error_message ?: "Failed to load pending requests.";
+    $_SESSION['error'] = $error_message;
 }
 
 // Get current/upcoming sessions
@@ -160,7 +172,7 @@ try {
         JOIN user u ON s.tutor_id = u.user_id
         JOIN course c ON s.course_id = c.id
         LEFT JOIN location l ON s.location_id = l.location_id
-        LEFT JOIN review r ON s.session_id = r.session_id
+        LEFT JOIN review r ON s.session_id = r.session_id AND r.student_id = ?
         WHERE s.student_id = ? AND s.start_datetime >= NOW()
     ";
     if ($search_date !== '' || $search_time_slot !== '') {
@@ -174,9 +186,9 @@ try {
         throw new Exception("Database error: Unable to fetch current sessions.");
     }
     if ($search_date !== '' || $search_time_slot !== '') {
-        $stmt->bind_param("isssi", $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+        $stmt->bind_param("iisssi", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
     } else {
-        $stmt->bind_param("i", $student_id);
+        $stmt->bind_param("ii", $student_id, $student_id);
     }
     $stmt->execute();
     $current_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -185,6 +197,7 @@ try {
     error_log("Current sessions error: " . $e->getMessage());
     $current_sessions = [];
     $error_message = $error_message ?: "Failed to load current sessions.";
+    $_SESSION['error'] = $error_message;
 }
 
 // Get session history (past sessions)
@@ -200,7 +213,7 @@ try {
         JOIN user u ON s.tutor_id = u.user_id
         JOIN course c ON s.course_id = c.id
         LEFT JOIN location l ON s.location_id = l.location_id
-        LEFT JOIN review r ON s.session_id = r.session_id
+        LEFT JOIN review r ON s.session_id = r.session_id AND r.student_id = ?
         WHERE s.student_id = ? AND (s.start_datetime < NOW() OR s.status IN ('completed', 'cancelled'))
     ";
     if ($search_date !== '' || $search_time_slot !== '') {
@@ -214,9 +227,9 @@ try {
         throw new Exception("Database error: Unable to fetch past sessions.");
     }
     if ($search_date !== '' || $search_time_slot !== '') {
-        $stmt->bind_param("isssi", $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+        $stmt->bind_param("iisssi", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
     } else {
-        $stmt->bind_param("i", $student_id);
+        $stmt->bind_param("ii", $student_id, $student_id);
     }
     $stmt->execute();
     $past_sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -225,6 +238,7 @@ try {
     error_log("Past sessions error: " . $e->getMessage());
     $past_sessions = [];
     $error_message = $error_message ?: "Failed to load past sessions.";
+    $_SESSION['error'] = $error_message;
 }
 
 // Get tutor statistics
@@ -272,7 +286,7 @@ if (!empty($tutor_stats)) {
         ");
         if (!$stmt) {
             error_log("Tutor details prepare failed: " . $conn->error);
-            throw new Exception("Database error: Unable to fetch tutor details.");
+            throw new Exception("Database error: Failed to fetch tutor details.");
         }
         $stmt->bind_param(str_repeat('i', count($tutor_ids)), ...$tutor_ids);
         $stmt->execute();
@@ -293,43 +307,85 @@ if (!empty($tutor_stats)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Sessions - Peer Tutoring Platform</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>My Sessions - Peer Tutoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="css/stud_session.css">
     <style>
+        .alert {
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            transition: opacity 0.3s ease;
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .alert-success {
+            background-color: rgba(196, 214, 39, 0.1);
+            border-left: 4px solid #C4D600;
+            color: #2c5c00;
+        }
+        .alert-error {
+            background-color: rgba(255, 77, 77, 0.1);
+            border-left: 4px solid #dc3545;
+            color: #c82333;
+        }
+        .alert i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        .alert::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: currentColor;
+            opacity: 0.2;
+        }
         .search-form {
             display: flex;
             gap: 1rem;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
         }
         .search-form input[type="date"],
         .search-form select {
-            padding: 0.5rem;
-            border: 1px solid #e0e0e0; /* --gray */
-            border-radius: 4px;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
             font-size: 1rem;
+            background-color: #fff;
+            min-width: 150px;
         }
         .search-form button {
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            transition: background-color 0.2s;
         }
         .search-form .btn-search {
-            background-color: #00AEEF; /* --secondary */
+            background-color: #00AEEF;
             color: white;
         }
         .search-form .btn-search:hover {
             background-color: #0099cc;
         }
         .search-form .btn-clear {
-            background-color: #e0e0e0; /* --gray */
-            color: #2B3990; /* --primary */
+            background-color: #e0e0e0;
+            color: #2B3990;
         }
         .search-form .btn-clear:hover {
             background-color: #d0d0d0;
@@ -337,7 +393,16 @@ if (!empty($tutor_stats)) {
     </style>
 </head>
 <body>
-    <?php include 'header/stud_head.php'; ?>
+    <?php
+    // Check if header file exists before including
+    $header_file = 'header/stud_head.php';
+    if (file_exists($header_file)) {
+        include $header_file;
+    } else {
+        error_log("Header file not found: $header_file");
+        echo '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Header file not found. Please contact support.</div>';
+    }
+    ?>
 
     <!-- Main Content -->
     <main class="main">
@@ -367,11 +432,11 @@ if (!empty($tutor_stats)) {
                 <option value="">Select Time Slot</option>
                 <option value="08:00-10:00" <?php echo $search_time_slot === '08:00-10:00' ? 'selected' : ''; ?>>08:00 - 10:00</option>
                 <option value="10:00-12:00" <?php echo $search_time_slot === '10:00-12:00' ? 'selected' : ''; ?>>10:00 - 12:00</option>
-                <option value="12:00-14:00" <?php echo $search_time_slot === '12:00-14:00' ? 'selected' : ''; ?>>12:00 - 14:00</option>
+                <option value="12:00-15:00" <?php echo $search_time_slot === '12:00-15:00' ? 'selected' : ''; ?>>12:00 - 15:00</option>
             </select>
             <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
-            <button type="submit" name="search" class="btn-search"><i class="fas fa-search"></i> Search</button>
-            <button type="submit" name="clear_search" class="btn-clear"><i class="fas fa-undo"></i> Clear Search</button>
+            <button type="submit" name="search" class="btn btn-search"><i class="fas fa-search"></i> Search</button>
+            <button type="submit" name="clear_search" class="btn btn-clear"><i class="fas fa-undo"></i> Clear</button>
         </form>
 
         <!-- Tabs -->
@@ -399,7 +464,7 @@ if (!empty($tutor_stats)) {
                         <h3>No pending session requests</h3>
                         <p>You don't have any pending session requests.</p>
                         <a href="find_tutors.php" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-user-plus"></i>
                             Find a Tutor
                         </a>
                     </div>
@@ -468,7 +533,7 @@ if (!empty($tutor_stats)) {
                         <h3>No upcoming sessions</h3>
                         <p>You don't have any scheduled sessions yet.</p>
                         <a href="find_tutors.php" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-user-plus"></i>
                             Find a Tutor
                         </a>
                     </div>
@@ -576,6 +641,9 @@ if (!empty($tutor_stats)) {
                                             <i class="fas fa-star <?php echo $i <= $session['rating'] ? 'star' : 'star empty'; ?>"></i>
                                         <?php endfor; ?>
                                     </div>
+                                    <?php if ($session['comment']): ?>
+                                        <p><strong>Comment:</strong> <?php echo htmlspecialchars($session['comment']); ?></p>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                                 <?php if ($session['cancellation_reason']): ?>
                                     <p><strong>Cancellation reason:</strong> <?php echo htmlspecialchars($session['cancellation_reason']); ?></p>
@@ -586,10 +654,17 @@ if (!empty($tutor_stats)) {
                                     <i class="fas fa-user"></i>
                                     View Tutor
                                 </button>
-                                <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
-                                    <i class="fas fa-star"></i>
-                                    Rate Session
-                                </button>
+                                <?php if ($session['status'] === 'completed' && !$session['rating']): ?>
+                                    <button class="btn btn-warning" onclick="rateSession(<?php echo $session['session_id']; ?>, <?php echo $session['tutor_id']; ?>)">
+                                        <i class="fas fa-star"></i>
+                                        Rate Session
+                                    </button>
+                                <?php elseif ($session['rating']): ?>
+                                    <span class="btn btn-warning" style="opacity: 0.7; cursor: default;">
+                                        <i class="fas fa-check"></i>
+                                        Reviewed
+                                    </span>
+                                <?php endif; ?>
                                 <a href="messages.php?tutor_id=<?php echo $session['tutor_id']; ?>" class="btn btn-primary">
                                     <i class="fas fa-envelope"></i>
                                     Message
@@ -608,10 +683,11 @@ if (!empty($tutor_stats)) {
                     <h3><i class="fas fa-times-circle"></i> Cancel Session</h3>
                     <button class="close-btn" onclick="closeCancelModal()">×</button>
                 </div>
-                <form method="POST" id="cancel-form" action="">
+                <form method="POST" id="cancel-form" action="student_sessions.php">
                     <input type="hidden" id="cancel_session_id" name="session_id">
                     <input type="hidden" id="cancel_type" name="type">
                     <input type="hidden" name="cancel_session" value="1">
+                    <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
                     <div class="form-group">
                         <label for="cancellation_reason">Reason for cancellation:</label>
                         <textarea id="cancellation_reason" name="cancellation_reason" class="form-control"
@@ -641,10 +717,11 @@ if (!empty($tutor_stats)) {
                 <form id="rateForm" method="POST" action="submit_review.php">
                     <input type="hidden" id="rate_session_id" name="session_id">
                     <input type="hidden" id="rate_tutor_id" name="tutor_id">
+                    <input type="hidden" name="active_tab" value="history">
                     <div class="form-group">
                         <label>Rating:</label>
                         <div class="rating-input">
-                            <input type="radio" id="star5" name="rating" value="5">
+                            <input type="radio" id="star5" name="rating" value="5" required>
                             <label for="star5" class="star-label">★</label>
                             <input type="radio" id="star4" name="rating" value="4">
                             <label for="star4" class="star-label">★</label>
@@ -768,7 +845,7 @@ if (!empty($tutor_stats)) {
                     setTimeout(() => {
                         alert.style.opacity = '0';
                         setTimeout(() => alert.remove(), 300);
-                    }, 5000);
+                    }, 10000); // Extended to 10 seconds
                 });
             });
         </script>
