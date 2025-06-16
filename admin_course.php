@@ -35,7 +35,7 @@
                 <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                 <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
-                <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+                <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
         </aside>
 
