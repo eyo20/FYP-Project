@@ -35,7 +35,7 @@
                 <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                 <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_review.php"><span class="material-symbols-sharp">star</span><h3>Reviews</h3></a>
-                <a href="home_page.php"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+                <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
         </aside>
 
@@ -117,27 +117,6 @@
         </main>
 
         <!-------------------END OF COURSES------------------->
-        
-        <div class="right">
-            <div class="top">
-                <button id="menu-btn">
-                    <span class="material-symbols-sharp">menu</span>
-                </button>
-                <div class="theme-toggler">
-                    <span class="material-symbols-sharp active">light_mode</span>
-                    <span class="material-symbols-sharp">dark_mode</span>
-                </div>
-                <div class="profile">
-                    <div class="info">
-                        <p>Hey, <b>MengWen</b></p>
-                        <small class="text-muted">Admin</small>
-                    </div>
-                    <div class="profile-photo">
-                        <img src="image/profile-1.jpg">
-                    </div>
-                </div>
-            </div>
-             <!-----------------END OF RIGHT---------------------->
             
             <div class="recent-updates">
                 <h2>Recent Updates</h2>
