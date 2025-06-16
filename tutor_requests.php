@@ -67,7 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
     $request_id = (int)$_POST['request_id'];
 
     // Validate request
-    $stmt_validate = $conn->prepare("SELECT student_id, course_id, selected_date, time_slot, location_id FROM session_requests WHERE request_id = ? AND tutor_id = ?");
+    $stmt_validate = $conn->prepare("
+        SELECT sr.student_id, sr.course_id, sr.selected_date, sr.time_slot, sr.location_id, c.course_name
+        FROM session_requests sr
+        JOIN course c ON sr.course_id = c.id
+        WHERE sr.request_id = ? AND sr.tutor_id = ? AND sr.status = 'pending'
+    ");
     if (!$stmt_validate) {
         $_SESSION['error'] = "Error preparing request validation: " . $conn->error;
         error_log("Error preparing request validation: " . $conn->error);
@@ -125,6 +130,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                     }
                     $stmt_loc->close();
 
+                    // Fetch conflicting requests
+                    $stmt_conflict_fetch = $conn->prepare("
+                        SELECT sr.request_id, sr.student_id, c.course_name
+                        FROM session_requests sr
+                        JOIN course c ON sr.course_id = c.id
+                        WHERE sr.tutor_id = ? AND sr.request_id != ? 
+                        AND sr.selected_date = ? AND sr.time_slot = ? AND sr.status = 'pending'
+                    ");
+                    if (!$stmt_conflict_fetch) {
+                        throw new Exception("Prepare failed: " . $conn->error);
+                    }
+                    $stmt_conflict_fetch->bind_param("iiss", $user_id, $request_id, $request_data['selected_date'], $request_data['time_slot']);
+                    $stmt_conflict_fetch->execute();
+                    $conflict_result = $stmt_conflict_fetch->get_result();
+                    $conflicting_requests = [];
+                    while ($row = $conflict_result->fetch_assoc()) {
+                        $conflicting_requests[] = $row;
+                    }
+                    $stmt_conflict_fetch->close();
+
                     // Reject conflicting requests
                     $stmt_conflict = $conn->prepare("
                         UPDATE session_requests 
@@ -137,21 +162,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                     }
                     $stmt_conflict->bind_param("iiss", $user_id, $request_id, $request_data['selected_date'], $request_data['time_slot']);
                     $stmt_conflict->execute();
-                    $affected_rows = $stmt_conflict->affected_rows;
                     $stmt_conflict->close();
 
                     // Notify students of rejected conflicting requests
-                    if ($affected_rows > 0) {
-                        $stmt_notify_conflict = $conn->prepare("
-                            INSERT INTO notification (user_id, type, title, message, related_id, created_at)
-                            SELECT student_id, 'session', 'Request Rejected', 'Your tutoring request was rejected due to a conflicting accepted request.', request_id, NOW()
-                            FROM session_requests
-                            WHERE tutor_id = ? AND selected_date = ? AND time_slot = ? AND status = 'rejected'
-                        ");
-                        if ($stmt_notify_conflict) {
-                            $stmt_notify_conflict->bind_param("iss", $user_id, $request_data['selected_date'], $request_data['time_slot']);
+                    if ($conflicting_requests) {
+                        $admin_id = 17;
+                        foreach ($conflicting_requests as $conflict) {
+                            $conflict_request_id = $conflict['request_id'];
+                            $conflict_student_id = $conflict['student_id'];
+                            $conflict_course_name = $conflict['course_name'];
+                            $message_content = "Your {$conflict_course_name} course in the {$request_data['time_slot']} slot on " . date('M d, Y', strtotime($request_data['selected_date'])) . " has been cancelled. You can rebook another session or discuss alternative timings with your tutor.";
+
+                            // Insert notification
+                            $stmt_notify_conflict = $conn->prepare("
+                                INSERT INTO notification (user_id, type, title, message, related_id, created_at)
+                                VALUES (?, 'session', 'Request Rejected', ?, ?, NOW())
+                            ");
+                            if (!$stmt_notify_conflict) {
+                                throw new Exception("Prepare failed: " . $conn->error);
+                            }
+                            $stmt_notify_conflict->bind_param("isi", $conflict_student_id, $message_content, $conflict_request_id);
                             $stmt_notify_conflict->execute();
                             $stmt_notify_conflict->close();
+
+                            // Insert message
+                            $stmt_message = $conn->prepare("
+                                INSERT INTO message (sender_id, receiver_id, content, is_read, sent_datetime)
+                                VALUES (?, ?, ?, 0, NOW())
+                            ");
+                            if (!$stmt_message) {
+                                throw new Exception("Prepare failed: " . $conn->error);
+                            }
+                            $stmt_message->bind_param("iis", $admin_id, $conflict_student_id, $message_content);
+                            $stmt_message->execute();
+                            $stmt_message->close();
                         }
                     }
 
@@ -167,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                     $stmt_insert->execute();
                     $stmt_insert->close();
 
-                    // Send notification
+                    // Send notification for accepted request
                     $stmt_notify = $conn->prepare("
                         INSERT INTO notification (user_id, type, title, message, related_id, created_at)
                         VALUES (?, 'session', 'Request Accepted', 'Your tutoring request has been accepted. Please discuss timing with your tutor.', ?, NOW())
@@ -187,28 +231,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
                     error_log("Failed to accept request: " . $e->getMessage());
                 }
             } elseif ($action === 'reject') {
-                $stmt_reject = $conn->prepare("UPDATE session_requests SET status = 'rejected' WHERE request_id = ?");
-                if (!$stmt_reject) {
-                    $_SESSION['error'] = 'Error preparing reject: ' . $conn->error;
-                    error_log("Error preparing reject: " . $conn->error);
-                } else {
-                    $stmt_reject->bind_param("i", $request_id);
-                    if ($stmt_reject->execute()) {
-                        $_SESSION['success'] = 'Request rejected successfully';
-                        $stmt_notify = $conn->prepare("
-                            INSERT INTO notification (user_id, type, title, message, related_id, created_at)
-                            VALUES (?, 'session', 'Request Rejected', 'Your tutoring request has been rejected.', ?, NOW())
-                        ");
-                        if ($stmt_notify) {
-                            $stmt_notify->bind_param("ii", $request['student_id'], $request_id);
-                            $stmt_notify->execute();
-                            $stmt_notify->close();
-                        }
-                    } else {
-                        $_SESSION['error'] = 'Failed to reject request: ' . $conn->error;
-                        error_log("Failed to reject request: " . $conn->error);
+                $conn->begin_transaction();
+                try {
+                    // Update session request status
+                    $stmt_reject = $conn->prepare("UPDATE session_requests SET status = 'rejected' WHERE request_id = ?");
+                    if (!$stmt_reject) {
+                        throw new Exception("Prepare failed: " . $conn->error);
                     }
+                    $stmt_reject->bind_param("i", $request_id);
+                    $stmt_reject->execute();
                     $stmt_reject->close();
+
+                    // Send cancellation message to message table from admin (user_id=17)
+                    $admin_id = 17;
+                    $time_slot = $request['time_slot'] ?? 'Not specified';
+                    $selected_date = $request['selected_date'] ?? 'Not specified';
+                    $course_name = $request['course_name'] ?? 'Unknown Course';
+                    $message_content = "Your {$course_name} course in the {$time_slot} slot on " . date('M d, Y', strtotime($selected_date)) . " has been cancelled. You can rebook another session or discuss alternative timings with your tutor.";
+
+                    // Insert notification
+                    $stmt_notify = $conn->prepare("
+                        INSERT INTO notification (user_id, type, title, message, related_id, created_at)
+                        VALUES (?, 'session', 'Request Rejected', ?, ?, NOW())
+                    ");
+                    if (!$stmt_notify) {
+                        throw new Exception("Prepare failed: " . $conn->error);
+                    }
+                    $stmt_notify->bind_param("isi", $request['student_id'], $message_content, $request_id);
+                    $stmt_notify->execute();
+                    $stmt_notify->close();
+
+                    // Insert message
+                    $stmt_message = $conn->prepare("
+                        INSERT INTO message (sender_id, receiver_id, content, is_read, sent_datetime)
+                        VALUES (?, ?, ?, 0, NOW())
+                    ");
+                    if (!$stmt_message) {
+                        throw new Exception("Prepare failed: " . $conn->error);
+                    }
+                    $stmt_message->bind_param("iis", $admin_id, $request['student_id'], $message_content);
+                    $stmt_message->execute();
+                    $stmt_message->close();
+
+                    $conn->commit();
+                    $_SESSION['success'] = 'Request rejected successfully';
+                } catch (Exception $e) {
+                    $conn->rollback();
+                    $_SESSION['error'] = 'Failed to reject request: ' . $e->getMessage();
+                    error_log("Failed to reject request: " . $e->getMessage());
                 }
             } else {
                 $_SESSION['error'] = 'Invalid action: ' . $action;
