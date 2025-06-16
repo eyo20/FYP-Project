@@ -263,7 +263,7 @@ $conn->close();
         </div>
 
         <div class="sidebar">
-            <a href="admin.php"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+            <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
             <a href="#"></a>
             <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
             <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>

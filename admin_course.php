@@ -117,27 +117,6 @@
         </main>
 
         <!-------------------END OF COURSES------------------->
-        
-        <div class="right">
-            <div class="top">
-                <button id="menu-btn">
-                    <span class="material-symbols-sharp">menu</span>
-                </button>
-                <div class="theme-toggler">
-                    <span class="material-symbols-sharp active">light_mode</span>
-                    <span class="material-symbols-sharp">dark_mode</span>
-                </div>
-                <div class="profile">
-                    <div class="info">
-                        <p>Hey, <b>MengWen</b></p>
-                        <small class="text-muted">Admin</small>
-                    </div>
-                    <div class="profile-photo">
-                        <img src="image/profile-1.jpg">
-                    </div>
-                </div>
-            </div>
-             <!-----------------END OF RIGHT---------------------->
             
             <div class="recent-updates">
                 <h2>Recent Updates</h2>
