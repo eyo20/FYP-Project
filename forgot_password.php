@@ -2,8 +2,12 @@
 // Start session
 session_start();
 
-// Include database connection
-require_once "db_connection.php";
+// Include database connection and PHPMailer
+require_once 'db_connection.php';
+require_once 'vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 // Initialize variables
 $email = '';
@@ -11,113 +15,128 @@ $email_error = '';
 $success_message = '';
 $error_message = '';
 
+// Generate CSRF token if not set
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Process form submission
 if (isset($_POST['reset_btn'])) {
-    // Get and sanitize email
-    $email = trim($_POST['user_email']);
-    
-    // Validate email
-    if (empty($email)) {
+    $email = trim($_POST['user_email'] ?? '');
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    // Verify CSRF token
+    if (!isset($_SESSION['csrf_token']) || $csrf_token !== $_SESSION['csrf_token']) {
+        $error_message = 'Invalid request. Please try again.';
+    } elseif (empty($email)) {
         $email_error = 'Email is required';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $email_error = 'Invalid email format';
     } elseif (!preg_match('/@.*\.mmu\.edu\.my$/', $email)) {
         $email_error = 'Not an MMU email address';
     } else {
-        // Check if email exists in the database
-        $sql = "SELECT user_id, email FROM user WHERE email = ?";   //'?' is only serve as a Parameter placeholders
+        // Check if email exists
+        $sql = "SELECT user_id FROM user WHERE email = ?";
         if ($stmt = mysqli_prepare($conn, $sql)) {
             mysqli_stmt_bind_param($stmt, 's', $email);
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
-                
+
                 if (mysqli_stmt_num_rows($stmt) === 1) {
                     // Email exists, generate token
-                    $token = bin2hex(random_bytes(32)); // Generate a secure random token
-                    
-                    // Set expiration time (15 minutes from now)
+                    $token = bin2hex(random_bytes(32));
                     $expires_at = date('Y-m-d H:i:s', time() + 15 * 60);
-                    
-                    // Delete any existing tokens for this email
+
+                    // Delete existing tokens
                     $delete_sql = "DELETE FROM password_reset WHERE email = ?";
                     if ($delete_stmt = mysqli_prepare($conn, $delete_sql)) {
                         mysqli_stmt_bind_param($delete_stmt, 's', $email);
                         mysqli_stmt_execute($delete_stmt);
                         mysqli_stmt_close($delete_stmt);
                     }
-                    
-                    // Store token in database
+
+                    // Store new token
                     $insert_sql = "INSERT INTO password_reset (email, token, expires_at) VALUES (?, ?, ?)";
                     if ($insert_stmt = mysqli_prepare($conn, $insert_sql)) {
                         mysqli_stmt_bind_param($insert_stmt, 'sss', $email, $token, $expires_at);
-                        
+
                         if (mysqli_stmt_execute($insert_stmt)) {
-                            // Token stored successfully, send email
-                            $reset_link = 'http://' . $_SERVER['HTTP_HOST'] . '/FYP-Project/reset_password.php?token=' . $token;
-                            
-                            $to = $email;
-                            $subject = 'PeerLearn - Password Reset Request';
-                            
-                            // Create HTML message
-                            $message = '
-                            <html>
-                            <head>
-                                <title>Reset Your PeerLearn Password</title>
-                            </head>
-                            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                                    <div style="text-align: center; margin-bottom: 20px;">
-                                        <h2 style="color: #2B3990;">PeerLearn Password Reset</h2>
-                                    </div>
-                                    <p>Hello,</p>
-                                    <p>We received a request to reset your password for your PeerLearn account. Please click the button below to reset your password:</p>
-                                    <p style="text-align: center;">
-                                        <a href="' . $reset_link . '" style="display: inline-block; background-color: #C4D600; color: #2B3990; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Reset Password</a>
-                                    </p>
-                                    <p>This link will expire in 15 minutes.</p>
-                                    <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
-                                    <p>Thank you,<br>The PeerLearn Team</p>
-                                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center;">
-                                        <p>This is an automated email, please do not reply.</p>
-                                    </div>
-                                </div>
-                            </body>
-                            </html>';
-                            
-                            // Set email headers
-                            $headers = "MIME-Version: 1.0" . "\r\n";
-                            $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-                            $headers .= 'From: PeerLearn <noreply@peerlearn.com>' . "\r\n";
-                            
-                            // Send email
-                            if (mail($to, $subject, $message, $headers)) {
+                            // Send email with PHPMailer
+                            $mail = new PHPMailer(true);
+                            try {
+                                // SMTP settings
+                                $mail->isSMTP();
+                                $mail->Host = 'smtp.gmail.com';
+                                $mail->SMTPAuth = true;
+                                $mail->Username = 'your-email@gmail.com'; // Replace with your Gmail
+                                $mail->Password = 'your-app-password'; // Replace with App Password
+                                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                                $mail->Port = 587;
+
+                                // Recipients
+                                $mail->setFrom('noreply@peerlearn.com', 'PeerLearn');
+                                $mail->addAddress($email);
+
+                                // Content
+                                $reset_link = 'http://localhost:8080/reset_password.php?token=' . $token; // Adjust domain/port
+                                $mail->isHTML(true);
+                                $mail->Subject = 'PeerLearn - Password Reset Request';
+                                $mail->Body = '
+                                    <html>
+                                    <head>
+                                        <title>Reset Your PeerLearn Password</title>
+                                    </head>
+                                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                                        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h2 style="color: #2B3990;">PeerLearn Password Reset</h2>
+                                            </div>
+                                            <p>Hello,</p>
+                                            <p>We received a request to reset your password for your PeerLearn account. Please click the button below to reset your password:</p>
+                                            <p style="text-align: center;">
+                                                <a href="' . $reset_link . '" style="display: inline-block; background-color: #C4D600; color: #2B3990; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Reset Password</a>
+                                            </p>
+                                            <p>This link will expire in 15 minutes.</p>
+                                            <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+                                            <p>Thank you,<br>The PeerLearn Team</p>
+                                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center;">
+                                                <p>This is an automated email, please do not reply.</p>
+                                            </div>
+                                        </div>
+                                    </body>
+                                    </html>';
+                                $mail->AltBody = "Reset your PeerLearn password: $reset_link\nThis link expires in 15 minutes.\nIf you didn't request this, ignore this email.";
+
+                                $mail->send();
                                 $success_message = 'Password reset instructions have been sent to your email. Please check your inbox.';
-                                $email = ''; // Clear the email field
-                            } else {
+                                $email = '';
+                            } catch (Exception $e) {
                                 $error_message = 'Failed to send password reset email. Please try again later.';
+                                error_log("PHPMailer error: " . $mail->ErrorInfo);
                             }
                         } else {
                             $error_message = 'Something went wrong. Please try again later.';
                         }
-                        
                         mysqli_stmt_close($insert_stmt);
                     } else {
                         $error_message = 'Database error. Please try again later.';
                     }
                 } else {
-                    // Email doesn't exist, but don't reveal this for security
+                    // Email doesn't exist, show vague message for security
                     $success_message = 'If your email exists in our system, you will receive password reset instructions.';
                 }
             } else {
                 $error_message = 'Something went wrong. Please try again later.';
             }
-            
             mysqli_stmt_close($stmt);
         } else {
             $error_message = 'Database error. Please try again later.';
         }
     }
 }
+
+// Generate new CSRF token for next request
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
 // Close database connection
 mysqli_close($conn);
@@ -296,24 +315,25 @@ mysqli_close($conn);
                 Enter your MMU email address below, and we'll send you instructions to reset your password.
             </div>
             
-            <?php if(!empty($error_message)): ?>
+            <?php if (!empty($error_message)): ?>
                 <div class="error-alert">
-                    <?php echo $error_message; ?>
+                    <?php echo htmlspecialchars($error_message); ?>
                 </div>
             <?php endif; ?>
             
-            <?php if(!empty($success_message)): ?>
+            <?php if (!empty($success_message)): ?>
                 <div class="success-alert">
-                    <?php echo $success_message; ?>
+                    <?php echo htmlspecialchars($success_message); ?>
                 </div>
             <?php endif; ?>
             
-            <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+            <form method="POST" action="">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <div class="input-group">
                     <label for="user_email">Email Address</label>
                     <input type="email" name="user_email" id="user_email" value="<?php echo htmlspecialchars($email); ?>" placeholder="Enter your MMU email">
-                    <?php if(!empty($email_error)): ?>
-                        <div class="error-message"><?php echo $email_error; ?></div>
+                    <?php if (!empty($email_error)): ?>
+                        <div class="error-message"><?php echo htmlspecialchars($email_error); ?></div>
                     <?php endif; ?>
                 </div>
                 
