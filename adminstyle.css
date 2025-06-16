@@ -270,11 +270,11 @@ main .insights > div span {
     font-size: 2rem;
 }
 
-main .insights > div.expenses span{
+main .insights > div.total_tutor span{
     background: #ff7782;
 }
 
-main .insights > div.income span {
+main .insights > div.total_course span {
     background:#41f1b6;
 }
 

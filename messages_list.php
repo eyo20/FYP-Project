@@ -1,5 +1,5 @@
 <?php
-// messages_list.php
+
 session_start();
 require_once "db_connection.php";
 
@@ -67,7 +67,7 @@ if ($current_user['role'] === 'student') {
      <link rel="stylesheet" href="studentstyle.css">
     <style>
         :root {
-            --primary: #7380ec;
+            --primary: #2B3990;
             --secondary: #00AEEF;
             --accent: #C4D600;
             --light-gray: #f5f7fa;
@@ -258,7 +258,7 @@ if ($current_user['role'] === 'student') {
         }
         
         .back-button:hover {
-            background-color: #5a6ce0;
+            background-color: #C4D600;
             transform: translateY(-2px);
         }
         
