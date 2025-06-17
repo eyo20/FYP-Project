@@ -387,6 +387,14 @@ if (!$stmt) {
     $stmt->close();
 }
 
+$confirmed_requests = array_filter($processed_requests, fn($r) => $r['status'] === 'confirmed');
+$rejected_requests = array_filter($processed_requests, fn($r) => $r['status'] === 'rejected');
+
+// Debug log
+error_log("Total processed requests: " . count($processed_requests));
+error_log("Confirmed requests: " . count($confirmed_requests));
+error_log("Rejected requests: " . count($rejected_requests));
+
 // Get unread messages count
 $unread_messages = 0;
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM message WHERE receiver_id = ? AND is_read = 0");
@@ -409,387 +417,415 @@ $conn->close();
     <title>Appointment Requests - PeerLearn</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        :root {
-            --primary: #2B3990;
-            --secondary: #00AEEF;
-            --accent: #C4D600;
-            --gray: #e0e0e0;
-            --light-gray: #f5f5f5;
-            --dark-gray: #777;
-        }
+    :root {
+        --primary: #2B3990;
+        --secondary: #00AEEF;
+        --accent: #C4D600;
+        --gray: #e0e0e0;
+        --light-gray: #f5f5f5;
+        --dark-gray: #777;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        body {
-            background-color: var(--light-gray);
-            color: #333;
-            line-height: 1.6;
-        }
+    body {
+        background-color: var(--light-gray);
+        color: #333;
+        line-height: 1.6;
+    }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--primary);
+        color: white;
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-        .logo span {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+    .logo span {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
 
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            position: relative;
-        }
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        position: relative;
+    }
 
-        .nav-links a:hover {
-            color: var(--accent);
-        }
+    .nav-links a:hover {
+        color: var(--accent);
+    }
 
-        .nav-links a.active {
-            color: var(--accent);
-        }
+    .nav-links a.active {
+        color: var(--accent);
+    }
 
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -12px;
-            background-color: var(--accent);
-            color: var(--primary);
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background-color: var(--accent);
+        color: var(--primary);
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
 
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
 
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            overflow: hidden;
-            border: 2px solid white;
-        }
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+        border: 2px solid white;
+    }
 
-        .profile-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
+    main {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
 
-        .page-title {
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 
-        .search-form {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
 
-        .search-form input[type="date"],
-        .search-form select {
-            padding: 0.5rem;
-            border: 1px solid var(--gray);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
+    .search-form input[type="date"],
+    .search-form select {
+        padding: 0.5rem;
+        border: 1px solid var(--gray);
+        border-radius: 4px;
+        font-size: 1rem;
+    }
 
-        .search-form button {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    .search-form button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-        .search-form .btn-search {
-            background-color: var(--secondary);
-            color: white;
-        }
+    .search-form .btn-search {
+        background-color: var(--secondary);
+        color: white;
+    }
 
-        .search-form .btn-search:hover {
-            background-color: #0099cc;
-        }
+    .search-form .btn-search:hover {
+        background-color: #0099cc;
+    }
 
-        .search-form .btn-clear {
-            background-color: var(--gray);
-            color: var(--primary);
-        }
+    .search-form .btn-clear {
+        background-color: var(--gray);
+        color: var(--primary);
+    }
 
-        .search-form .btn-clear:hover {
-            background-color: #d0d0d0;
-        }
+    .search-form .btn-clear:hover {
+        background-color: #d0d0d0;
+    }
 
-        .alert {
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1.5rem;
-        }
+    .alert {
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+    }
 
-        .alert-success {
-            background-color: rgba(196, 214, 0, 0.1);
-            border-left: 4px solid var(--accent);
-            color: #5a6400;
-        }
+    .alert-success {
+        background-color: rgba(196, 214, 0, 0.1);
+        border-left: 4px solid var(--accent);
+        color: #5a6400;
+    }
 
-        .alert-danger {
-            background-color: rgba(220, 53, 69, 0.1);
-            border-left: 4px solid #dc3545;
-            color: #dc3545;
-        }
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+        color: #dc3545;
+    }
 
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid var(--gray);
-            margin-bottom: 1.5rem;
-        }
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--gray);
+        margin-bottom: 1.5rem;
+    }
 
-        .tab {
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-            color: var(--dark-gray);
-            position: relative;
-        }
+    .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        color: var(--dark-gray);
+        position: relative;
+    }
 
-        .tab.active {
-            border-bottom-color: var(--accent);
-            color: var(--primary);
-            font-weight: 600;
-        }
+    .tab.active {
+        border-bottom-color: var(--accent);
+        color: var(--primary);
+        font-weight: 600;
+    }
 
-        .tab:hover {
-            background-color: rgba(0, 174, 239, 0.05);
-            color: var(--primary);
-        }
+    .tab:hover {
+        background-color: rgba(0, 174, 239, 0.05);
+        color: var(--primary);
+    }
 
-        .tab-content {
-            display: none;
-        }
+    .tab-content {
+        display: none;
+        padding: 0;
+    }
 
-        .tab-content.active {
-            display: block;
-        }
+    .tab-content.active {
+        display: block;
+    }
 
-        .request-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-        }
+    .request-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 0;
+    }
 
-        .request-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
+    #processed-tab .request-list {
+        margin-top: 0;
+    }
 
-        .request-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
+    .request-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
 
-        .student-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            overflow: hidden;
-            border-right: 2px solid var(--light-gray);
-        }
+    .request-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
 
-        .request-info {
-            flex: 1;
-        }
+    .student-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+        border-right: 2px solid var(--light-gray);
+    }
 
-        .student-name {
-            font-weight: 600;
-            color: var(--primary);
-        }
+    .student-avatar img.profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-        .request-subject {
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-        }
+    .request-info {
+        flex: 1;
+    }
 
-        .request-details {
-            margin-bottom: 1.5rem;
-            background-color: rgba(0, 174, 239, 0.03);
-            padding: 1rem;
-            border-radius: 6px;
-            border-left: 3px solid var(--secondary);
-        }
+    .student-name {
+        font-weight: 600;
+        color: var(--primary);
+    }
 
-        .detail-item {
-            display: flex;
-            margin-bottom: 0.5rem;
-        }
+    .request-subject {
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
 
-        .detail-label {
-            width: 120px;
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-        }
+    .request-details {
+        margin-bottom: 1.5rem;
+        background-color: rgba(0, 174, 239, 0.03);
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 3px solid var(--secondary);
+    }
 
-        .detail-value {
-            flex: 1;
-            font-weight: 500;
-            color: var(--primary);
-        }
+    .detail-item {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
 
-        .request-actions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
+    .detail-label {
+        width: 120px;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
 
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
+    .detail-value {
+        flex: 1;
+        font-weight: 500;
+        color: var(--primary);
+    }
 
-        .btn-success {
-            background-color: var(--accent);
-            color: white;
-        }
+    .request-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 
-        .btn-success:hover {
-            background-color: #b1c100;
-        }
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
 
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
+    .btn-success {
+        background-color: var(--accent);
+        color: white;
+    }
 
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
+    .btn-success:hover {
+        background-color: #b1c100;
+    }
 
-        .btn-message {
-            background-color: var(--secondary);
-            color: white;
-        }
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
 
-        .btn-message:hover {
-            background-color: #0099cc;
-        }
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
 
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: auto;
-        }
+    .btn-message {
+        background-color: var(--secondary);
+        color: white;
+        padding: 0.5rem 2.5rem;
+        min-width: 120px;
+        text-align: center;
+    }
 
-        .status-confirmed {
-            background-color: rgba(196, 214, 0, 0.1);
-            color: var(--accent);
-        }
+    .btn-message:hover {
+        background-color: #0099cc;
+    }
 
-        .status-rejected {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
-        }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: auto;
+    }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
+    .status-confirmed {
+        background-color: rgba(196, 214, 0, 0.1);
+        color: var(--accent);
+    }
 
-        .empty-icon {
-            font-size: 3rem;
-            color: var(--secondary);
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
+    .status-rejected {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
 
-        .empty-text {
-            color: var(--dark-gray);
-            margin-bottom: 1.5rem;
-        }
+    .separator {
+        border: 0;
+        height: 1px;
+        background: #C4D600;
+        margin: 1rem 0;
+    }
 
-        @media (max-width: 768px) {
-            .navbar { padding: 1rem; }
-            .nav-links { gap: 1rem; }
-            .request-list { grid-template-columns: 1fr; }
-            .request-actions { flex-direction: column; }
-            .btn { width: 100%; justify-content: center; }
-            .search-form { flex-direction: column; gap: 0.5rem; }
-        }
-    </style>
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-text {
+        color: var(--dark-gray);
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .navbar { padding: 1rem; }
+        .nav-links { gap: 1rem; }
+        .request-list { grid-template-columns: 1fr; }
+        .request-actions { flex-direction: column; }
+        .btn { width: 100%; justify-content: center; }
+        .search-form { flex-direction: column; gap: 0.5rem; }
+    }
+</style>
 </head>
 <body>
     <?php include 'header/tut_head.php'; ?>
 
     <main>
-        <h1 class="page-title">Tutoring Requests</h1>
+        <h1 class="section-title">Tutoring Requests</h1>
 
         <?php if ($success_message): ?>
             <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
@@ -905,80 +941,128 @@ $conn->close();
         </div>
 
         <div id="processed-tab" class="tab-content <?php echo $active_tab === 'processed' ? 'active' : ''; ?>">
-            <?php if ($processed_requests): ?>
-                <div class="request-list">
-                    <?php foreach ($processed_requests as $request): ?>
-                        <div class="request-card">
-                            <div class="request-header">
-                                <div class="student-avatar">
-                                    <?php if ($request['profile_image']): ?>
-                                        <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
-                                    <?php else: ?>
-                                        <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
-                                    <?php endif; ?>
+            <?php if ($confirmed_requests || $rejected_requests): ?>
+                <?php if ($confirmed_requests): ?>
+                    <h3 class="section-title">Confirmed Requests</h3>
+                    <div class="request-list">
+                        <?php foreach ($confirmed_requests as $request): ?>
+                            <div class="request-card">
+                                <div class="request-header">
+                                    <div class="student-avatar">
+                                        <?php if ($request['profile_image']): ?>
+                                            <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
+                                        <?php else: ?>
+                                            <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="request-info">
+                                        <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
+                                        <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                    </div>
+                                    <span class="status-badge status-confirmed">Confirmed</span>
                                 </div>
-                                <div class="request-info">
-                                    <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
-                                    <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <?php
-                                $statusClass = $statusText = '';
-                                switch ($request['status'] ?? '') {
-                                    case 'confirmed':
-                                        $statusClass = 'status-confirmed';
-                                        $statusText = 'Confirmed';
-                                        break;
-                                    case 'rejected':
-                                        $statusClass = 'status-rejected';
-                                        $statusText = 'Rejected';
-                                        break;
-                                    default:
-                                        $statusClass = 'status-pending';
-                                        $statusText = $request['status'] ?? 'Unknown';
-                                }
-                                ?>
-                                <span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
-                            </div>
-                            <div class="request-details">
-                                <div class="detail-item">
-                                    <div class="detail-label">Course:</div>
-                                    <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Date:</div>
-                                    <div class="detail-value">
-                                        <?php echo !empty($request['selected_date']) 
-                                            ? date('M d, Y', strtotime($request['selected_date'])) 
-                                            : 'Not specified'; ?>
+                                <div class="request-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Course:</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Date:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['selected_date']) 
+                                                ? date('M d, Y', strtotime($request['selected_date'])) 
+                                                : 'Not specified'; ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Time Slot:</div>
+                                        <div class="detail-value">
+                                            <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Location:</div>
+                                        <div class="detail-value">
+                                            <?php echo htmlspecialchars($request['location_name'] ?? 'Not specified'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Requested On:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['created_at']) 
+                                                ? date('M d, Y', strtotime($request['created_at'])) 
+                                                : 'Not specified'; ?>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Time Slot:</div>
-                                    <div class="detail-value">
-                                        <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Location:</div>
-                                    <div class="detail-value">
-                                        <?php echo htmlspecialchars($request['location_name'] ?? 'Not specified'); ?>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Requested On:</div>
-                                    <div class="detail-value">
-                                        <?php echo !empty($request['created_at']) 
-                                            ? date('M d, Y', strtotime($request['created_at'])) 
-                                            : 'Not specified'; ?>
-                                    </div>
+                                <div class="request-actions">
+                                    <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
                                 </div>
                             </div>
-                            <div class="request-actions">
-                                <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($rejected_requests): ?>
+                    <h3 class="section-title">Rejected Requests</h3>
+                    <div class="request-list">
+                        <?php foreach ($rejected_requests as $request): ?>
+                            <div class="request-card">
+                                <div class="request-header">
+                                    <div class="student-avatar">
+                                        <?php if ($request['profile_image']): ?>
+                                            <img src="<?php echo htmlspecialchars($request['profile_image']); ?>" alt="Student" class="profile-image">
+                                        <?php else: ?>
+                                            <?php echo htmlspecialchars(substr($request['first_name'] ?? '', 0, 1) . substr($request['last_name'] ?? '', 0, 1)); ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="request-info">
+                                        <div class="student-name"><?php echo htmlspecialchars(($request['first_name'] ?? '') . ' ' . ($request['last_name'] ?? '')); ?></div>
+                                        <div class="request-subject"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                    </div>
+                                    <span class="status-badge status-rejected">Rejected</span>
+                                </div>
+                                <div class="request-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Course:</div>
+                                        <div class="detail-value"><?php echo htmlspecialchars($request['course_name'] ?? 'Unknown Course'); ?></div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Date:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['selected_date']) 
+                                                ? date('M d, Y', strtotime($request['selected_date'])) 
+                                                : 'Not specified'; ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Time Slot:</div>
+                                        <div class="detail-value">
+                                            <?php echo htmlspecialchars($request['time_slot'] ?? 'Not specified'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Location:</div>
+                                        <div class="detail-value">
+                                            <?php echo htmlspecialchars($request['location_name'] ?? 'Not specified'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Requested On:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['created_at']) 
+                                                ? date('M d, Y', strtotime($request['created_at'])) 
+                                                : 'Not specified'; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="request-actions">
+                                    <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
+                                </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-history"></i></div>

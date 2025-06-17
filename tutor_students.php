@@ -747,10 +747,10 @@ $conn->close();
                                     <div class="detail-label">Completed:</div>
                                     <div class="detail-value"><?php echo $student['completed_sessions']; ?></div>
                                 </div>
-                                <div class="detail-item">
+                                <!-- <div class="detail-item">
                                     <div class="detail-label">Cancelled:</div>
                                     <div class="detail-value"><?php echo $student['cancelled_sessions']; ?></div>
-                                </div>
+                                </div> -->
                                 <div class="detail-item">
                                     <div class="detail-label">Last Session:</div>
                                     <div class="detail-value">
