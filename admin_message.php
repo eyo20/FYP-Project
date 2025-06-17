@@ -99,7 +99,7 @@ $conn->close();
         }
         
         aside {
-            width: 250px;
+            width: 210px;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: sticky;
@@ -107,6 +107,24 @@ $conn->close();
             height: 100vh;
         }
         
+        aside .top {
+            margin-left: 0;
+            padding-left: 1rem;
+        }
+        aside .logo {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        aside .logo img{
+            width: 2rem;
+            height: 2rem;
+        }
+
+        aside .close{
+            display: none;
+        }
+
         .main-content {
             flex: 1;
             padding: 30px;
@@ -122,7 +140,7 @@ $conn->close();
         .message-center-container h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
-            color: #7380ec;
+            color:rgb(0, 0, 0);
         }
         
         .message-container {
@@ -224,7 +242,7 @@ $conn->close();
         }
         
         .message.unread {
-            border-left-color: #7380ec;
+            border-left-color:rgb(236, 115, 115);
             background-color: #f0f4ff;
         }
         
@@ -265,6 +283,7 @@ $conn->close();
         <div class="sidebar">
             <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
             <a href="#"></a>
+            <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
             <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
             <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
             <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>

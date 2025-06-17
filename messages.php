@@ -78,7 +78,7 @@ $stmt->close();
 
 // Function to determine profile page based on role
 function getProfilePage($role) {
-    return $role === 'tutor' ? 'tutor_profile.php' : 'student_profile.php';
+    return $role === 'tutor' ? 'tutor_main_page.php' : 'student_main_page.php';
 }
 ?>
 
@@ -91,6 +91,22 @@ function getProfilePage($role) {
     <link rel="stylesheet" href="msgstyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+            .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 50px;
+            height: 70px;
+        }
+        
         .chat-area {
             max-width: 800px;
             margin: 0 auto;
@@ -107,6 +123,19 @@ function getProfilePage($role) {
     </style>
 </head>
 <body>
+        <?php 
+    // Include the appropriate header based on user role
+    if ($current_user_role === 'student') {
+        include 'header/stud_head.php';
+    } elseif ($current_user_role === 'tutor') {
+        include 'header/tut_head.php';
+    } else {
+        // Default header for admin or other roles if needed
+        include 'header/header.php';
+    }
+    ?>
+
+    
     <div class="wrapper">
         <section class="chat-area">
             <header>
@@ -143,6 +172,48 @@ function getProfilePage($role) {
     </div>
 
     <script>
+   
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Mobile menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('show');
+        });
+
+        // Avatar upload preview and automatic submission
+        document.getElementById('profile_image_upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewElement = document.getElementById('profile-image-preview');
+                    const placeholderElement = document.getElementById('profile-image-placeholder');
+
+                    if (previewElement) {
+                        // If it is already an image, update src
+                        previewElement.src = e.target.result;
+                    } else if (placeholderElement) {
+                        // If it is a placeholder, replace it with an image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Profile";
+                        img.className = "profile-image";
+                        img.id = "profile-image-preview";
+                        placeholderElement.parentNode.replaceChild(img, placeholderElement);
+                    }
+
+                    // Automatically submit forms
+                    document.getElementById('image-upload-form').submit();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+
         // Auto-scroll to bottom of chat
         const chatBox = document.querySelector('.chat-box');
         chatBox.scrollTop = chatBox.scrollHeight;

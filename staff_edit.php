@@ -1,47 +1,71 @@
 <?php
-// Start session and include database connection
 session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "peer_tutoring_platform";
+require_once 'db_connection.php';
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    $_SESSION['error'] = "Invalid staff ID";
+    header("Location: admin_staff.php");
+    exit();
 }
 
-// Get course ID from URL
-$course_id = $_GET['id'] ?? 0;
+$user_id = intval($_GET['id']);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_course'])) {
-    // Prepare delete statement
-    $delete_sql = "DELETE FROM course WHERE id = ?";
-    $stmt = $conn->prepare($delete_sql);
-    $stmt->bind_param("i", $course_id);
-    
-    if ($stmt->execute()) {
-        // Redirect to courses list after successful deletion
-        header("Location: admin_course.php?deleted=1");
-        exit();
-    } else {
-        $delete_error = "Error deleting course: " . $conn->error;
-    }
-}
-
-// Fetch course details
-$sql = "SELECT * FROM course WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $course_id);
+// Fetch staff data
+$stmt = $conn->prepare("SELECT user_id, username, email, role, is_active FROM user WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$course = $result->fetch_assoc();
 
-// Close connection
-$conn->close();
+if ($result->num_rows === 0) {
+    $_SESSION['error'] = "Staff member not found";
+    header("Location: admin_staff.php");
+    exit();
+}
+
+$staff = $result->fetch_assoc();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $role = $_POST['role'];
+    $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $change_password = !empty($_POST['new_password']);
+
+    if (empty($username) || empty($email)) {
+        $_SESSION['error'] = "Username and email are required";
+        header("Location: staff_edit.php?id=$user_id");
+        exit();
+    }
+
+    $stmt = $conn->prepare("SELECT user_id FROM user WHERE (username = ? OR email = ?) AND user_id != ?");
+    $stmt->bind_param("ssi", $username, $email, $user_id);
+    $stmt->execute();
+    
+    if ($stmt->get_result()->num_rows > 0) {
+        $_SESSION['error'] = "Username or email already exists";
+        header("Location: staff_edit.php?id=$user_id");
+        exit();
+    }
+
+    if ($change_password) {
+        $new_password = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("UPDATE user SET username = ?, email = ?, role = ?, is_active = ?, password = ? WHERE user_id = ?");
+        $stmt->bind_param("sssisi", $username, $email, $role, $is_active, $new_password, $user_id);
+    } else {
+        $stmt = $conn->prepare("UPDATE user SET username = ?, email = ?, role = ?, is_active = ? WHERE user_id = ?");
+        $stmt->bind_param("sssii", $username, $email, $role, $is_active, $user_id);
+    }
+
+    if ($stmt->execute()) {
+        $_SESSION['message'] = "Staff member updated successfully";
+        header("Location: admin_staff.php");
+    } else {
+        $_SESSION['error'] = "Error updating staff member: " . $conn->error;
+        header("Location: staff_edit.php?id=$user_id");
+    }
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -49,10 +73,10 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Details - <?php echo htmlspecialchars($course['course_name'] ?? 'Course'); ?></title>
+    <title>Edit Staff Member</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="studentstyle.css">
-    <style>
+ <style>
       :root {
             --primary: #7380ec;
             --danger: #ff7782;
@@ -309,86 +333,102 @@ $conn->close();
             margin-bottom: 2rem;
         }
         
-        .detail-item {
-            margin-bottom: 15px;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
         
-        .detail-item strong {
+        .form-group label {
             display: block;
-            color: #7d8da1;
-            font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
         
-        .detail-item p {
-            margin: 0;
-            font-size: 16px;
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 0.4rem;
         }
         
-        .full-width {
-            grid-column: span 2;
+        .checkbox-group {
+            display: flex;
+            align-items: center;
         }
         
-        .back-btn {
+        .checkbox-group input {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.4rem;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            margin-top: 30px;
-            padding: 10px 20px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
             background: #7380ec;
             color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.3s;
+            border: none;
         }
         
-        .back-btn:hover {
-            background: #6572ce;
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
         }
         
-        .back-btn .material-symbols-sharp {
-            margin-right: 8px;
-            font-size: 20px;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background-color: #e3f9e5;
-            color: #429e44;
-        }
-        
-        .status-pending {
-            background-color: #fff3bf;
-            color: #8d6e00;
-        }
-        
-        .status-inactive {
-            background-color: #ffe3e3;
-            color: #cc0000;
+        .btn .material-symbols-sharp {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
         }
 
-        .delete-btn 
-        {
+        .danger{
+            color: #ff7782;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
             display: inline-flex;
             align-items: center;
-            margin-top: 30px;
-            padding: 10px 20px;
-            background:rgb(236, 115, 115);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.4rem;
             font-weight: 500;
-            transition: background 0.3s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background: #e66771;
         }
         
-
+        .alert {
+            padding: 1rem;
+            border-radius: 0.4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+        }
     </style>
 </head>
 <body>
@@ -406,75 +446,85 @@ $conn->close();
 
             <div class="sidebar">
                 <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
-                <a href="#"></a>
-                <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
+                <a></a>
+                <a href="admin_staff.php" class="active"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
-                <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                 <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
-               <a href="admin_report.php"><span class="material-symbols-sharp">description</span><h3>Reports</h3></a>
+                <a href="admin_report.php"><span class="material-symbols-sharp">description</span><h3>Reports</h3></a>
                 <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
             </div>
         </aside>
 
         <div class="profile-content">
             <div class="profile-header">
-                <span class="material-symbols-sharp profile-icon">school</span>
+                <span class="material-symbols-sharp profile-icon">badge</span>
                 <div class="profile-title">
-                    <h1><?php echo htmlspecialchars($course['course_name'] ?? 'Course Name'); ?></h1>
-                    <p>Course Details</p>
+                    <h1>Edit Staff Member</h1>
+                    <p>Update staff information</p>
                 </div>
             </div>
-            
-            <div class="profile-sections">
-                <div class="profile-section">
-                    <h2>Course Information</h2>
-                    <div class="detail-item">
-                        <strong>Course Name</strong>
-                        <p><?php echo htmlspecialchars($course['course_name'] ?? 'N/A'); ?></p>
+
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert error"><?= $_SESSION['error'] ?></div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <div class="profile-section">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" value="<?= htmlspecialchars($staff['username']) ?>" required>
                     </div>
-                    <div class="detail-item">
-                        <strong>Status</strong>
-                        <p>
-                            <span class="status-badge status-<?php echo strtolower(htmlspecialchars($course['status'] ?? 'pending')); ?>">
-                                <?php echo htmlspecialchars($course['status'] ?? 'Pending'); ?>
-                            </span>
-                        </p>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<?= htmlspecialchars($staff['email']) ?>" required>
                     </div>
-                    <div class="detail-item">
-                        <strong>Date Added</strong>
-                        <p><?php echo htmlspecialchars($course['created_at'] ?? 'N/A'); ?></p>
+                    
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select id="role" name="role" required>
+                            <option value="staff" <?= $staff['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
+                            <option value="admin" <?= $staff['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                        </select>
                     </div>
-                </div>
-                
-                <div class="profile-section">
-                    <h2>Course Description</h2>
-                    <div class="detail-item">
-                        <p><?php echo nl2br(htmlspecialchars($course['details'] ?? 'No description provided')); ?></p>
+                    
+                    <div class="form-group">
+                        <label for="new_password">New Password (leave blank to keep current)</label>
+                        <input type="password" id="new_password" name="new_password">
                     </div>
-                </div>
-                <div class="profile-section">
-                    <h2>Delete Course</h2>
-                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone.');">
-                        <div class="delete-confirmation">
-                            <p>Warning: Deleting this course will permanently remove it from the system.</p>
-                            <button type="submit" name="delete_course" class="delete-btn">
-                                <span class="material-symbols-sharp">delete</span>
-                                Delete This Course
-                            </button>
-                        </div>
-                    </form>
-                    <?php if (isset($delete_error)): ?>
-                        <div class="error-message"><?php echo htmlspecialchars($delete_error); ?></div>
-                    <?php endif; ?>
-                </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="is_active" name="is_active" value="1" <?= $staff['is_active'] ? 'checked' : '' ?>>
+                        <label for="is_active">Active</label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-symbols-sharp">save</span>
+                            Save Changes
+                        </button>
+                        <a href="admin_staff.php" class="btn btn-secondary">
+                            <span class="material-symbols-sharp">cancel</span>
+                            Cancel
+                        </a>
+                        <a href="staff_action.php?id=<?= $user_id ?>&action=delete" class="btn btn-danger" onclick="return confirmDelete()">
+                            <span class="material-symbols-sharp">delete</span>
+                            Delete Staff
+                        </a>
+                    </div>
+
+                    <script>
+                        function confirmDelete() {
+                            return confirm('Are you sure you want to delete this staff member? This action cannot be undone.');
+                        }
+                    </script>
+                        </a>
+                    </div>
+                </form>
             </div>
-            
-            
-            <a href="admin_course.php" class="back-btn">
-                <span class="material-symbols-sharp">arrow_back</span>
-                Back to Courses List
-            </a>
         </div>
     </div>
 </body>

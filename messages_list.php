@@ -49,11 +49,11 @@ $students = array_filter($users, function($user) {
 });
 
 if ($current_user['role'] === 'student') {
-    $back_url = 'student_profile.php';
+    $back_url = 'student_main_page.php';
 } elseif ($current_user['role'] === 'tutor') {
-    $back_url = 'tutor_profile.php';
+    $back_url = 'tutor_main_page.php';
 } else {
-    $back_url = 'index.php'; // Default fallback
+    $back_url = 'home_page.html'; // Default fallback
 }
 
 ?>
@@ -64,7 +64,7 @@ if ($current_user['role'] === 'student') {
     <title>Your Messages</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="studentstylesheet">
-     <link rel="stylesheet" href="studentstyle.css">
+    <link rel="stylesheet" href="studentstyle.css">
     <style>
         :root {
             --primary: #2B3990;
@@ -79,22 +79,36 @@ if ($current_user['role'] === 'student') {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Arial', sans-serif;
         }
         
         body {
             display: flex;
+            flex-direction: column;
             min-height: 100vh;
             background-color: var(--light-gray);
+            padding-top: 0; 
         }
         
-        aside {
-            width: 250px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: sticky;
+
+                .main-header {
+            position: fixed;
             top: 0;
-            height: 100vh;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            height: 70px;
+        }
+        
+        
+        .danger {
+            color: #ff4757;
         }
         
         .main-content {
@@ -266,16 +280,63 @@ if ($current_user['role'] === 'student') {
             margin-right: 5px;
             font-size: 20px;
         }
-    </style>
+      </style>
 </head>
-        <div class="top top-corner">
-            <div class="logo compact-logo">
-                <img src="image/logo.png">
-                <h2>PEER<span class="danger">LEARN</span></h2>
-            </div>
-        </div>
 <body>
+    <?php 
+    // Include the appropriate header based on user role
+    if ($current_user['role'] === 'student') {
+        include 'header/stud_head.php';
+    } elseif ($current_user['role'] === 'tutor') {
+        include 'header/tut_head.php';
+    } else {
+        // Default header for admin or other roles if needed
+        include 'header/header.php'; // You might want to create this
+    }
+    ?>
 
+    <script>
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Mobile menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('show');
+        });
+
+        // Avatar upload preview and automatic submission
+        document.getElementById('profile_image_upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewElement = document.getElementById('profile-image-preview');
+                    const placeholderElement = document.getElementById('profile-image-placeholder');
+
+                    if (previewElement) {
+                        // If it is already an image, update src
+                        previewElement.src = e.target.result;
+                    } else if (placeholderElement) {
+                        // If it is a placeholder, replace it with an image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Profile";
+                        img.className = "profile-image";
+                        img.id = "profile-image-preview";
+                        placeholderElement.parentNode.replaceChild(img, placeholderElement);
+                    }
+
+                    // Automatically submit forms
+                    document.getElementById('image-upload-form').submit();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+    </script>
     
     <div class="main-content">
         <div class="message-center-container">
@@ -310,7 +371,7 @@ if ($current_user['role'] === 'student') {
                 <?php if (!empty($tutors)): ?>
                     <div class="user-grid">
                         <?php foreach ($tutors as $tutor): ?>
-                            <a href="student_messages.php?user_id=<?= $tutor['user_id'] ?>" class="user-card">
+                            <a href="messages.php?user_id=<?= $tutor['user_id'] ?>" class="user-card">
                                 <?php if ($tutor['profile_image']): ?>
                                     <img src="<?= htmlspecialchars($tutor['profile_image']) ?>" class="user-avatar" alt="Profile">
                                 <?php else: ?>
@@ -359,13 +420,13 @@ if ($current_user['role'] === 'student') {
             <?php endif; ?>
         </div>
 
-                <div class="message-center-container">
+        <div class="message-center-container">
             <a href="<?php echo $back_url; ?>" class="back-button">
                 <span class="material-symbols-sharp">arrow_back</span>
-                Back to Profile
+                Back to Student Main Page
             </a>
-            
-            
+        </div>
+        
     </div>
 </body>
 </html>

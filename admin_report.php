@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 require_once "db_connection.php";
 
@@ -38,6 +37,365 @@ if ($time_period == 'month') {
 } else {
     $start_date = $current_week_start;
     $end_date = $current_week_end;
+}
+
+// Check if export was requested
+if (isset($_GET['action']) && $_GET['action'] == 'export') {
+    require ('./fpdf186/fpdf.php'); // Adjust path as needed
+    
+    // Create new PDF document
+    $pdf = new FPDF('p','mm',"A4");
+    
+    // Set document information
+    $pdf->SetCreator('PeerLearn Admin');
+    $pdf->SetAuthor('PeerLearn');
+    $pdf->SetTitle('Admin Report - ' . ucfirst($report_type));
+    $pdf->SetSubject('Admin Report');
+    
+    // Add a page
+    $pdf->AddPage();
+    
+    // Set font
+    $pdf->SetFont('helvetica', 'B', 16);
+    $pdf->Cell(0, 10, 'PeerLearn Admin Report', 0, 1, 'C');
+    $pdf->SetFont('helvetica', '', 12);
+    $pdf->Cell(0, 10, 'Report Type: ' . ucfirst(str_replace('_', ' ', $report_type)), 0, 1);
+    $pdf->Cell(0, 10, 'Time Period: ' . ucfirst($time_period), 0, 1);
+    $pdf->Cell(0, 10, 'Generated on: ' . date('Y-m-d H:i:s'), 0, 1);
+    $pdf->Ln(10);
+    
+    // Generate the report content
+    ob_start();
+    switch($report_type) {
+        case 'popular_courses':
+            generatePopularCoursesPDF($conn, $pdf, $start_date, $end_date);
+            break;
+            
+        case 'top_tutors':
+            generateTopTutorsPDF($conn, $pdf);
+            break;
+            
+        case 'reports_received':
+            generateReportsReceivedPDF($conn, $pdf, $start_date, $end_date);
+            break;
+            
+        case 'sessions_completed':
+            generateSessionsCompletedPDF($conn, $pdf, $start_date, $end_date);
+            break;
+    }
+    ob_end_clean();
+    
+    // Output the PDF
+    $pdf->Output('peerlearn_report_' . $report_type . '_' . date('Ymd') . '.pdf', 'D');
+    exit();
+}
+
+// PDF generation functions
+function generatePopularCoursesPDF($conn, $pdf, $start_date, $end_date) {
+    $sql = "SELECT 
+                c.id as course_id,
+                c.course_name,
+                COUNT(s.session_id) as session_count,
+                COUNT(DISTINCT s.student_id) as student_count,
+                GROUP_CONCAT(DISTINCT CONCAT(u1.first_name, ' ', u1.last_name) SEPARATOR ', ') as tutors,
+                GROUP_CONCAT(DISTINCT CONCAT(u2.first_name, ' ', u2.last_name) SEPARATOR ', ') as students
+            FROM 
+                course c
+            JOIN 
+                session s ON c.id = s.course_id
+            JOIN 
+                user u1 ON s.tutor_id = u1.user_id
+            JOIN 
+                user u2 ON s.student_id = u2.user_id
+            WHERE 
+                (s.status = 'completed' OR s.status = 'confirmed')
+                AND s.end_datetime BETWEEN ? AND ?
+            GROUP BY 
+                c.id, c.course_name
+            ORDER BY 
+                session_count DESC
+            LIMIT 10";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $start_date, $end_date);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $pdf->SetFont('helvetica', 'B', 14);
+    $pdf->Cell(0, 10, 'Most Popular Courses', 0, 1);
+    $pdf->SetFont('helvetica', '', 10);
+    
+    if ($result->num_rows > 0) {
+        // Table header
+        $header = array('Rank', 'Course Name', 'Sessions', 'Students', 'Tutors');
+        $w = array(15, 60, 25, 25, 65);
+        
+        // Colors, line width and bold font
+        $pdf->SetFillColor(115, 128, 236);
+        $pdf->SetTextColor(255);
+        $pdf->SetDrawColor(128, 128, 128);
+        $pdf->SetLineWidth(0.3);
+        $pdf->SetFont('', 'B');
+        
+        // Header
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
+        }
+        $pdf->Ln();
+        
+        // Color and font restoration
+        $pdf->SetFillColor(224, 235, 255);
+        $pdf->SetTextColor(0);
+        $pdf->SetFont('');
+        
+        // Data
+        $fill = false;
+        $rank = 1;
+        while ($row = $result->fetch_assoc()) {
+            $pdf->Cell($w[0], 6, $rank, 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[1], 6, $row['course_name'], 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[2], 6, $row['session_count'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[3], 6, $row['student_count'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[4], 6, $row['tutors'], 'LR', 0, 'L', $fill);
+            $pdf->Ln();
+            $fill = !$fill;
+            $rank++;
+        }
+        // Closing line
+        $pdf->Cell(array_sum($w), 0, '', 'T');
+    } else {
+        $pdf->Cell(0, 10, 'No completed sessions in the selected period to determine popular courses.', 0, 1);
+    }
+}
+
+function generateTopTutorsPDF($conn, $pdf) {
+    $sql = "SELECT 
+                u.user_id as user_id, 
+                u.first_name, 
+                u.last_name, 
+                t.rating as avg_rating,
+                t.total_sessions as session_count   
+            FROM 
+                user u
+            JOIN 
+                tutorprofile t ON u.user_id = t.user_id
+            WHERE 
+                t.rating > 0
+            ORDER BY 
+                t.rating DESC
+            LIMIT 10";
+    
+    $result = $conn->query($sql);
+    
+    $pdf->SetFont('helvetica', 'B', 14);
+    $pdf->Cell(0, 10, 'Top Rated Tutors', 0, 1);
+    $pdf->SetFont('helvetica', '', 10);
+    
+    if ($result->num_rows > 0) {
+        // Table header
+        $header = array('Rank', 'Tutor Name', 'Rating', 'Sessions');
+        $w = array(15, 80, 30, 30);
+        
+        // Header styling
+        $pdf->SetFillColor(115, 128, 236);
+        $pdf->SetTextColor(255);
+        $pdf->SetDrawColor(128, 128, 128);
+        $pdf->SetLineWidth(0.3);
+        $pdf->SetFont('', 'B');
+        
+        // Header
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
+        }
+        $pdf->Ln();
+        
+        // Data styling
+        $pdf->SetFillColor(224, 235, 255);
+        $pdf->SetTextColor(0);
+        $pdf->SetFont('');
+        
+        // Data
+        $fill = false;
+        $rank = 1;
+        while ($row = $result->fetch_assoc()) {
+            $pdf->Cell($w[0], 6, $rank, 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[1], 6, $row['first_name'].' '.$row['last_name'], 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[2], 6, number_format($row['avg_rating'], 1).' ★', 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[3], 6, $row['session_count'], 'LR', 0, 'C', $fill);
+            $pdf->Ln();
+            $fill = !$fill;
+            $rank++;
+        }
+        // Closing line
+        $pdf->Cell(array_sum($w), 0, '', 'T');
+    } else {
+        $pdf->Cell(0, 10, 'No tutor ratings available.', 0, 1);
+    }
+}
+
+function generateReportsReceivedPDF($conn, $pdf, $start_date, $end_date) {
+    $sql = "SELECT 
+                r.id as report_id,
+                r.type as report_type,
+                r.description,
+                r.status,
+                r.created_at,
+                r.updated_at,
+                u1.first_name as reporter_first,
+                u1.last_name as reporter_last,
+                u2.first_name as reported_first,
+                u2.last_name as reported_last
+            FROM 
+                reports r
+            JOIN 
+                user u1 ON r.reporter_id = u1.user_id
+            LEFT JOIN 
+                user u2 ON r.reported_id = u2.user_id
+            WHERE 
+                r.created_at BETWEEN ? AND ?
+            ORDER BY 
+                r.created_at DESC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $start_date, $end_date);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $pdf->SetFont('helvetica', 'B', 14);
+    $pdf->Cell(0, 10, 'Reports Received', 0, 1);
+    $pdf->SetFont('helvetica', '', 10);
+    
+    if ($result->num_rows > 0) {
+        // Table header
+        $header = array('ID', 'Type', 'Reporter', 'Reported', 'Status', 'Created');
+        $w = array(15, 30, 50, 50, 25, 30);
+        
+        // Header styling
+        $pdf->SetFillColor(115, 128, 236);
+        $pdf->SetTextColor(255);
+        $pdf->SetDrawColor(128, 128, 128);
+        $pdf->SetLineWidth(0.3);
+        $pdf->SetFont('', 'B');
+        
+        // Header
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
+        }
+        $pdf->Ln();
+        
+        // Data styling
+        $pdf->SetFillColor(224, 235, 255);
+        $pdf->SetTextColor(0);
+        $pdf->SetFont('');
+        
+        // Data
+        $fill = false;
+        while ($row = $result->fetch_assoc()) {
+            $reporter_name = $row['reporter_first'].' '.$row['reporter_last'];
+            $reported_name = ($row['reported_first'] && $row['reported_last']) 
+                ? $row['reported_first'].' '.$row['reported_last']
+                : 'System';
+            $created_at = date('M j, Y', strtotime($row['created_at']));
+            
+            $pdf->Cell($w[0], 6, $row['report_id'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[1], 6, $row['report_type'], 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[2], 6, $reporter_name, 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[3], 6, $reported_name, 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[4], 6, $row['status'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[5], 6, $created_at, 'LR', 0, 'C', $fill);
+            $pdf->Ln();
+            $fill = !$fill;
+        }
+        // Closing line
+        $pdf->Cell(array_sum($w), 0, '', 'T');
+    } else {
+        $pdf->Cell(0, 10, 'No reports received between '.$start_date.' and '.$end_date, 0, 1);
+    }
+}
+
+function generateSessionsCompletedPDF($conn, $pdf, $start_date, $end_date) {
+    $sql = "SELECT 
+                s.session_id,
+                c.course_name,
+                u1.first_name as tutor_first,
+                u1.last_name as tutor_last,
+                u2.first_name as student_first,
+                u2.last_name as student_last,
+                s.start_datetime,
+                s.end_datetime,
+                l.location_name
+            FROM 
+                session s
+            JOIN 
+                course c ON s.course_id = c.id
+            JOIN 
+                user u1 ON s.tutor_id = u1.user_id
+            JOIN 
+                user u2 ON s.student_id = u2.user_id
+            LEFT JOIN
+                location l ON s.location_id = l.location_id
+            WHERE 
+                (s.status = 'completed' OR s.status = 'confirmed')
+                AND s.end_datetime BETWEEN ? AND ?
+            ORDER BY 
+                s.end_datetime DESC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $start_date, $end_date);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $pdf->SetFont('helvetica', 'B', 14);
+    $pdf->Cell(0, 10, 'Sessions Completed', 0, 1);
+    $pdf->SetFont('helvetica', '', 10);
+    
+    if ($result->num_rows > 0) {
+        // Table header
+        $header = array('ID', 'Course', 'Tutor', 'Student', 'Location', 'Start', 'End');
+        $w = array(15, 40, 40, 40, 30, 25, 25);
+        
+        // Header styling
+        $pdf->SetFillColor(115, 128, 236);
+        $pdf->SetTextColor(255);
+        $pdf->SetDrawColor(128, 128, 128);
+        $pdf->SetLineWidth(0.3);
+        $pdf->SetFont('', 'B');
+        
+        // Header
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
+        }
+        $pdf->Ln();
+        
+        // Data styling
+        $pdf->SetFillColor(224, 235, 255);
+        $pdf->SetTextColor(0);
+        $pdf->SetFont('');
+        
+        // Data
+        $fill = false;
+        while ($row = $result->fetch_assoc()) {
+            $tutor_name = $row['tutor_first'].' '.$row['tutor_last'];
+            $student_name = $row['student_first'].' '.$row['student_last'];
+            $start_time = date('M j, g:i A', strtotime($row['start_datetime']));
+            $end_time = date('M j, g:i A', strtotime($row['end_datetime']));
+            $location = $row['location_name'] ? $row['location_name'] : 'Online';
+            
+            $pdf->Cell($w[0], 6, $row['session_id'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[1], 6, $row['course_name'], 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[2], 6, $tutor_name, 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[3], 6, $student_name, 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[4], 6, $location, 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[5], 6, $start_time, 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[6], 6, $end_time, 'LR', 0, 'C', $fill);
+            $pdf->Ln();
+            $fill = !$fill;
+        }
+        // Closing line
+        $pdf->Cell(array_sum($w), 0, '', 'T');
+    } else {
+        $pdf->Cell(0, 10, 'No completed sessions in the selected period.', 0, 1);
+    }
 }
 ?>
 
@@ -99,20 +457,14 @@ if ($time_period == 'month') {
         }
         
         body {
-            width: 100vw;
-            height: 100vh;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.88rem;
-            background: var(--color-background);
-            user-select: none;
-            overflow-x: hidden;
-            color: var(--dark);
+            margin: 0;
+            padding: 0;
         }
         
-        .container {
-            display: grid;
-            width: 96%;
-            margin: 0 auto;
+        
+       .container {
+            width: 100%;
+            margin: 0;
             gap: 1.8rem;
             grid-template-columns: 14rem auto 23rem;
         }
@@ -184,17 +536,22 @@ if ($time_period == 'month') {
         }
 
 
-        aside{
+        aside {
+            width: 210px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
             height: 100vh;
+            margin-left: 0;
+            padding-left: 0;
+            left: 0;
         }
 
-        aside .top{
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 1.4rem;
-            border-radius: 0.4rem;
+
+        aside .top {
+            margin-left: 0;
+            padding-left: 1rem;
         }
 
         aside .logo {
@@ -212,15 +569,11 @@ if ($time_period == 'month') {
         }
 
         /* ======================== Side Bar ================================ */
-        aside .sidebar {
-            background: rgb(255, 255, 255);
-            display: flex;
-            flex-direction: column;
-            height: 86vh;
-            position: relative;
-            top: 3rem;
-            border-radius: 0.4rem;
+       aside .sidebar {
+            margin-left: 0;
+            padding-left: 0;
         }
+
 
         aside h3 {
             font-weight: 500;
@@ -287,6 +640,7 @@ if ($time_period == 'month') {
         /* ========== MAIN CONTENT ========== */
         main {
             margin-top: 1.4rem;
+            margin-left: 6rem;
         }
         
         .report-controls {
@@ -319,6 +673,18 @@ if ($time_period == 'month') {
         
         .report-controls button:hover {
             background: var(--primary-variant);
+        }
+        
+        .export-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 300ms ease;
+        }
+
+        .export-btn:hover {
+            background: #e66772;
         }
         
         .report-results {
@@ -406,6 +772,7 @@ if ($time_period == 'month') {
             <div class="sidebar">
                 <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="#"></a>
+                <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
                 <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
@@ -434,7 +801,8 @@ if ($time_period == 'month') {
                         <option value="month" <?php echo ($time_period == 'month') ? 'selected' : ''; ?>>This Month</option>
                     </select>
                     
-                    <button type="submit">Generate Report</button>
+                    <button type="submit" name="action" value="generate">Generate Report</button>
+                    <button type="submit" name="action" value="export" class="export-btn">Export as PDF</button>
                 </form>
             </div>
             
@@ -592,25 +960,19 @@ function displayTopTutors($conn) {
     }
 }
 
-// Function to display reports received
 function displayReportsReceived($conn, $start_date, $end_date) {
     $sql = "SELECT 
-                r.id as report_id,
-                r.type as report_type,
-                r.description,
-                r.status,
+                r.rating,
+                r.comment,
+                r.is_approved,
+                r.approved_by,
                 r.created_at,
-                r.updated_at,
-                u1.first_name as reporter_first,
-                u1.last_name as reporter_last,
-                u2.first_name as reported_first,
-                u2.last_name as reported_last
+                r.student_id,
+                u.username
             FROM 
-                reports r
+                review r
             JOIN 
-                user u1 ON r.reporter_id = u1.user_id
-            LEFT JOIN 
-                user u2 ON r.reported_id = u2.user_id
+                user u ON r.student_id = u.user_id
             WHERE 
                 r.created_at BETWEEN ? AND ?
             ORDER BY 
@@ -624,38 +986,25 @@ function displayReportsReceived($conn, $start_date, $end_date) {
     if ($result->num_rows > 0) {
         echo "<table>
                 <tr>
-                    <th>Report ID</th>
-                    <th>Type</th>
-                    <th>Reporter</th>
-                    <th>Reported User</th>
-                    <th>Description</th>
-                    <th>Status</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Sent by</th>
                     <th>Created At</th>
-                    <th>Updated At</th>
                 </tr>";
         
         while ($row = $result->fetch_assoc()) {
-            $reporter_name = htmlspecialchars($row['reporter_first']).' '.htmlspecialchars($row['reporter_last']);
-            $reported_name = ($row['reported_first'] && $row['reported_last']) 
-                ? htmlspecialchars($row['reported_first']).' '.htmlspecialchars($row['reported_last'])
-                : 'System';
             $created_at = date('M j, Y g:i A', strtotime($row['created_at']));
-            $updated_at = date('M j, Y g:i A', strtotime($row['updated_at']));
             
             echo "<tr>
-                    <td>".$row['report_id']."</td>
-                    <td>".htmlspecialchars($row['report_type'])."</td>
-                    <td>".$reporter_name."</td>
-                    <td>".$reported_name."</td>
-                    <td>".htmlspecialchars($row['description'])."</td>
-                    <td>".htmlspecialchars($row['status'])."</td>
+                    <td>".htmlspecialchars($row['rating'])."</td>
+                    <td>".htmlspecialchars($row['comment'])."</td>
+                    <td>".htmlspecialchars($row['username'])."</td>
                     <td>".$created_at."</td>
-                    <td>".$updated_at."</td>
                   </tr>";
         }
         echo "</table>";
     } else {
-        echo "<div class='no-data'>No reports received between ".htmlspecialchars($start_date)." and ".htmlspecialchars($end_date)."</div>";
+        echo "<div class='no-data'>No reviews found between ".htmlspecialchars($start_date)." and ".htmlspecialchars($end_date)."</div>";
     }
 }
 

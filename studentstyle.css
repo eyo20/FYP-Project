@@ -8,6 +8,7 @@
     list-style: none;
     box-sizing: border-box;
     border-radius: 0.4rem;
+    
 }
 
 html {
@@ -387,4 +388,59 @@ main .recent-activities a{
 
 .recent-updates .add-course div h3 {
     font-weight: 600;
+}
+
+/* Staff Page Specific Styles */
+.current_staff {
+    width: 100%;
+    padding: 20px;
+}
+
+.staff-search-container {
+    margin: 20px 0;
+}
+
+.staff-search-container form {
+    display: flex;
+    gap: 10px;
+}
+
+.staff-search-container input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+}
+
+.staff-search-container input[type="submit"] {
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.staff-table th, .staff-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.staff-table th {
+    background-color: #f2f2f2;
+}
+
+.edit-btn {
+    padding: 5px 10px;
+    background-color: #2196F3;
+    color: white;
+    text-decoration: none;
+    border-radius: 4；
 }

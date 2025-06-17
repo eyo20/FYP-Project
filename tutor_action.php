@@ -47,8 +47,264 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet">
     <title>Tutor Management System</title>
     <style>
+      :root {
+            --primary: #7380ec;
+            --danger: #ff7782;
+            --success: #41f1b6;
+            --warning: #ffbb55;
+            --white: #fff;
+            --info-dark: #7d8da1;
+            --info-light: #dce1eb;
+            --dark: #363949;
+            --light: rgba(132, 139, 200, 0.18);
+            --primary-variant: #111e88;
+            --dark-variant: #677483;
+            --color-background: #f6f6f9;
+            
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+            
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            
+            --box-shadow: 0 2rem 3rem var(--light);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            outline: 0;
+            appearance: none;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 14px;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        
+       .container {
+            width: 100%;
+            margin: 0;
+            gap: 1.8rem;
+            grid-template-columns: 14rem auto 23rem;
+        }
+        
+
+        a{
+            color: #363949;
+        }
+
+        img {
+            display: block;
+            width: 100%;
+        }
+
+        h1{
+            font-weight: 800;
+            font-size: 1.8rem;
+        }
+
+        h2{
+            font-size: 1.4rem;
+        }
+
+        h3{
+            font-size: 0.87rem;
+        }
+
+        h4{
+            font-size: 0.8rem;
+        }
+
+        h5{
+            font-size: 0.77rem;
+        }
+
+        small {
+            font-size: 0.75rem;
+        }
+
+        .profile-photo{
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .text-muted {
+            color: #dce1eb;
+        }
+
+        p{
+            color:#677483;
+        }
+
+        b{
+            color: #363949;
+        }
+        .primary{
+            color: #7380ec;
+        }
+        .danger{
+            color: #ff7782;
+        }
+        .success{
+            color: #41f1b6;
+        }
+        .warning{
+            color: #ffbb55;
+        }
+
+
+        aside {
+            width: 210px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            margin-left: 0;
+            padding-left: 0;
+            left: 0;
+        }
+
+
+        aside .top {
+            margin-left: 0;
+            padding-left: 1rem;
+        }
+
+        aside .logo {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        aside .logo img{
+            width: 2rem;
+            height: 2rem;
+        }
+
+        aside .close{
+            display: none;
+        }
+
+        /* ======================== Side Bar ================================ */
+       aside .sidebar {
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+
+        aside h3 {
+            font-weight: 500;
+        }
+
+        aside .sidebar a{
+            display: flex;
+            color:  #7d8da1;
+            margin-left: 2rem;
+            gap: 1rem;
+            align-items: center;
+            position: relative;
+            height: 3.7rem;
+            transition: all 300ms ease;
+        }
+
+        aside .sidebar a span{
+            font-size: 1.6rem;
+            transition: all 300ms ease;
+        }
+
+        aside .sidebar  a:last-child{
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+
+        }
+
+        aside .sidebar a.active {
+            background: rgba(132, 139, 200, 0.18);
+            color: #7380ec;
+            margin-left: 0;
+        }
+
+        aside .sidebar a.active:before{
+            content: "";
+            width: 6px;
+            height: 100%;
+            background: #7380ec;
+
+        }
+
+        aside .sidebar a.active span{
+            color: #7380ec;
+            margin-left: calc(1rem -3 px);
+        }
+
+        aside .sidebar a:hover {
+            color: #7380ec;
+        }
+
+        aside .sidebar a:hover span{
+            margin-left: 1rem;
+        }
+
+        aside .sidebar .message-count {
+            background: #ff7782;
+            color: #fff;
+            padding: 2px 10px;
+            font-size: 11px;
+            border-radius: 0.4rem;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .profile-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-icon {
+            font-size: 3rem;
+            margin-right: 1.5rem;
+            color: #7380ec;
+        }
+        
+        .profile-title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .profile-section {
+            background: white;
+            border-radius: 0.8rem;
+            padding: 2rem;
+            box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
         body {
             font-family: poppins, sans-serif;
             margin: 0;
@@ -57,11 +313,13 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
         }
         
         .current_students {
-            padding: 20px;
+            padding: 50px;
             background: white;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin: 20px;
+            margin: 0px;
+            width: 80%;
+            height: 80%;
         }
         
         .tab-container {
@@ -173,9 +431,34 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
             background-color: #dff0d8;
             color: #3c763d;
         }
-    </style>
+        </style>
 </head>
 <body>
+     <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="image/logo.png" alt="PeerLearn Logo">
+                    <h2>PEER<span class="danger">LEARN</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp">close</span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="#"></a>
+                <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
+                <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
+                <a href="admin_tutors.php" class="active"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
+                <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
+               <a href="admin_report.php"><span class="material-symbols-sharp">description</span><h3>Reports</h3></a>
+                <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+            </div>
+        </aside>
+
     <div class="current_students">
         <?php if (!empty($message)): ?>
             <div class="message"><?php echo htmlspecialchars($message); ?></div>

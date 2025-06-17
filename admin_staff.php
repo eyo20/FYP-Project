@@ -1,11 +1,24 @@
+<?php
+session_start();
+// Display messages if they exist
+if (isset($_SESSION['message'])) {
+    echo '<div class="alert success">' . $_SESSION['message'] . '</div>';
+    unset($_SESSION['message']);
+}
+if (isset($_SESSION['error'])) {
+    echo '<div class="alert error">' . $_SESSION['error'] . '</div>';
+    unset($_SESSION['error']);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE-edge">
-    <meta name="viewport" content="width-device-width, initial-scale=1.0">
-    <title>Peer Tutoring Website - Courses</title>
+    <meta name="viewport" content="width-device-width, initial-scale=1.0 ">
+    <title>Peer Tutoring Website</title>
 
     <!--Material Cdn-->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp" rel="stylesheet" />
@@ -254,10 +267,10 @@
             <div class="sidebar">
                 <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
                 <a href="#"></a>
-                <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
+                <a href="admin_staff.php" class="active"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
                 <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
                 <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
-                <a href="admin_course.php" class="active"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
                 <a href="admin_message.php"><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
                 <a href="admin_report.php"><span class="material-symbols-sharp">description</span><h3>Reports</h3></a>
                 <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
@@ -266,108 +279,92 @@
 
         <main>
             <div class="current_students">
-                <h2>Available Courses</h2>
+                <h2>Staff Members</h2>
 
-                 <di style="margin-left: 500px ; padding:100px;"> 
-
-
+                <div> 
                     <form action="" method="GET">
-                        <input type="text" name="my_search" placeholder="Search Courses ...">
+                        <input type="text" name="my_search" placeholder="Search Staff...">
                         <input type="submit" name="search" value="Search">
-
                     </form>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>COURSE NAME</th>
-                            <th>DETAILS</th>
-                            <th>STATUS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        // Database connection
-                        $servername = "localhost";
-                        $username = "root"; 
-                        $password = ""; 
-                        $dbname = "peer_tutoring_platform";
+                
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>USERNAME</th>
+                                <th>EMAIL</th>
+                                <th>ROLE</th>
+                                <th>REGISTRATION DATE</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Database connection
+                            $servername = "localhost";
+                            $username = "root";
+                            $password = ""; 
+                            $dbname = "peer_tutoring_platform";
 
-                        // Create connection
-                        $conn = new mysqli($servername, $username, $password, $dbname);
+                            // Create connection
+                            $conn = new mysqli($servername, $username, $password, $dbname);
 
-                        // Check connection
-                        if ($conn->connect_error) {
-                            die("Connection failed: " . $conn->connect_error);
-                        }
-
-                        $sql = "SELECT * FROM course";
-
-                        if(isset($_GET['search']) && !empty($_GET['my_search']))
-                        {
-                            $search_value = $conn->real_escape_string($_GET['my_search']);
-                            
-                            $sql .= " WHERE course_name LIKE '%$search_value%' 
-                                    OR details LIKE '%$search_value%' 
-                                    OR status LIKE '%$search_value%'";
-                        }
-
-                        $result = $conn->query($sql);
-
-                        if ($result->num_rows > 0) {
-                            // Output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                echo "<tr>
-                                    <td>".htmlspecialchars($row["course_name"])."</td>
-
-                                     <td>
-                                    <a href='course_details.php?id=".$row["id"]."' class='details-btn'>Details</a>
-                                    </td>   
-                                    <th>
-                                        <a>Available</a>
-                                    </th>
-                                </tr>";
+                            // Check connection
+                            if ($conn->connect_error) {
+                                die("Connection failed: " . $conn->connect_error);
                             }
-                        } else {
-                            $no_results_message = isset($_GET['search']) ? 
-                                "No courses found matching '".htmlspecialchars($_GET['my_search'])."'" : 
-                                "No courses found";
-                            echo "<tr><td colspan='4'>$no_results_message</td></tr>";
-                        }
-                        $conn->close();
-                        ?>
-                    </tbody>
+
+                            $sql = "SELECT user_id, username, email, role, created_at, is_active 
+                                    FROM user 
+                                    WHERE role = 'staff' OR role = 'admin'";
+
+                            if(isset($_GET['search']) && !empty($_GET['my_search'])) {
+                                $search_value = $conn->real_escape_string($_GET['my_search']);
+                                
+                                $sql .= " AND (username LIKE '%$search_value%' 
+                                        OR email LIKE '%$search_value%' 
+                                        OR role LIKE '%$search_value%')";
+                            }
+
+                            $result = $conn->query($sql);
+
+                            if ($result->num_rows > 0) {
+                                // Output data of each row
+                                while($row = $result->fetch_assoc()) {
+                                    $status = $row["is_active"] ? "Active" : "Inactive";
+                                    echo "<tr>
+                                        <td>".htmlspecialchars($row["username"])."</td>
+                                        <td>".htmlspecialchars($row["email"])."</td>
+                                        <td>".htmlspecialchars($row["role"])."</td>
+                                        <td>".htmlspecialchars($row["created_at"])."</td>
+                                        <td>".$status."</td>                                    
+                                        <td>
+                                            <a href='staff_edit.php?id=".$row["user_id"]."' class='edit-btn'>Edit</a>
+                                            <a href='staff_action.php?id=".$row["user_id"]."&action=".($row["is_active"]?"deactivate":"activate")."' class='".($row["is_active"]?"deactivate-btn":"activate-btn")."'>".($row["is_active"]?"Deactivate":"Activate")."</a>
+                                        </td>
+                                    </tr>";
+                                }
+                            } else {
+                                $no_results_message = isset($_GET['search']) ? 
+                                    "No staff members found matching '".htmlspecialchars($_GET['my_search'])."'" : 
+                                    "No staff members found";
+                                echo "<tr><td colspan='6'>$no_results_message</td></tr>";
+                            }
+                            $conn->close();
+                            ?>
+                        </tbody>
                 </table>
                 <a href="#">Show All</a>
             </div>
         </main>
-
-        <!-------------------END OF COURSES------------------->
-            
-            <div class="recent-updates">
-                <h2>Add  Course</h2>
-                <div class="updates">
-                    <div class="update">
-                        <span class="material-symbols-sharp">school</span>
-
-                    </div>
-                    <div class="message">
-                        <p>Admin can add course here!</p>
-                        <form action="course_record.php" method="POST">
-                            <div>
-                                <label for="Course">Course:</label>
-                                <input type="text" id="course" name="course_name" placeholder="Enter Course" required>
-                            </div>
-                            <br>
-                            <div>
-                                <input type="reset" value="Reset">
-                            </div>
-
-                            <br>
-                            <div>
-                                <input type="submit" value="Add Course">
-                            </div>
-                        </form>
+<div class="recent-updates">
+    <h2>Staff Management</h2>
+    <div class="updates">
+        <a href="add_staff.php" class="add-staff-btn">
+            <span class="material-symbols-sharp">person_add</span>
+            <span>Add New Staff</span>
+        </a>
     </div>
-    
+</div>
 </body>
 </html>
