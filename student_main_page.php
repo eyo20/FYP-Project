@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Kuala_Lumpur');
 require_once "db_connection.php";
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] != 'student') {
@@ -62,13 +63,12 @@ if ($table_check->num_rows > 0) {
 $upcoming_sessions = [];
 $upcoming_sessions_query = "
     SELECT s.session_id, s.created_at AS session_date, s.status, c.course_name AS subject,
-           u.username AS tutor_name, s.start_datetime
+           u.username AS tutor_name, s.start_datetime, s.end_datetime
     FROM session s
     JOIN user u ON s.tutor_id = u.user_id
     JOIN course c ON s.course_id = c.id
-    WHERE s.student_id = ? AND s.status = 'confirmed'
-    ORDER BY s.start_datetime
-    LIMIT 5";
+    WHERE s.student_id = ? AND s.status = 'confirmed' AND s.end_datetime > NOW()
+    ORDER BY s.start_datetime";
 try {
     $stmt = $conn->prepare($upcoming_sessions_query);
     if ($stmt) {
@@ -151,7 +151,7 @@ $recommended_tutors_query = "
         u.username, 
         u.profile_image,
         u.first_name,
-        GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS subjects,
+        GROUP_CONCAT(DISTINCT c.course_name ORDER BY c.course_name SEPARATOR ', ') AS subjects,
         COALESCE(AVG(r.rating), 0) AS avg_rating
     FROM user u
     JOIN tutorsubject ts ON u.user_id = ts.tutor_id
@@ -458,7 +458,7 @@ $conn->close();
             text-align: center;
             font-size: 0.9rem;
         }
-        . coupling-time .date {
+        .session-time .date {
             font-weight: 600;
             color: var(--primary);
         }
@@ -612,13 +612,13 @@ $conn->close();
                 <p class="action-description">Filter tutors by subject, availability, reviews and book a new session.</p>
                 <a href="find_tutors.php" class="btn">Search Now</a>
             </div>
-            <div class="action-card" onclick="window.location.href='manage_appointment.php'">
+            <div class="action-card" onclick="window.location.href='student_sessions.php'">
                 <div class="action-header">
                     <div class="action-icon">📅</div>
                     <div class="action-title">Manage Appointment</div>
                 </div>
                 <p class="action-description">Manage the booking sessions and view the completed sessions.</p>
-                <a href="manage_appointment.php" class="btn">Manage Now</a>
+                <a href="student_sessions.php" class="btn">Manage Now</a>
             </div>
             <div class="action-card" onclick="window.location.href='messages.php'">
                 <div class="action-header">

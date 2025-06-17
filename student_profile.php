@@ -748,10 +748,6 @@ $conn->close();
                         <div class="info-icon">📱</div>
                         <div class="info-text"><?php echo $phone ? htmlspecialchars($phone) : 'Not Set'; ?></div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-icon">🕒</div>
-                        <div class="info-text">Last login: <?php echo $last_login != 'Never' ? date('M d, Y H:i', strtotime($last_login)) : 'Never'; ?></div>
-                    </div>
                 </div>
             </div>
 
