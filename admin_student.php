@@ -280,7 +280,7 @@ if (isset($_SESSION['error'])) {
 
     <main>
        <div class="current_students">
-                <h2>Available Staff</h2>
+                <h2>Available Students</h2>
 
                 <di style="margin-left: 500px ; padding:100px;"> 
 

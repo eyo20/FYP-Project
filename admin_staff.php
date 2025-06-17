@@ -279,7 +279,7 @@ if (isset($_SESSION['error'])) {
 
         <main>
             <div class="current_students">
-                <h2>Staff Members</h2>
+                <h2>Available Staff</h2>
 
                 <div> 
                     <form action="" method="GET">
