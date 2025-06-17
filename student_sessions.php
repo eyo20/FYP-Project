@@ -12,6 +12,44 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 
 $student_id = $_SESSION['user_id'];
 
+// Auto-update completed sessions
+try {
+    $stmt = $conn->prepare("
+        SELECT session_id, status
+        FROM session
+        WHERE student_id = ? AND end_datetime < NOW() AND status NOT IN ('completed', 'cancelled')
+    ");
+    if ($stmt) {
+        $stmt->bind_param("i", $student_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $sessions_to_update = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (!empty($sessions_to_update)) {
+            $stmt = $conn->prepare("
+                UPDATE session
+                SET status = 'completed'
+                WHERE session_id = ?
+            ");
+            if ($stmt) {
+                foreach ($sessions_to_update as $session) {
+                    $stmt->bind_param("i", $session['session_id']);
+                    $stmt->execute();
+                }
+                $stmt->close();
+                error_log("Auto-updated " . count($sessions_to_update) . " sessions to 'completed' for student_id=$student_id");
+            } else {
+                error_log("Failed to prepare update statement: " . $conn->error);
+            }
+        }
+    } else {
+        error_log("Failed to prepare select statement for auto-update: " . $conn->error);
+    }
+} catch (Exception $e) {
+    error_log("Error in auto-update logic: " . $e->getMessage());
+}
+
 // Retrieve session messages
 $success_message = isset($_SESSION['success']) ? $_SESSION['success'] : '';
 $error_message = isset($_SESSION['error']) ? $_SESSION['error'] : '';
@@ -274,13 +312,13 @@ try {
 }
 
 // Get tutor details
-$tutor_details = [];
-if (!empty($tutor_stats)) {
-    try {
-        $tutor_ids = array_keys($tutor_stats);
-        $placeholders = implode(',', array_fill(0, count($tutor_ids), '?'));
+        $tutor_details = [];
+        if (!empty($tutor_stats)) {
+            try {
+                $tutor_ids = array_keys($tutor_stats);
+                $placeholders = implode(',', array_fill(0, count($tutor_ids), '?'));
         $stmt = $conn->prepare("
-            SELECT user_id, major, tutor_id
+            SELECT user_id, major
             FROM tutorprofile
             WHERE user_id IN ($placeholders)
         ");

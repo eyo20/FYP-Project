@@ -158,6 +158,13 @@ if (!$tutorResult) {
         .btn:hover {
             background-color: #b3c300;
         }
+
+        /* 确保占位符显示 */
+        .form-control::placeholder {
+            color: #6c757d !important;
+            opacity: 1 !important;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -171,15 +178,15 @@ if (!$tutorResult) {
 
         <!-- Filter Section -->
         <div class="filter-section">
-            <form method="GET" action="find_tutors.php" class="row">
+            <form method="GET" action="find_tutors.php" class="row align-items-end">
                 <div class="col-md-3 mb-3">
-                    <label for="search_name">Tutor Name</label>
-                    <input type="text" class="form-control" id="search_name" name="search_name"
-                        value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Search by name">
+                    <label for="search_name" class="form-label">Tutor Name</label>
+                    <input type="text" class="form-control" id="search_name" name="search_name "
+                        value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Enter tutor name" style="width: 100%;height:55px ;">
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label for="course">Course</label>
-                    <select class="form-control" id="course" name="course">
+                    <label for="course" class="form-label">Course</label>
+                    <select class="form-control" id="course" name="course" style="width: 100%;height:55px ;">
                         <option value="0">All Courses</option>
                         <?php mysqli_data_seek($courseResult, 0); ?>
                         <?php while ($course = mysqli_fetch_assoc($courseResult)): ?>
@@ -191,8 +198,8 @@ if (!$tutorResult) {
                     </select>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label for="rating">Minimum Rating</label>
-                    <select class="form-control" id="rating" name="rating">
+                    <label for="rating" class="form-label">Minimum Rating</label>
+                    <select class="form-control" id="rating" name="rating" style="width: 100%;height:55px ;">
                         <option value="0" <?php echo ($ratingFilter == 0) ? 'selected' : ''; ?>>Any Rating</option>
                         <option value="5" <?php echo ($ratingFilter == 5) ? 'selected' : ''; ?>>5 Stars</option>
                         <option value="4" <?php echo ($ratingFilter == 4) ? 'selected' : ''; ?>>4+ Stars</option>
@@ -200,8 +207,8 @@ if (!$tutorResult) {
                         <option value="2" <?php echo ($ratingFilter == 2) ? 'selected' : ''; ?>>2+ Stars</option>
                     </select>
                 </div>
-                <div class="col-md-1 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                <div class="col-md-2 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">Filter</button>
                 </div>
             </form>
         </div>
@@ -212,24 +219,24 @@ if (!$tutorResult) {
                 <?php while ($tutor = mysqli_fetch_assoc($tutorResult)): ?>
                     <div class="col-md-6">
                         <div class="card tutor-card">
-                            <div class="card-body">
-                                <div class="row">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
                                     <div class="col-md-4 text-center">
                                         <?php if (!empty($tutor['profile_image']) && file_exists($tutor['profile_image'])): ?>
-                                            <img src="<?php echo htmlspecialchars($tutor['profile_image']); ?>" alt="Profile" class="profile-img">
+                                            <img src="<?php echo htmlspecialchars($tutor['profile_image']); ?>" alt="Profile" class="profile-img shadow-sm">
                                         <?php else: ?>
-                                            <img src="Uploads/profile_images/default.jpg" alt="Default Profile" class="profile-img">
+                                            <img src="Uploads/profile_images/default.jpg" alt="Default Profile" class="profile-img shadow-sm">
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5 class="card-title">
+                                        <h5 class="card-title mb-2">
                                             <?php echo htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']); ?>
                                             <?php if ($tutor['is_verified']): ?>
-                                                <span class="verified-badge" title="Verified Tutor"><i class="fas fa-check-circle"></i></span>
+                                                <span class="verified-badge ms-2" title="Verified Tutor"><i class="fas fa-check-circle"></i></span>
                                             <?php endif; ?>
                                         </h5>
 
-                                        <div class="rating-stars mb-2">
+                                        <div class="rating-stars mb-3">
                                             <?php
                                             $rating = (float)$tutor['rating'];
                                             for ($i = 1; $i <= 5; $i++) {
@@ -246,7 +253,6 @@ if (!$tutorResult) {
                                         </div>
 
                                         <?php
-                                        // Get tutor's courses
                                         $tutorId = $tutor['user_id'];
                                         $coursesQuery = "SELECT c.course_name, ts.hourly_rate 
                                                         FROM tutorsubject ts 
@@ -260,7 +266,7 @@ if (!$tutorResult) {
 
                                             if ($coursesResult->num_rows > 0):
                                         ?>
-                                                <p class="card-text"><strong>Courses:</strong>
+                                                <p class="card-text mb-2"><strong>Courses:</strong>
                                                     <?php
                                                     $courses = [];
                                                     while ($course = $coursesResult->fetch_assoc()) {
@@ -277,13 +283,9 @@ if (!$tutorResult) {
                                         }
                                         ?>
 
-                                        <?php if (!empty($tutor['bio'])): ?>
-                                            <p class="card-text text-truncate"><?php echo htmlspecialchars($tutor['bio']); ?></p>
-                                        <?php endif; ?>
+                
 
-                                        <div class="mt-3">
-                                            <!-- <a href="booking.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-outline-primary btn-sm">View Profile</a>-->
-                                            <!-- <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">Book Session</a>  -->
+                                        <div class="d-flex gap-2">
                                             <a href="appointments.php?tutor_id=<?php echo $tutor['user_id']; ?>" class="btn btn-primary btn-sm">View Profile</a>
                                         </div>
                                     </div>
@@ -302,9 +304,9 @@ if (!$tutorResult) {
         </div>
     </div>
 
-    <footerx`>
+    <footer class="text-center mt-4">
         <p>&copy; 2025 PeerLearn - Peer Tutoring Platform. All rights reserved.</p>
-        </footer>
+    </footer>
 
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
