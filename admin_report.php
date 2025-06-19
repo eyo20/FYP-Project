@@ -41,10 +41,10 @@ if ($time_period == 'month') {
 
 // Check if export was requested
 if (isset($_GET['action']) && $_GET['action'] == 'export') {
-    require ('./fpdf186/fpdf.php'); // Adjust path as needed
+    require ('./fpd186/fpdf.php'); // Adjust path as needed
     
     // Create new PDF document
-    $pdf = new FPDF('p','mm',"A4");
+    $pdf = new FPDF('L','mm',"A4");
     
     // Set document information
     $pdf->SetCreator('PeerLearn Admin');
@@ -235,22 +235,17 @@ function generateTopTutorsPDF($conn, $pdf) {
 
 function generateReportsReceivedPDF($conn, $pdf, $start_date, $end_date) {
     $sql = "SELECT 
-                r.id as report_id,
-                r.type as report_type,
-                r.description,
-                r.status,
+                r.rating,
+                r.comment,
+                r.is_approved,
+                r.approved_by,
                 r.created_at,
-                r.updated_at,
-                u1.first_name as reporter_first,
-                u1.last_name as reporter_last,
-                u2.first_name as reported_first,
-                u2.last_name as reported_last
+                r.student_id,
+                u.username
             FROM 
-                reports r
+                review r
             JOIN 
-                user u1 ON r.reporter_id = u1.user_id
-            LEFT JOIN 
-                user u2 ON r.reported_id = u2.user_id
+                user u ON r.student_id = u.user_id
             WHERE 
                 r.created_at BETWEEN ? AND ?
             ORDER BY 
@@ -261,23 +256,27 @@ function generateReportsReceivedPDF($conn, $pdf, $start_date, $end_date) {
     $stmt->execute();
     $result = $stmt->get_result();
     
+    // Set up PDF document
     $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Reports Received', 0, 1);
+    $pdf->Cell(0, 10, 'Reviews Received', 0, 1, 'C');
     $pdf->SetFont('helvetica', '', 10);
     
+    // Check if there are results
     if ($result->num_rows > 0) {
-        // Table header
-        $header = array('ID', 'Type', 'Reporter', 'Reported', 'Status', 'Created');
-        $w = array(15, 30, 50, 50, 25, 30);
-        
-        // Header styling
-        $pdf->SetFillColor(115, 128, 236);
-        $pdf->SetTextColor(255);
-        $pdf->SetDrawColor(128, 128, 128);
-        $pdf->SetLineWidth(0.3);
-        $pdf->SetFont('', 'B');
-        
+        // Define column widths
+        $w = array(25, 20, 40, 50); // Adjust these values as needed
+         $totalWidth = array_sum($w);
+
+        $pageWidth = $pdf->GetPageWidth();
+        $leftMargin = ($pageWidth - $totalWidth) / 2;
+        $pdf->SetLeftMargin($leftMargin);
+
         // Header
+        $header = array('Student', 'Rating', 'Comment', 'Date');
+        $pdf->SetFillColor(200, 220, 255);
+        $pdf->SetTextColor(0);
+        $pdf->SetFont('helvetica', 'B');
+        
         for($i = 0; $i < count($header); $i++) {
             $pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
         }
@@ -286,30 +285,28 @@ function generateReportsReceivedPDF($conn, $pdf, $start_date, $end_date) {
         // Data styling
         $pdf->SetFillColor(224, 235, 255);
         $pdf->SetTextColor(0);
-        $pdf->SetFont('');
+        $pdf->SetFont('helvetica', '');
         
-        // Data
+        // Data rows
         $fill = false;
         while ($row = $result->fetch_assoc()) {
-            $reporter_name = $row['reporter_first'].' '.$row['reporter_last'];
-            $reported_name = ($row['reported_first'] && $row['reported_last']) 
-                ? $row['reported_first'].' '.$row['reported_last']
-                : 'System';
-            $created_at = date('M j, Y', strtotime($row['created_at']));
+            // Format the data for display
+            $status = $row['is_approved'] ? 'Approved' : 'Pending';
+            $date = date('Y-m-d H:i', strtotime($row['created_at']));
             
-            $pdf->Cell($w[0], 6, $row['report_id'], 'LR', 0, 'C', $fill);
-            $pdf->Cell($w[1], 6, $row['report_type'], 'LR', 0, 'L', $fill);
-            $pdf->Cell($w[2], 6, $reporter_name, 'LR', 0, 'L', $fill);
-            $pdf->Cell($w[3], 6, $reported_name, 'LR', 0, 'L', $fill);
-            $pdf->Cell($w[4], 6, $row['status'], 'LR', 0, 'C', $fill);
-            $pdf->Cell($w[5], 6, $created_at, 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[0], 6, $row['username'], 'LR', 0, 'L', $fill);
+            $pdf->Cell($w[1], 6, $row['rating'], 'LR', 0, 'C', $fill);
+            $pdf->Cell($w[2], 6, substr($row['comment'], 0, 50), 'LR', 0, 'L', $fill); // Limit comment length
+            $pdf->Cell($w[3], 6, $date, 'LR', 0, 'C', $fill);
             $pdf->Ln();
+            
             $fill = !$fill;
         }
+        
         // Closing line
         $pdf->Cell(array_sum($w), 0, '', 'T');
     } else {
-        $pdf->Cell(0, 10, 'No reports received between '.$start_date.' and '.$end_date, 0, 1);
+        $pdf->Cell(0, 10, 'No reviews received between '.$start_date.' and '.$end_date, 0, 1, 'C');
     }
 }
 
@@ -350,9 +347,9 @@ function generateSessionsCompletedPDF($conn, $pdf, $start_date, $end_date) {
     $pdf->SetFont('helvetica', '', 10);
     
     if ($result->num_rows > 0) {
-        // Table header
+        // Table header (Edit the Table Column here)
         $header = array('ID', 'Course', 'Tutor', 'Student', 'Location', 'Start', 'End');
-        $w = array(15, 40, 40, 40, 30, 25, 25);
+        $w = array(15,60, 40, 40, 50, 35, 35);
         
         // Header styling
         $pdf->SetFillColor(115, 128, 236);
