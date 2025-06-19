@@ -25,18 +25,19 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     $user_id = $conn->real_escape_string($_GET['id']);
     
     // Get tutor information and credentials in one query
-    $sql = "SELECT sp.*, u.username, u.email, u.phone, 
-                   cf.file_id, cf.file_name, cf.file_path, cf.file_type, 
-                   cf.upload_date, cf.status, cf.is_verified, cf.rejection_reason
-            FROM tutorprofile sp
-            JOIN user u ON sp.user_id = u.user_id
-            LEFT JOIN credential_file cf ON sp.user_id = cf.user_id
-            WHERE sp.user_id = '$user_id'
-            ORDER BY 
-                CASE WHEN cf.status = 'approved' THEN 0 
-                     WHEN cf.status = 'pending' THEN 1
-                     ELSE 2 END,
-                cf.upload_date DESC";   
+    $sql = "SELECT sp.*, u.username, u.email, u.phone,
+               sp.is_verified as tutor_is_verified,
+               cf.file_id, cf.file_name, cf.file_path, cf.file_type, 
+               cf.upload_date, cf.status, cf.is_verified, cf.rejection_reason
+        FROM tutorprofile sp
+        JOIN user u ON sp.user_id = u.user_id
+        LEFT JOIN credential_file cf ON sp.user_id = cf.user_id
+        WHERE sp.user_id = '$user_id'
+        ORDER BY 
+            CASE WHEN cf.status = 'approved' THEN 0 
+                 WHEN cf.status = 'pending' THEN 1
+                 ELSE 2 END,
+            cf.upload_date DESC";  
     
     $result = $conn->query($sql);
     
@@ -51,7 +52,8 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
                     'year' => $row['year'],
                     'program' => $row['program'],
                     'major' => $row['major'],
-                    'rating' => $row['rating']
+                    'rating' => $row['rating'],
+                    'is_verified' => $row['tutor_is_verified'] // Changed from is_verify to is_verified
                 );
             }
             if (!empty($row['file_id'])) {
@@ -351,6 +353,8 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             margin: 0;
             font-size: 16px;
         }
+
+        .detail-item .status
         
         .full-width {
             grid-column: span 2;
@@ -486,6 +490,15 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             border-radius: 4px;
             font-size: 14px;
         }
+         .verified {
+        color: green;
+        font-weight: bold;
+         }
+    
+        .not-verified {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -539,6 +552,18 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
                             <strong>Major</strong>
                             <p><?php echo !empty($tutor['major']) ? htmlspecialchars($tutor['major']) : 'N/A'; ?></p>
                         </div>
+                    <div class="detail-item">
+                        <strong>Status</strong>
+                        <p style="<?php echo isset($tutor['is_verified']) && $tutor['is_verified'] == 1 ? 'color: green;' : 'color: red;'; ?> font-weight: bold;">
+                            <?php
+                            if (isset($tutor['is_verified'])) {
+                                echo $tutor['is_verified'] == 1 ? 'Verified' : 'Not Verified';
+                            } else {
+                                echo 'Not Verified';
+                            }
+                            ?>
+                        </p>
+                    </div>
                     </div>
                     
                     <div class="profile-section">

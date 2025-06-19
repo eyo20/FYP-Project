@@ -21,9 +21,10 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
     
     if ($tutor_id > 0 && in_array($action, ['approve', 'reject'])) {
         if ($action === 'approve') {
-            $sql = "UPDATE tutorprofile SET status = 'approved' WHERE user_id = ?";
+            // Update both status and is_verify when approving
+            $sql = "UPDATE tutorprofile SET status = 'approved', is_verified = 1 WHERE user_id = ?";
         } elseif ($action === 'reject') {
-            $sql = "UPDATE tutorprofile SET status = 'rejected' WHERE user_id = ?";
+            $sql = "UPDATE tutorprofile SET status = 'rejected', is_verified = 0 WHERE user_id = ?";
         }
         
         $stmt = $conn->prepare($sql);
@@ -41,6 +42,7 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
