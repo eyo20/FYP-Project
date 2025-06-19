@@ -615,7 +615,7 @@ $conn->close();
             <div class="action-card" onclick="window.location.href='student_sessions.php'">
                 <div class="action-header">
                     <div class="action-icon">📅</div>
-                    <div class="action-title">Manage Appointment</div>
+                    <div class="action-title">Manage Session</div>
                 </div>
                 <p class="action-description">Manage the booking sessions and view the completed sessions.</p>
                 <a href="student_sessions.php" class="btn">Manage Now</a>
@@ -693,7 +693,7 @@ $conn->close();
                             }
                             ?>
                         </p>
-                        <a href="find_tutors.php?tutor_id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
+                        <a href="appointments.php?tutor_id=<?php echo $tutor['tutor_id']; ?>" class="btn">View Profile</a>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>

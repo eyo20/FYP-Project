@@ -8,14 +8,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Get all messages (both sent and received by admin)
+// Initialize filter variables
+$filter_user_id = '';
+$filter_condition = '';
+
+// Handle message filter if user is selected
+if (isset($_GET['filter_user']) && !empty($_GET['filter_user'])) {
+    $filter_user_id = $conn->real_escape_string($_GET['filter_user']);
+    $filter_condition = " AND (m.sender_id = '$filter_user_id' OR m.receiver_id = '$filter_user_id')";
+}
+
+// Get all messages (both sent and received by admin) with optional filter
 $query = "SELECT m.*, 
                  sender.username AS sender_name,
                  receiver.username AS receiver_name
           FROM message m
           JOIN user sender ON m.sender_id = sender.user_id
           JOIN user receiver ON m.receiver_id = receiver.user_id
-          WHERE m.sender_id = ? OR m.receiver_id = ?
+          WHERE (m.sender_id = ? OR m.receiver_id = ?)
+          $filter_condition
           ORDER BY m.sent_datetime DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("ii", $_SESSION['user_id'], $_SESSION['user_id']);
@@ -39,6 +50,14 @@ if (!empty($messages)) {
         $stmt->close();
     }
 }
+
+// Get all users for the filter dropdown and recipient dropdown
+$users_query = "SELECT user_id, username, role FROM user WHERE user_id != ? ORDER BY role, username";
+$stmt = $conn->prepare($users_query);
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 // Handle message deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_message'])) {
@@ -68,6 +87,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_message'])) {
         exit();
     }
 }
+
+    $search_term = '';
+$filtered_users = [];
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['search_recipient'])) {
+    $search_term = trim($_POST['search_recipient']);
+    
+    // Get filtered users based on search
+    $search_query = "SELECT user_id, username, role FROM user 
+                    WHERE user_id != ? AND (username LIKE ? OR role LIKE ?)
+                    ORDER BY role, username";
+    $stmt = $conn->prepare($search_query);
+    $search_param = "%$search_term%";
+    $stmt->bind_param("iss", $_SESSION['user_id'], $search_param, $search_param);
+    $stmt->execute();
+    $filtered_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+// Keep your original users query for when there's no search
+$users_query = "SELECT user_id, username, role FROM user WHERE user_id != ? ORDER BY role, username";
+$stmt = $conn->prepare($users_query);
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 // Get all users for the recipient dropdown
 $users_query = "SELECT user_id, username, role FROM user WHERE user_id != ? ORDER BY role, username";
@@ -266,6 +311,54 @@ $conn->close();
         .message-actions {
             text-align: right;
         }
+
+        .btn-search {
+            background-color: #6c757d;
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-search:hover {
+            background-color: #5a6268;
+        }
+
+        .message-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message-filter label {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .message-filter select {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .btn-filter {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 15px;
+        }
+        
+        .btn-filter:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-clear {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-clear:hover {
+            background-color: #e9ecef;
+        }
     </style>
 </head>
 <body>
@@ -296,11 +389,30 @@ $conn->close();
     <div class="main-content">
         <div class="message-center-container">
             <h1>Message Center</h1>
+
+
             
             <div class="message-container">
                 <div class="message-list">
                     <h2>Your Messages</h2>
                     
+                     <form method="GET" class="message-filter">
+                            <select name="filter_user" id="filter_user">
+                                <option value="">Filter by user...</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?php echo $user['user_id']; ?>" 
+                                        <?php echo ($filter_user_id == $user['user_id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($user['username']); ?>
+                                        (<?php echo ucfirst($user['role']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="submit" class="btn btn-filter">Filter</button>
+                            <?php if (!empty($filter_user_id)): ?>
+                                <a href="admin_message.php" class="btn btn-clear">Clear</a>
+                            <?php endif; ?>
+                        </form>
+                 
                     <?php if (empty($messages)): ?>
                         <div class="no-messages">
                             <p>No messages found.</p>
@@ -334,33 +446,36 @@ $conn->close();
                     <?php endif; ?>
                 </div>
                 
-                <div class="message-compose">
-                    <h2>Compose New Message</h2>
-                    
-                    <form method="POST">
-                        <div class="form-group">
-                            <label for="receiver_id">Recipient:</label>
-                            <select name="receiver_id" id="receiver_id" required>
-                                <option value="">Select a recipient</option>
-                                <?php foreach ($users as $user): ?>
-                                    <option value="<?php echo $user['user_id']; ?>">
-                                        <?php echo htmlspecialchars($user['username']); ?>
-                                        <span class="role-badge <?php echo strtolower($user['role']); ?>-badge">
-                                            <?php echo ucfirst($user['role']); ?>
-                                        </span>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="content">Message:</label>
-                            <textarea name="content" id="content" required placeholder="Type your message here..."></textarea>
-                        </div>
-                        
-                        <button type="submit" name="send_message" class="btn btn-send">Send Message</button>
-                    </form>
-                </div>
+                
+       <div class="message-compose">
+    <h2>Compose New Message</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            
+            <label for="receiver_id" style="margin-top: 15px;">Select Recipient:</label>
+            <select name="receiver_id" id="receiver_id" required>
+                <option value="">Select a recipient</option>
+                <?php foreach ($users as $user): ?>
+                    <option value="<?php echo $user['user_id']; ?>">
+                        <?php echo htmlspecialchars($user['username']); ?>
+                        <span class="role-badge <?php echo strtolower($user['role']); ?>-badge">
+                            (<?php echo ucfirst($user['role']); ?>)
+                        </span>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="content">Message:</label>
+            <textarea name="content" id="content" required placeholder="Type your message here..."></textarea>
+        </div>
+        
+        <button type="submit" name="send_message" class="btn btn-send">Send Message</button>
+    </form>
+</div>
+
             </div>
         </div>
     </div>

@@ -2489,4 +2489,501 @@
 [16-Jun-2025 21:01:05 Asia/Kuala_Lumpur] Processing for user_id: 26
 [17-Jun-2025 23:57:01 Asia/Kuala_Lumpur] Processing for user_id: 16
 [17-Jun-2025 23:57:42 Asia/Kuala_Lumpur] Processing for user_id: 16
+<<<<<<< HEAD
 [19-Jun-2025 16:11:26 Europe/Berlin] Processing for user_id: 16
+=======
+[18-Jun-2025 23:31:38 Europe/Berlin] Processing for user_id: 16
+[18-Jun-2025 23:31:52 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Degree first year
+    [bio] => hello
+    [qualifications] => 1
+)
+
+[18-Jun-2025 23:31:52 Europe/Berlin] FILES data received: Array
+(
+)
+
+[18-Jun-2025 23:31:52 Europe/Berlin] Processing for user_id: 16
+[18-Jun-2025 23:31:52 Europe/Berlin] POST request received at 2025-06-18 23:31:52 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Computer Science
+    [year] => Degree first year
+    [bio] => hello
+    [qualifications] => 1
+)
+ | FILES: No FILES data
+[18-Jun-2025 23:31:52 Europe/Berlin] Processing profile update for user_id: 16
+[18-Jun-2025 23:31:52 Europe/Berlin] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
+[18-Jun-2025 23:31:52 Europe/Berlin] Tutor profile updated/inserted for user_id: 16
+[18-Jun-2025 23:31:52 Europe/Berlin] Processing for user_id: 16
+[19-Jun-2025 00:16:11 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:19:30 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => yun
+    [last_name] => hin
+    [phone] => 0127770231
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+
+)
+
+[19-Jun-2025 00:19:30 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:19:30 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:19:30 Europe/Berlin] POST request received at 2025-06-19 00:19:30 for user_id: 27 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => yun
+    [last_name] => hin
+    [phone] => 0127770231
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:19:30 Europe/Berlin] Processing profile update for user_id: 27
+[19-Jun-2025 00:19:30 Europe/Berlin] Before user update for user_id: 27, first_name: yun, last_name: hin, phone: 0127770231
+[19-Jun-2025 00:19:30 Europe/Berlin] Phone already in use!
+[19-Jun-2025 00:19:30 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:20:09 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+
+)
+
+[19-Jun-2025 00:20:09 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:20:09 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:20:09 Europe/Berlin] POST request received at 2025-06-19 00:20:09 for user_id: 27 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:20:09 Europe/Berlin] Processing profile update for user_id: 27
+[19-Jun-2025 00:20:09 Europe/Berlin] Before user update for user_id: 27, first_name: chong, last_name: hin, phone: 0127770233
+[19-Jun-2025 00:20:09 Europe/Berlin] Tutor profile updated/inserted for user_id: 27
+[19-Jun-2025 00:20:09 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:21:26 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+)
+
+[19-Jun-2025 00:21:26 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:21:26 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:21:26 Europe/Berlin] POST request received at 2025-06-19 00:21:26 for user_id: 27 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => artificial intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:21:26 Europe/Berlin] Processing profile update for user_id: 27
+[19-Jun-2025 00:21:26 Europe/Berlin] Before user update for user_id: 27, first_name: chong, last_name: hin, phone: 0127770233
+[19-Jun-2025 00:21:26 Europe/Berlin] Tutor profile updated/inserted for user_id: 27
+[19-Jun-2025 00:21:26 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:22:12 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 4
+    [hourly_rate] => 40
+)
+
+[19-Jun-2025 00:22:12 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:22:12 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:22:12 Europe/Berlin] POST request received at 2025-06-19 00:22:12 for user_id: 27 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 4
+    [hourly_rate] => 40
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:22:12 Europe/Berlin] Processing add course
+[19-Jun-2025 00:22:12 Europe/Berlin] User ID: 27, Course ID: 4, Hourly Rate: 40
+[19-Jun-2025 00:22:12 Europe/Berlin] Course added successfully for user ID: 27, course_id: 4
+[19-Jun-2025 00:22:12 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:22:31 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 7
+    [hourly_rate] => 30
+)
+
+[19-Jun-2025 00:22:31 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:22:31 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:22:31 Europe/Berlin] POST request received at 2025-06-19 00:22:31 for user_id: 27 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 7
+    [hourly_rate] => 30
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:22:31 Europe/Berlin] Processing add course
+[19-Jun-2025 00:22:31 Europe/Berlin] User ID: 27, Course ID: 7, Hourly Rate: 30
+[19-Jun-2025 00:22:31 Europe/Berlin] Course added successfully for user ID: 27, course_id: 7
+[19-Jun-2025 00:22:31 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:54:22 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:54:30 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 2
+    [hourly_rate] => 35
+)
+
+[19-Jun-2025 00:54:30 Europe/Berlin] FILES data received: Array
+(
+)
+
+[19-Jun-2025 00:54:30 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 00:54:30 Europe/Berlin] POST request received at 2025-06-19 00:54:30 for user_id: 27 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 2
+    [hourly_rate] => 35
+)
+ | FILES: No FILES data
+[19-Jun-2025 00:54:30 Europe/Berlin] Processing add course
+[19-Jun-2025 00:54:30 Europe/Berlin] User ID: 27, Course ID: 2, Hourly Rate: 35
+[19-Jun-2025 00:54:30 Europe/Berlin] Course added successfully for user ID: 27, course_id: 2
+[19-Jun-2025 00:54:30 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:23:47 Europe/Berlin] Processing for user_id: 16
+[19-Jun-2025 01:23:56 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:25:40 Europe/Berlin] POST data received: Array
+(
+)
+
+[19-Jun-2025 01:25:40 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Chihuahua.jpg
+            [full_path] => Chihuahua.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpE359.tmp
+            [error] => 0
+            [size] => 111260
+        )
+
+)
+
+[19-Jun-2025 01:25:40 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:25:40 Europe/Berlin] POST request received at 2025-06-19 01:25:40 for user_id: 27 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Chihuahua.jpg
+            [full_path] => Chihuahua.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpE359.tmp
+            [error] => 0
+            [size] => 111260
+        )
+
+)
+
+[19-Jun-2025 01:25:40 Europe/Berlin] Processing profile image upload for user ID: 27
+[19-Jun-2025 01:25:40 Europe/Berlin] Profile image updated for user ID: 27, file: Uploads/profile_images/27_1750289140_Chihuahua.jpg
+[19-Jun-2025 01:25:40 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:29 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:36 Europe/Berlin] POST data received: Array
+(
+)
+
+[19-Jun-2025 01:27:36 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => puppy.jpeg
+            [full_path] => puppy.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpA9A3.tmp
+            [error] => 0
+            [size] => 4898
+        )
+
+)
+
+[19-Jun-2025 01:27:36 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:36 Europe/Berlin] POST request received at 2025-06-19 01:27:36 for user_id: 27 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => puppy.jpeg
+            [full_path] => puppy.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpA9A3.tmp
+            [error] => 0
+            [size] => 4898
+        )
+
+)
+
+[19-Jun-2025 01:27:36 Europe/Berlin] Processing profile image upload for user ID: 27
+[19-Jun-2025 01:27:36 Europe/Berlin] Old profile image deleted: Uploads/profile_images/27_1750289140_Chihuahua.jpg
+[19-Jun-2025 01:27:36 Europe/Berlin] Profile image updated for user ID: 27, file: Uploads/profile_images/27_1750289256_puppy.jpeg
+[19-Jun-2025 01:27:36 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:41 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:45 Europe/Berlin] POST data received: Array
+(
+)
+
+[19-Jun-2025 01:27:45 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Chihuahua.jpg
+            [full_path] => Chihuahua.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpCAD8.tmp
+            [error] => 0
+            [size] => 111260
+        )
+
+)
+
+[19-Jun-2025 01:27:45 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:27:45 Europe/Berlin] POST request received at 2025-06-19 01:27:45 for user_id: 27 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => Chihuahua.jpg
+            [full_path] => Chihuahua.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpCAD8.tmp
+            [error] => 0
+            [size] => 111260
+        )
+
+)
+
+[19-Jun-2025 01:27:45 Europe/Berlin] Processing profile image upload for user ID: 27
+[19-Jun-2025 01:27:45 Europe/Berlin] Old profile image deleted: Uploads/profile_images/27_1750289256_puppy.jpeg
+[19-Jun-2025 01:27:45 Europe/Berlin] Profile image updated for user ID: 27, file: Uploads/profile_images/27_1750289265_Chihuahua.jpg
+[19-Jun-2025 01:27:45 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 01:59:47 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 03:09:09 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 03:09:21 Europe/Berlin] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[19-Jun-2025 03:09:21 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 1231203070_ONG ENYONG_AWS-Lab4.pdf
+            [full_path] => 1231203070_ONG ENYONG_AWS-Lab4.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\phpCF97.tmp
+            [error] => 0
+            [size] => 1236078
+        )
+
+)
+
+[19-Jun-2025 03:09:21 Europe/Berlin] Processing for user_id: 27
+[19-Jun-2025 03:09:21 Europe/Berlin] POST request received at 2025-06-19 03:09:21 for user_id: 27 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 1231203070_ONG ENYONG_AWS-Lab4.pdf
+            [full_path] => 1231203070_ONG ENYONG_AWS-Lab4.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\phpCF97.tmp
+            [error] => 0
+            [size] => 1236078
+        )
+
+)
+
+[19-Jun-2025 03:09:21 Europe/Berlin] CGPA inserted for user_id: 27, file: Uploads/credentials/68536341a3863_1231203070_ONG_ENYONG_AWS-Lab4.pdf
+[19-Jun-2025 03:09:21 Europe/Berlin] Processing for user_id: 27
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81

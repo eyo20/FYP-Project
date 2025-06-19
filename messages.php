@@ -91,14 +91,14 @@ function getProfilePage($role) {
     <link rel="stylesheet" href="msgstyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-            .main-header {
+        .main-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(101, 101, 101, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -109,21 +109,103 @@ function getProfilePage($role) {
         
         .chat-area {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 80px auto 20px;
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
         }
+        
         .chat-box {
             max-height: 500px;
             overflow-y: auto;
-            padding: 10px;
+            padding: 20px;
             background: #f9f9f9;
+        }
+        
+        .typing-area {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+        }
+        
+        .typing-area input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .typing-area button {
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .chat {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .chat.incoming {
+            justify-content: flex-start;
+        }
+        
+        .chat.outgoing {
+            justify-content: flex-end;
+        }
+        
+        .chat .details {
+            max-width: 20%;
+            padding: 5px 15px;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .chat.incoming .details {
+            background: #fff;
+            border: 1px solid #ddd;
+            margin-left: 10px;
+        }
+        
+        .chat.outgoing .details {
+            color: black;
+        }
+        
+        .chat .details p {
+            margin: 0;
+        }
+        
+        .chat .details .time {
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .chat.incoming .details .time {
+            color: #777;
+        }
+        
+        .chat.outgoing .details .time {
+            color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .chat img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
-        <?php 
+    <?php 
     // Include the appropriate header based on user role
     if ($current_user_role === 'student') {
         include 'header/stud_head.php';
@@ -134,7 +216,6 @@ function getProfilePage($role) {
         include 'header/header.php';
     }
     ?>
-
     
     <div class="wrapper">
         <section class="chat-area">
@@ -172,48 +253,6 @@ function getProfilePage($role) {
     </div>
 
     <script>
-   
-        // Dropdown functionality
-        function toggleDropdown() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-
-        // Mobile menu toggle
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('show');
-        });
-
-        // Avatar upload preview and automatic submission
-        document.getElementById('profile_image_upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewElement = document.getElementById('profile-image-preview');
-                    const placeholderElement = document.getElementById('profile-image-placeholder');
-
-                    if (previewElement) {
-                        // If it is already an image, update src
-                        previewElement.src = e.target.result;
-                    } else if (placeholderElement) {
-                        // If it is a placeholder, replace it with an image element
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.alt = "Profile";
-                        img.className = "profile-image";
-                        img.id = "profile-image-preview";
-                        placeholderElement.parentNode.replaceChild(img, placeholderElement);
-                    }
-
-                    // Automatically submit forms
-                    document.getElementById('image-upload-form').submit();
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-
         // Auto-scroll to bottom of chat
         const chatBox = document.querySelector('.chat-box');
         chatBox.scrollTop = chatBox.scrollHeight;

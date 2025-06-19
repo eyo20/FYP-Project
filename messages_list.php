@@ -340,7 +340,7 @@ if ($current_user['role'] === 'student') {
     
     <div class="main-content">
         <div class="message-center-container">
-            <h1>Your Messages</h1>
+            <h1>Your Messages</h1>  
             
             <?php if (!empty($admins)): ?>
                 <div class="user-section">
@@ -418,12 +418,27 @@ if ($current_user['role'] === 'student') {
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
+
+             <div class="user-section">
+            <h2>Community</h2>
+            <div class="user-grid">
+                <a href="community_chat.php" class="user-card">
+                    <div class="default-avatar" style="background-color: var(--accent);">
+                        <span class="material-symbols-sharp">groups</span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">Community Chat</div>
+                        <span class="role-badge admin-badge">Group Discussion</span>
+                    </div>
+                </a>
+            </div>
         </div>
+        
 
         <div class="message-center-container">
             <a href="<?php echo $back_url; ?>" class="back-button">
                 <span class="material-symbols-sharp">arrow_back</span>
-                Back to Student Main Page
+                Back
             </a>
         </div>
         

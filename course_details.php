@@ -17,18 +17,51 @@ if ($conn->connect_error) {
 // Get course ID from URL
 $course_id = $_GET['id'] ?? 0;
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_course'])) {
-    // Prepare delete statement
-    $delete_sql = "DELETE FROM course WHERE id = ?";
-    $stmt = $conn->prepare($delete_sql);
-    $stmt->bind_param("i", $course_id);
-    
-    if ($stmt->execute()) {
-        // Redirect to courses list after successful deletion
-        header("Location: admin_course.php?deleted=1");
-        exit();
-    } else {
-        $delete_error = "Error deleting course: " . $conn->error;
+// Initialize variables
+$edit_error = '';
+$edit_success = '';
+$edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['delete_course'])) {
+        // Prepare delete statement
+        $delete_sql = "DELETE FROM course WHERE id = ?";
+        $stmt = $conn->prepare($delete_sql);
+        $stmt->bind_param("i", $course_id);
+        
+        if ($stmt->execute()) {
+            // Redirect to courses list after successful deletion
+            header("Location: admin_course.php?deleted=1");
+            exit();
+        } else {
+            $delete_error = "Error deleting course: " . $conn->error;
+        }
+    }
+    elseif (isset($_POST['update_course'])) {
+        // Get form data
+        $course_name = $_POST['course_name'];
+        $details = $_POST['details'];
+        $status = $_POST['status'];
+        
+        // Prepare update statement
+        $update_sql = "UPDATE course SET course_name = ?, details = ?, status = ? WHERE id = ?";
+        $stmt = $conn->prepare($update_sql);
+        $stmt->bind_param("sssi", $course_name, $details, $status, $course_id);
+        
+        if ($stmt->execute()) {
+            $edit_success = "Course updated successfully!";
+            $edit_mode = false; // Switch back to view mode after successful update
+            // Refresh the course data
+            $sql = "SELECT * FROM course WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $course_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $course = $result->fetch_assoc();
+        } else {
+            $edit_error = "Error updating course: " . $conn->error;
+            $edit_mode = true; // Stay in edit mode if there was an error
+        }
     }
 }
 
@@ -374,8 +407,7 @@ $conn->close();
             color: #cc0000;
         }
 
-        .delete-btn 
-        {
+        .delete-btn {
             display: inline-flex;
             align-items: center;
             margin-top: 30px;
@@ -386,8 +418,104 @@ $conn->close();
             border-radius: 6px;
             font-weight: 500;
             transition: background 0.3s;
+            border: none;
+            cursor: pointer;
         }
         
+        .edit-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background: #41f1b6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .edit-btn:hover {
+            background: #3ad8a4;
+        }
+        
+        .delete-btn:hover {
+            background: rgb(216, 85, 85);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #7d8da1;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dce1eb;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .success-message {
+            color: #429e44;
+            background-color: #e3f9e5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            color: #cc0000;
+            background-color: #ffe3e3;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-edit {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 15px;
+            background: #7380ec;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+            cursor: pointer;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-edit:hover {
+            background: #6572ce;
+        }
+        
+        .toggle-edit .material-symbols-sharp {
+            margin-right: 5px;
+            font-size: 18px;
+        }
 
     </style>
 </head>
@@ -426,33 +554,92 @@ $conn->close();
                 </div>
             </div>
             
+            <?php if (!$edit_mode): ?>
+                <a href="?id=<?php echo $course_id; ?>&edit=1" class="toggle-edit">
+                    <span class="material-symbols-sharp">edit</span>
+                    Edit Course
+                </a>
+            <?php else: ?>
+                <a href="?id=<?php echo $course_id; ?>" class="toggle-edit">
+                    <span class="material-symbols-sharp">close</span>
+                    Cancel Edit
+                </a>
+            <?php endif; ?>
+            
+            <?php if ($edit_success): ?>
+                <div class="success-message"><?php echo htmlspecialchars($edit_success); ?></div>
+            <?php endif; ?>
+            
+            <?php if ($edit_error): ?>
+                <div class="error-message"><?php echo htmlspecialchars($edit_error); ?></div>
+            <?php endif; ?>
+            
             <div class="profile-sections">
-                <div class="profile-section">
-                    <h2>Course Information</h2>
-                    <div class="detail-item">
-                        <strong>Course Name</strong>
-                        <p><?php echo htmlspecialchars($course['course_name'] ?? 'N/A'); ?></p>
+                <?php if ($edit_mode): ?>
+                    <!-- Edit Form -->
+                    <form method="POST" class="profile-section">
+                        <h2>Edit Course Information</h2>
+                        
+                        <div class="form-group">
+                            <label for="course_name">Course Name</label>
+                            <input type="text" id="course_name" name="course_name" value="<?php echo htmlspecialchars($course['course_name'] ?? ''); ?>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status" required>
+                                <option value="Active" <?php echo ($course['status'] ?? '') == 'Active' ? 'selected' : ''; ?>>Active</option>
+                                <option value="Pending" <?php echo ($course['status'] ?? '') == 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                                <option value="Inactive" <?php echo ($course['status'] ?? '') == 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="details">Course Description</label>
+                            <textarea id="details" name="details" required><?php echo htmlspecialchars($course['details'] ?? ''); ?></textarea>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="submit" name="update_course" class="edit-btn">
+                                <span class="material-symbols-sharp">save</span>
+                                Save Changes
+                            </button>
+                            <a href="?id=<?php echo $course_id; ?>" class="back-btn">
+                                <span class="material-symbols-sharp">close</span>
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                <?php else: ?>
+                    <!-- View Mode -->
+                    <div class="profile-section">
+                        <h2>Course Information</h2>
+                        <div class="detail-item">
+                            <strong>Course Name</strong>
+                            <p><?php echo htmlspecialchars($course['course_name'] ?? 'N/A'); ?></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Status</strong>
+                            <p>
+                                <span class="status-badge status-<?php echo strtolower(htmlspecialchars($course['status'] ?? 'pending')); ?>">
+                                    <?php echo htmlspecialchars($course['status'] ?? 'Pending'); ?>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Date Added</strong>
+                            <p><?php echo htmlspecialchars($course['created_at'] ?? 'N/A'); ?></p>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <strong>Status</strong>
-                        <p>
-                            <span class="status-badge status-<?php echo strtolower(htmlspecialchars($course['status'] ?? 'pending')); ?>">
-                                <?php echo htmlspecialchars($course['status'] ?? 'Pending'); ?>
-                            </span>
-                        </p>
+                    
+                    <div class="profile-section">
+                        <h2>Course Description</h2>
+                        <div class="detail-item">
+                            <p><?php echo nl2br(htmlspecialchars($course['details'] ?? 'No description provided')); ?></p>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <strong>Date Added</strong>
-                        <p><?php echo htmlspecialchars($course['created_at'] ?? 'N/A'); ?></p>
-                    </div>
-                </div>
+                <?php endif; ?>
                 
-                <div class="profile-section">
-                    <h2>Course Description</h2>
-                    <div class="detail-item">
-                        <p><?php echo nl2br(htmlspecialchars($course['details'] ?? 'No description provided')); ?></p>
-                    </div>
-                </div>
                 <div class="profile-section">
                     <h2>Delete Course</h2>
                     <form method="POST" onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone.');">
@@ -469,7 +656,6 @@ $conn->close();
                     <?php endif; ?>
                 </div>
             </div>
-            
             
             <a href="admin_course.php" class="back-btn">
                 <span class="material-symbols-sharp">arrow_back</span>

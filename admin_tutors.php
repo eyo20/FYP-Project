@@ -359,7 +359,6 @@ if (isset($_SESSION['error'])) {
                         ?>
                     </tbody>
                 </table>
-                <a href="#">Show All</a>
             </div>
         </main>
     </div>

@@ -1,7 +1,11 @@
 <?php
 session_start();
+<<<<<<< HEAD
 
 require_once 'db_connection.php';
+=======
+require_once 'db_connect.php';
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
 
 // Initialize variables
 $otp = '';
@@ -9,12 +13,15 @@ $otp_error = '';
 $success_message = '';
 $error_message = '';
 
+<<<<<<< HEAD
 // Check if OTP was just sent
 if (isset($_SESSION['otp_sent']) && $_SESSION['otp_sent']) {
     $success_message = 'OTP has been sent to your email. Please check your inbox.';
     unset($_SESSION['otp_sent']); // Clear the flag after displaying
 }
 
+=======
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
 // Generate CSRF token
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -53,8 +60,13 @@ if (isset($_POST['verify_btn'])) {
                         mysqli_stmt_execute($delete_stmt);
                         mysqli_stmt_close($delete_stmt);
                     }
+<<<<<<< HEAD
                     $_SESSION['reset_token'] = $otp; // Ensure token is available
                     header('Location: reset_password_form.php');
+=======
+                    unset($_SESSION['reset_email']); // Clear session
+                    header('Location: reset_password_form.php'); // 跳转到重置密码页面
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
                     exit();
                 } else {
                     $error_message = 'Invalid or expired OTP. Please request a new one.';
@@ -131,10 +143,17 @@ mysqli_close($conn);
         .input-group {
             position: relative;
             margin-bottom: 20px;
+<<<<<<< HEAD
             text-align: left;
         }
         .input-group label {
             display: block;
+=======
+        }
+        .input-group label {
+            display: block;
+            text-align: left;
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
             margin-bottom: 5px;
             color: #555;
             font-size: 14px;
@@ -174,22 +193,44 @@ mysqli_close($conn);
         #verify-form input[type=submit]:hover {
             background-color: #b5c500;
         }
+<<<<<<< HEAD
         .error-alert, .success-alert {
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
             text-align: center;
             width: 100%;
+=======
+        #verify-form p {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #verify-form p a {
+            text-decoration: none;
+            color: #00AEEF;
+            font-size: 14px;
+        }
+        #verify-form p a:hover {
+            color: #2B3990;
+            text-decoration: underline;
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         }
         .error-alert {
             background-color: #fce4e4;
             border: 1px solid #e74c3c;
             color: #e74c3c;
+<<<<<<< HEAD
         }
         .success-alert {
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
+=======
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         }
         .instructions {
             margin-bottom: 20px;
@@ -212,11 +253,14 @@ mysqli_close($conn);
             <div class="instructions">
                 Enter the OTP sent to your MMU email address below to reset your password.
             </div>
+<<<<<<< HEAD
             <?php if (!empty($success_message)): ?>
                 <div class="success-alert">
                     <?php echo htmlspecialchars($success_message); ?>
                 </div>
             <?php endif; ?>
+=======
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
             <?php if (!empty($error_message)): ?>
                 <div class="error-alert">
                     <?php echo htmlspecialchars($error_message); ?>
@@ -233,7 +277,11 @@ mysqli_close($conn);
                 </div>
                 <input type="submit" name="verify_btn" value="Verify">
             </form>
+<<<<<<< HEAD
             <p><a href="reset_password.php" style="text-decoration: none; color: #00AEEF; font-size: 14px;">Resend OTP</a></p>
+=======
+            <p><a href="reset_password.php">Resend OTP</a></p>
+>>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         </div>
     </div>
 </body>
