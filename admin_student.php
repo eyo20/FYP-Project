@@ -252,6 +252,54 @@ if (isset($_SESSION['error'])) {
             border-radius: 0.4rem;
         }
 
+                /* Search Container */
+        .search-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-form input[type="text"] {
+            padding: 10px 15px;
+            border-radius: var(--border-radius-1);
+            border: 1px solid var(--info-light);
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            width: 300px;
+            font-size: 0.9rem;
+        }
+
+        .search-form input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(115, 128, 236, 0.2);
+            outline: none;
+        }
+
+        .search-form input[type="submit"] {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .search-form input[type="submit"]:hover {
+            background-color: var(--primary-variant);
+            transform: translateY(-1px);
+        }
+
+        
+
     </style>
     <div class="container">
         <aside>
@@ -284,11 +332,12 @@ if (isset($_SESSION['error'])) {
 
                 <di style="margin-left: 500px ; padding:100px;"> 
 
-                    <form action="" method="GET">
-                        <input type="text" name="my_search" placeholder="Search Students ...">
-
-                        <input  type="submit" name="search" value="Search">
+            <div class="search-container">
+                            <form class="search-form" action="" method="GET">
+                                <input type="text" name="my_search" placeholder="Search students by name, program, or major..." value="<?php echo isset($_GET['my_search']) ? htmlspecialchars($_GET['my_search']) : ''; ?>">
+                                <input type="submit" name="search" value="Search">
                     </form>
+            </div>
                 <table>
                     <thead>
                         <tr>
@@ -351,14 +400,14 @@ if (isset($_SESSION['error'])) {
                                 </tr>";
                             }
                         } else {
-                            $no_results_message = isset($_GET['search']) ? 
-                                "No students found matching '".htmlspecialchars($_GET['my_search'])."'" : 
-                                "No students found";
-                            echo "<tr><td colspan='6'>$no_results_message</td></tr>";
-                        }
-                        $conn->close();
-                        ?>
-                    </tbody>
+                        $no_results_message = isset($_GET['search']) ? 
+                            "No students found matching '".htmlspecialchars($_GET['my_search'])."'" : 
+                            "No students found";
+                        echo "<tr><td colspan='6' style='text-align: center;'>$no_results_message</td></tr>";
+                    }
+                    $conn->close();
+                    ?>
+                </tbody>
                 </table>
             </div>
         </main>
