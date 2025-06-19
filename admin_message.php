@@ -359,6 +359,26 @@ $conn->close();
         .btn-clear:hover {
             background-color: #e9ecef;
         }
+
+        .btn-community {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-community:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -447,8 +467,13 @@ $conn->close();
                 </div>
                 
                 
-       <div class="message-compose">
+<div class="message-compose">
     <h2>Compose New Message</h2>
+    
+    <!-- Add this button at the top of the compose section -->
+    <a href="community_chat.php" class="btn btn-community" style="margin-bottom: 20px; display: block; text-align: center;">
+        Join Community Chat
+    </a>
     
     <form method="POST">
         <div class="form-group">

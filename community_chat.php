@@ -326,19 +326,195 @@ unset($_SESSION['error']);
         .refresh-button:hover {
             background-color: var(--accent);
         }
+
+        aside {
+            width: 210px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            margin-left: 0;
+            padding-left: 0;
+            left: 0;
+        }
+
+
+        aside .top {
+            margin-left: 0;
+            padding-left: 1rem;
+        }
+
+        aside .logo {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        aside .logo img{
+            width: 2rem;
+            height: 2rem;
+        }
+
+        aside .close{
+            display: none;
+        }
+
+        /* ======================== Side Bar ================================ */
+       aside .sidebar {
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+
+        aside h3 {
+            font-weight: 500;
+        }
+
+        aside .sidebar a{
+            display: flex;
+            color:  #7d8da1;
+            margin-left: 2rem;
+            gap: 1rem;
+            align-items: center;
+            position: relative;
+            height: 3.7rem;
+            transition: all 300ms ease;
+        }
+
+        aside .sidebar a span{
+            font-size: 1.6rem;
+            transition: all 300ms ease;
+        }
+
+        aside .sidebar  a:last-child{
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+
+        }
+
+        aside .sidebar a.active {
+            background: rgba(132, 139, 200, 0.18);
+            color: #7380ec;
+            margin-left: 0;
+        }
+
+        aside .sidebar a.active:before{
+            content: "";
+            width: 6px;
+            height: 100%;
+            background: #7380ec;
+
+        }
+
+        aside .sidebar a.active span{
+            color: #7380ec;
+            margin-left: calc(1rem -3 px);
+        }
+
+        aside .sidebar a:hover {
+            color: #7380ec;
+        }
+
+        aside .sidebar a:hover span{
+            margin-left: 1rem;
+        }
+
+        aside .sidebar .message-count {
+            background: #ff7782;
+            color: #fff;
+            padding: 2px 10px;
+            font-size: 11px;
+            border-radius: 0.4rem;
+        }
+        .container {
+            width: 100%;
+            margin: 0;
+            gap: 1.8rem;
+            grid-template-columns: 14rem auto 23rem;
+        }
     </style>
 </head>
 <body>
+
+    <script>
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Mobile menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('show');
+        });
+
+        // Avatar upload preview and automatic submission
+        document.getElementById('profile_image_upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewElement = document.getElementById('profile-image-preview');
+                    const placeholderElement = document.getElementById('profile-image-placeholder');
+
+                    if (previewElement) {
+                        // If it is already an image, update src
+                        previewElement.src = e.target.result;
+                    } else if (placeholderElement) {
+                        // If it is a placeholder, replace it with an image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Profile";
+                        img.className = "profile-image";
+                        img.id = "profile-image-preview";
+                        placeholderElement.parentNode.replaceChild(img, placeholderElement);
+                    }
+
+                    // Automatically submit forms
+                    document.getElementById('image-upload-form').submit();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+    </script>
     <?php 
+    
     // Include the appropriate header based on user role
     if ($current_user['role'] === 'student') {
         include 'header/stud_head.php';
     } elseif ($current_user['role'] === 'tutor') {
         include 'header/tut_head.php';
-    } else {
-        include 'header/header.php';
-    }
+    } else 
     ?>
+        <?php if ($current_user['role'] === 'admin'): ?>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="image/logo.png">
+                    <h2>PEER<span class="danger">LEARN</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-symbols-sharp">close</span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <a href="admin.html"><span class="material-symbols-sharp">grid_view</span><h3>Dashboard</h3></a>
+                <a href="#"></a>
+                <a href="admin_staff.php"><span class="material-symbols-sharp">badge</span><h3>Staff</h3></a>
+                <a href="admin_student.php"><span class="material-symbols-sharp">person</span><h3>Students</h3></a>
+                <a href="admin_tutors.php"><span class="material-symbols-sharp">eyeglasses</span><h3>Tutors</h3></a>
+                <a href="admin_course.php"><span class="material-symbols-sharp">school</span><h3>Courses</h3></a>
+                <a href="admin_message.php"class="active" ><span class="material-symbols-sharp">chat</span><h3>Messages</h3></a>
+                <a href="admin_report.php"><span class="material-symbols-sharp">description</span><h3>Reports</h3></a>
+                <a href="home_page.html"><span class="material-symbols-sharp">logout</span><h3>Logout</h3></a>
+            </div>
+        </aside>
+        
+    <?php endif; ?>
 
     <div class="main-content">
         <div class="chat-container">
