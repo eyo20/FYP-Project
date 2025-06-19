@@ -216,7 +216,48 @@ function getProfilePage($role) {
         include 'header/header.php';
     }
     ?>
-    
+        <script>
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Mobile menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('show');
+        });
+
+        // Avatar upload preview and automatic submission
+        document.getElementById('profile_image_upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewElement = document.getElementById('profile-image-preview');
+                    const placeholderElement = document.getElementById('profile-image-placeholder');
+
+                    if (previewElement) {
+                        // If it is already an image, update src
+                        previewElement.src = e.target.result;
+                    } else if (placeholderElement) {
+                        // If it is a placeholder, replace it with an image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Profile";
+                        img.className = "profile-image";
+                        img.id = "profile-image-preview";
+                        placeholderElement.parentNode.replaceChild(img, placeholderElement);
+                    }
+
+                    // Automatically submit forms
+                    document.getElementById('image-upload-form').submit();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+    </script>
     <div class="wrapper">
         <section class="chat-area">
             <header>

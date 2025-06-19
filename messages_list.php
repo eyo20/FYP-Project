@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 require_once "db_connection.php";
 
@@ -18,24 +17,55 @@ $current_user_result = $stmt->get_result();
 $current_user = $current_user_result->fetch_assoc();
 $stmt->close();
 
-// Get list of users you can message, separated by role
-$query = "SELECT user_id, first_name, last_name, profile_image, role 
-          FROM user 
-          WHERE user_id != ? 
+// Get list of users you can message with unread counts
+$query = "SELECT 
+            u.user_id, 
+            u.first_name, 
+            u.last_name, 
+            u.profile_image, 
+            u.role,
+            (SELECT COUNT(*) 
+             FROM message
+             WHERE receiver_id = ? 
+             AND sender_id = u.user_id 
+             AND is_read = 0) as unread_count
+          FROM user u
+          WHERE u.user_id != ? 
           ORDER BY 
             CASE 
-                WHEN role = 'admin' THEN 1
-                WHEN role = 'tutor' THEN 2
-                WHEN role = 'student' THEN 3
+                WHEN u.role = 'admin' THEN 1
+                WHEN u.role = 'tutor' THEN 2
+                WHEN u.role = 'student' THEN 3
                 ELSE 4
-            END, first_name";
+            END, u.first_name";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->bind_param("ii", $_SESSION['user_id'], $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $users = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Get unread count for community chat (if you have this feature)
+$community_unread = ['unread_count' => 0]; // Default
+if (table_exists($conn, 'community_messages')) { // Helper function to check if table exists
+    $community_unread_query = "SELECT COUNT(*) as unread_count 
+                              FROM community_messages 
+                              WHERE receiver_id = ? 
+                              AND is_read = 0";
+    $stmt = $conn->prepare($community_unread_query);
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $community_unread_result = $stmt->get_result();
+    $community_unread = $community_unread_result->fetch_assoc();
+    $stmt->close();
+}
+
+// Helper function to check if table exists
+function table_exists($conn, $table) {
+    $result = $conn->query("SHOW TABLES LIKE '$table'");
+    return $result->num_rows > 0;
+}
 
 // Separate users by role
 $admins = array_filter($users, function($user) {
@@ -53,9 +83,8 @@ if ($current_user['role'] === 'student') {
 } elseif ($current_user['role'] === 'tutor') {
     $back_url = 'tutor_main_page.php';
 } else {
-    $back_url = 'home_page.html'; // Default fallback
+    $back_url = 'home_page.html';
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -280,6 +309,37 @@ if ($current_user['role'] === 'student') {
             margin-right: 5px;
             font-size: 20px;
         }
+
+ .unread-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .unread-dot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4757;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+        }
+
+        .user-card {
+            position: relative;
+
+        }
       </style>
 </head>
 <body>
@@ -359,6 +419,9 @@ if ($current_user['role'] === 'student') {
                                     <div class="user-name"><?= htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']) ?></div>
                                     <span class="role-badge admin-badge">Admin</span>
                                 </div>
+                                <?php if ($admin['unread_count'] > 0): ?>
+                                    <span class="unread-dot" title="<?= $admin['unread_count'] ?> unread messages"></span>
+                                <?php endif; ?>
                             </a>
                         <?php endforeach; ?>
                     </div>
@@ -383,6 +446,9 @@ if ($current_user['role'] === 'student') {
                                     <div class="user-name"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
                                     <span class="role-badge tutor-badge">Tutor</span>
                                 </div>
+                                <?php if ($tutor['unread_count'] > 0): ?>
+                                    <span class="unread-dot" title="<?= $tutor['unread_count'] ?> unread messages"></span>
+                                <?php endif; ?>
                             </a>
                         <?php endforeach; ?>
                     </div>
@@ -391,7 +457,7 @@ if ($current_user['role'] === 'student') {
                 <?php endif; ?>
             </div>
             
-            <!-- Students Section (only visible to tutors) -->
+            <!-- Students Section -->
             <?php if ($current_user['role'] === 'tutor'): ?>
                 <div class="user-section">
                     <h2>Students</h2>
@@ -410,6 +476,9 @@ if ($current_user['role'] === 'student') {
                                         <div class="user-name"><?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></div>
                                         <span class="role-badge student-badge">Student</span>
                                     </div>
+                                    <?php if ($student['unread_count'] > 0): ?>
+                                        <span class="unread-dot" title="<?= $student['unread_count'] ?> unread messages"></span>
+                                    <?php endif; ?>
                                 </a>
                             <?php endforeach; ?>
                         </div>
@@ -419,29 +488,32 @@ if ($current_user['role'] === 'student') {
                 </div>
             <?php endif; ?>
 
-             <div class="user-section">
-            <h2>Community</h2>
-            <div class="user-grid">
-                <a href="community_chat.php" class="user-card">
-                    <div class="default-avatar" style="background-color: var(--accent);">
-                        <span class="material-symbols-sharp">groups</span>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">Community Chat</div>
-                        <span class="role-badge admin-badge">Group Discussion</span>
-                    </div>
+            <!-- Community Chat Section -->
+            <div class="user-section">
+                <h2>Community</h2>
+                <div class="user-grid">
+                    <a href="community_chat.php" class="user-card">
+                        <div class="default-avatar" style="background-color: var(--accent);">
+                            <span class="material-symbols-sharp">groups</span>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">Community Chat</div>
+                            <span class="role-badge admin-badge">Group Discussion</span>
+                        </div>
+                        <?php if ($community_unread['unread_count'] > 0): ?>
+                            <span class="unread-dot" title="<?= $community_unread['unread_count'] ?> unread messages"></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+            </div>
+
+            <div class="message-center-container">
+                <a href="<?php echo $back_url; ?>" class="back-button">
+                    <span class="material-symbols-sharp">arrow_back</span>
+                    Back
                 </a>
             </div>
         </div>
-        
-
-        <div class="message-center-container">
-            <a href="<?php echo $back_url; ?>" class="back-button">
-                <span class="material-symbols-sharp">arrow_back</span>
-                Back
-            </a>
-        </div>
-        
     </div>
 </body>
 </html>
