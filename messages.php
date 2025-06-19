@@ -98,7 +98,7 @@ function getProfilePage($role) {
             right: 0;
             z-index: 1000;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(101, 101, 101, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -162,8 +162,8 @@ function getProfilePage($role) {
         }
         
         .chat .details {
-            max-width: 70%;
-            padding: 10px 15px;
+            max-width: 20%;
+            padding: 5px 15px;
             border-radius: 18px;
             position: relative;
         }
@@ -175,8 +175,7 @@ function getProfilePage($role) {
         }
         
         .chat.outgoing .details {
-            background: #007bff;
-            color: white;
+            color: black;
         }
         
         .chat .details p {
@@ -194,7 +193,7 @@ function getProfilePage($role) {
         }
         
         .chat.outgoing .details .time {
-            color: rgba(255,255,255,0.7);
+            color: rgba(0, 0, 0, 0.7);
         }
         
         .chat img {
