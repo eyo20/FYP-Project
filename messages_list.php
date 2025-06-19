@@ -438,7 +438,7 @@ if ($current_user['role'] === 'student') {
         <div class="message-center-container">
             <a href="<?php echo $back_url; ?>" class="back-button">
                 <span class="material-symbols-sharp">arrow_back</span>
-                Back to Student Main Page
+                Back
             </a>
         </div>
         
