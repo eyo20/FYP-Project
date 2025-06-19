@@ -251,6 +251,14 @@ if (isset($_SESSION['error'])) {
             border-radius: 0.4rem;
         }
 
+        .edit-btn {
+            padding: 5px 10px;
+            background-color: #fff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4；
+        }
+
     </style>
     <div class="container">
         <aside>

@@ -558,42 +558,39 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
                     </div>
                     
                     <div class="profile-section full-width">
-                    <?php if (!empty($credentials) && is_array($credentials)): ?>
-                        <?php foreach ($credentials as $cred): ?>
-                            <?php if (isset($cred['file_id']) && $cred['file_id'] !== null): ?>
-                                <div class="credential-item <?php echo htmlspecialchars($cred['status']); ?>">
-                                    <div class="credential-info">
-                                        <strong>
-                                            <?php if ($cred['status'] == 'approved'): ?>
-                                                <a href="download.php?file_id=<?php echo htmlspecialchars($cred['file_id']); ?>" class="view-credential">
+                        <?php if (!empty($credentials) && is_array($credentials)): ?>
+                            <?php foreach ($credentials as $cred): ?>
+                                <?php if (isset($cred['file_id']) && $cred['file_id'] !== null): ?>
+                                    <div class="credential-item <?php echo htmlspecialchars($cred['status']); ?>">
+                                        <div class="credential-info">
+                                            <strong>
+                                                <!-- Always make the filename clickable regardless of status -->
+                                                <a href="download.php?file_id=<?php echo htmlspecialchars($cred['file_id']); ?>" class="view-credential" target="_blank">
                                                     <?php echo htmlspecialchars($cred['file_name']); ?>
                                                 </a>
-                                            <?php else: ?>
-                                                <?php echo htmlspecialchars($cred['file_name']); ?>
-                                            <?php endif; ?>
-                                        </strong>
-                                        <span class="verification-status <?php echo htmlspecialchars($cred['status']); ?>">
-                                            <?php echo ucfirst($cred['status']); ?>
-                                            <?php if ($cred['is_verified'] && $cred['status'] == 'approved'): ?>
-                                                (Verified)
-                                            <?php endif; ?>
-                                        </span>
-                                    </div>
-                                    <div class="file-type">Type: <?php echo htmlspecialchars($cred['file_type']); ?></div>
-                                    <div class="credential-meta">
-                                        <span>Uploaded: <?php echo htmlspecialchars($cred['upload_date']); ?></span>
-                                    </div>
-                                    <?php if ($cred['status'] == 'rejected' && !empty($cred['rejection_reason'])): ?>
-                                        <div class="rejection-reason">
-                                            <strong>Reason: </strong><?php echo htmlspecialchars($cred['rejection_reason']); ?>
+                                            </strong>
+                                            <span class="verification-status <?php echo htmlspecialchars($cred['status']); ?>">
+                                                <?php echo ucfirst($cred['status']); ?>
+                                                <?php if ($cred['is_verified'] && $cred['status'] == 'approved'): ?>
+                                                    (Verified)
+                                                <?php endif; ?>
+                                            </span>
                                         </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p>No credentials found for this tutor.</p>
-                    <?php endif; ?>
+                                        <div class="file-type">Type: <?php echo htmlspecialchars($cred['file_type']); ?></div>
+                                        <div class="credential-meta">
+                                            <span>Uploaded: <?php echo htmlspecialchars($cred['upload_date']); ?></span>
+                                        </div>
+                                        <?php if ($cred['status'] == 'rejected' && !empty($cred['rejection_reason'])): ?>
+                                            <div class="rejection-reason">
+                                                <strong>Reason: </strong><?php echo htmlspecialchars($cred['rejection_reason']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No credentials found for this tutor.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
