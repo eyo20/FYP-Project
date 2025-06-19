@@ -202,6 +202,15 @@ function getProfilePage($role) {
             border-radius: 50%;
             object-fit: cover;
         }
+
+        .notification-info {
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+            color: #6c757d;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -285,11 +294,17 @@ function getProfilePage($role) {
                 <?php endwhile; ?>
             </div>
             
-            <form action="send_message.php" method="POST" class="typing-area" autocomplete="off">
-                <input type="text" name="message" placeholder="Type a message here..." required>
-                <input type="hidden" name="receiver_id" value="<?php echo $other_user_id; ?>">
-                <button type="submit"><i class="fab fa-telegram-plane"></i></button>
-            </form>
+            <?php if ($other_user_id != 17): ?>
+                <form action="send_message.php" method="POST" class="typing-area" autocomplete="off">
+                    <input type="text" name="message" placeholder="Type a message here..." required>
+                    <input type="hidden" name="receiver_id" value="<?php echo $other_user_id; ?>">
+                    <button type="submit"><i class="fab fa-telegram-plane"></i></button>
+                </form>
+            <?php else: ?>
+                <div class="notification-info" style="padding: 15px; text-align: center; background: #f8f9fa; border-top: 1px solid #ddd;">
+                    <p>This is a notification-only chat. You cannot send messages here.</p>
+                </div>
+            <?php endif; ?>
         </section>
     </div>
 

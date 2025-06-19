@@ -416,7 +416,9 @@ if ($current_user['role'] === 'student') {
                                     </div>
                                 <?php endif; ?>
                                 <div class="user-info">
-                                    <div class="user-name"><?= htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']) ?></div>
+                                    <div class="user-name">
+                                        <?= ($admin['user_id'] == 17) ? 'System Notifications' : htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']) ?>
+                                    </div>
                                     <span class="role-badge admin-badge">Admin</span>
                                 </div>
                                 <?php if ($admin['unread_count'] > 0): ?>
