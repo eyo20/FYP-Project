@@ -100,6 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="student_main_page.php" class="btn" style="background-color: var(--accent-color); padding: 0.8rem 1.5rem; text-decoration: none; color: var(--dark-gray); border-radius: 4px; display: inline-block; margin-top: 1rem;">Back to Main Page</a>
             </div>
         </div>
+        <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        
+    </script>
         </body>
 
         </html>

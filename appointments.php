@@ -236,6 +236,12 @@ $page_title = "Book a Study Partner - PeerLearn";
 </div>
 
 <script>
+
+    function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        
 document.addEventListener('DOMContentLoaded', function() {
     const courseSelect = document.getElementById('course');
     const hourlyRates = <?php echo json_encode(array_column($courses, 'hourly_rate', 'id')); ?>;
