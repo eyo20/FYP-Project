@@ -582,18 +582,17 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
                         </div>
                     </div>
                     
-                    <div class="profile-section full-width">
-                        <?php if (!empty($credentials) && is_array($credentials)): ?>
-                            <?php foreach ($credentials as $cred): ?>
-                                <?php if (isset($cred['file_id']) && $cred['file_id'] !== null): ?>
-                                    <div class="credential-item <?php echo htmlspecialchars($cred['status']); ?>">
-                                        <div class="credential-info">
-                                            <strong>
-                                                <!-- Always make the filename clickable regardless of status -->
-                                                <a href="download.php?file_id=<?php echo htmlspecialchars($cred['file_id']); ?>" class="view-credential" target="_blank">
-                                                    <?php echo htmlspecialchars($cred['file_name']); ?>
-                                                </a>
-                                            </strong>
+                                    <div class="profile-section full-width">
+                                    <?php if (!empty($credentials) && is_array($credentials)): ?>
+                                        <?php foreach ($credentials as $cred): ?>
+                                            <?php if (isset($cred['file_id']) && $cred['file_id'] !== null): ?>
+                                                <div class="credential-item <?php echo htmlspecialchars($cred['status']); ?>">
+                                                    <div class="credential-info">
+                                                        <strong>
+                                                            <a href="view_file.php?file_id=<?php echo htmlspecialchars($cred['file_id']); ?>" class="view-credential" target="_blank">
+                                                                <?php echo htmlspecialchars($cred['file_name']); ?>
+                                                            </a>
+                                                        </strong>
                                             <span class="verification-status <?php echo htmlspecialchars($cred['status']); ?>">
                                                 <?php echo ucfirst($cred['status']); ?>
                                                 <?php if ($cred['is_verified'] && $cred['status'] == 'approved'): ?>
