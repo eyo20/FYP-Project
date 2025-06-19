@@ -334,7 +334,7 @@ if (isset($_SESSION['error'])) {
 
             <div class="search-container">
                             <form class="search-form" action="" method="GET">
-                                <input type="text" name="my_search" placeholder="Search students by name, program, or major..." value="<?php echo isset($_GET['my_search']) ? htmlspecialchars($_GET['my_search']) : ''; ?>">
+                                <input type="text" name="my_search" placeholder="Search students by name... " value="<?php echo isset($_GET['my_search']) ? htmlspecialchars($_GET['my_search']) : ''; ?>">
                                 <input type="submit" name="search" value="Search">
                     </form>
             </div>
@@ -342,9 +342,9 @@ if (isset($_SESSION['error'])) {
                     <thead>
                         <tr>
                             <th>STUDENT NAME</th>
-                            <th>LEVEL</th>
-                            <th>PROGRAM</TH>
-                            <th>COURSE</th>
+                            <th></th>
+                            <th></TH>
+                            <th></th>
                             <th>DETAILS</th>
                             <th>ACTIONS</th>
                         </tr>
@@ -387,8 +387,8 @@ if (isset($_SESSION['error'])) {
                             while($row = $result->fetch_assoc()) {
                                 echo "<tr>
                                     <td>".htmlspecialchars($row["username"])."</td>
-                                    <td>".htmlspecialchars($row["year"])."</td>
-                                    <td>".htmlspecialchars($row["program"])."</td>
+                                    <td></td>
+                                    <td></td>
                                     <td>".htmlspecialchars($row["major"])."</td>                                    
                                     <td>
                                         <a href='student_details.php?id=".$row["user_id"]."' class='details-btn'>Details</a>

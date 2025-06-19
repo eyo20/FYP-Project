@@ -319,7 +319,7 @@
                     
             <div class="search-container">
                             <form class="search-form" action="" method="GET">
-                                <input type="text" name="my_search" placeholder="Search students by name, program, or major..." value="<?php echo isset($_GET['my_search']) ? htmlspecialchars($_GET['my_search']) : ''; ?>">
+                                <input type="text" name="my_search" placeholder="Search courses by name..." value="<?php echo isset($_GET['my_search']) ? htmlspecialchars($_GET['my_search']) : ''; ?>">
                                 <input type="submit" name="search" value="Search">
                     </form>
             </div>
