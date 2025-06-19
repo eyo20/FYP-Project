@@ -307,7 +307,7 @@ mysqli_close($conn);
                 <input type="submit" name="loginbtn" value="LOGIN">
             </form>
 
-            <p><a href="forgot_password.php">Forgot your password?</a></p>
+            <p><a href="reset_password.php">forgot your password?</a></p>
             <p><a href="register.php">New to PeerLearn? Create an account</a></p>
         </div>
     </div>
