@@ -168,49 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Handle password change
-    if (isset($_POST['change_password'])) {
-        $current_password = $_POST['current_password'];
-        $new_password = $_POST['new_password'];
-        $confirm_password = $_POST['confirm_password'];
-
-        // Verify current password
-        $password_query = "SELECT password FROM user WHERE user_id = ?";
-        $stmt = $conn->prepare($password_query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-        $stmt->close();
-
-        if (!password_verify($current_password, $user['password'])) {
-            $error_message = "The current password is incorrect.";
-        } elseif (strlen($new_password) < 8) {
-            $error_message = "The new password must be at least 8 characters.";
-        } elseif (!preg_match('/[A-Z]/', $new_password)) {
-            $error_message = "The new password must contain at least one uppercase letter.";
-        } elseif (!preg_match('/[0-9]/', $new_password)) {
-            $error_message = "The new password must contain at least one number.";
-        } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-            $error_message = "The new password must contain at least one special character.";
-        } elseif ($new_password !== $confirm_password) {
-            $error_message = "The new passwords entered do not match.";
-        } else {
-            // Update password
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $update_password = "UPDATE user SET password = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_password);
-            $stmt->bind_param("si", $hashed_password, $user_id);
-            if ($stmt->execute()) {
-                $success_message = "Password updated successfully!";
-            } else {
-                $error_message = "Failed to update password: " . $stmt->error;
-                error_log($error_message);
-            }
-            $stmt->close();
-        }
-    }
-
     // Handle profile image upload
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
@@ -630,27 +587,6 @@ $conn->close();
             margin-top: 0.25rem;
         }
 
-        .danger-zone {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            padding: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        .danger-zone h4 {
-            color: #721c24;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .profile-container {
@@ -730,7 +666,7 @@ $conn->close();
                         <div class="profile-image-placeholder" id="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                     <?php endif; ?>
                     <label for="profile_image_upload" class="edit-profile-image">
-                        <i>📷</i>
+                        <i>ðŸ“·</i>
                     </label>
                     <form id="image-upload-form" action="" method="post" enctype="multipart/form-data" style="display: none;">
                         <input type="file" id="profile_image_upload" name="profile_image" accept="image/jpeg,image/jpg,image/png,image/gif">
@@ -741,11 +677,11 @@ $conn->close();
 
                 <div class="profile-info">
                     <div class="info-item">
-                        <div class="info-icon">📧</div>
+                        <div class="info-icon">ðŸ“§</div>
                         <div class="info-text"><?php echo htmlspecialchars($email); ?></div>
                     </div>
                     <div class="info-item">
-                        <div class="info-icon">📱</div>
+                        <div class="info-icon">ðŸ“±</div>
                         <div class="info-text"><?php echo $phone ? htmlspecialchars($phone) : 'Not Set'; ?></div>
                     </div>
                 </div>
@@ -770,39 +706,6 @@ $conn->close();
                         </div>
                         <button type="submit" class="btn" id="save-profile-btn">Save Profile</button>
                     </form>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Security Settings</h3>
-                    <form action="" method="post" name="password_form" id="password-form">
-                        <input type="hidden" name="change_password" value="1">
-                        <div class="form-group">
-                            <label for="current_password">Current Password</label>
-                            <input type="password" class="form-control" id="current_password" name="current_password" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="new_password">New Password</label>
-                            <input type="password" class="form-control" id="new_password" name="new_password" required>
-                            <small class="form-text">Password must be at least 8 characters with uppercase, number, and special character.</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="confirm_password">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                        </div>
-                        <button type="submit" class="btn btn-secondary" id="change-password-btn">Change Password</button>
-                    </form>
-                    <p style="margin-top: 15px;">
-                        <a href="forgot_password.php">Forgot your password?</a>
-                    </p>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Account Settings</h3>
-                    <div class="danger-zone">
-                        <h4>Delete Account</h4>
-                        <p style="margin-bottom: 1rem;">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
-                        <button type="button" id="delete-account-btn" class="btn btn-danger">Delete My Account</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -898,69 +801,10 @@ $conn->close();
             }
         });
 
-        // Password form validation
-        document.getElementById('password-form').addEventListener('submit', function(e) {
-            const currentPassword = document.getElementById('current_password').value;
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-
-            if (!currentPassword) {
-                alert('Please enter your current password');
-                e.preventDefault();
-                return;
-            }
-
-            if (newPassword.length < 8) {
-                alert('New password must be at least 8 characters');
-                e.preventDefault();
-                return;
-            }
-
-            if (!/[A-Z]/.test(newPassword)) {
-                alert('New password must contain at least one uppercase letter');
-                e.preventDefault();
-                return;
-            }
-
-            if (!/[0-9]/.test(newPassword)) {
-                alert('New password must contain at least one number');
-                e.preventDefault();
-                return;
-            }
-
-            if (!/[^A-Za-z0-9]/.test(newPassword)) {
-                alert('New password must contain at least one special character');
-                e.preventDefault();
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                alert('The new passwords entered do not match');
-                e.preventDefault();
-                return;
-            }
-        });
-
         // Save profile confirmation
         document.getElementById('save-profile-btn').addEventListener('click', function(e) {
             if (!confirm('Are you sure you want to save your profile changes?')) {
                 e.preventDefault();
-            }
-        });
-
-        // Change password confirmation
-        document.getElementById('change-password-btn').addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to change your password?')) {
-                e.preventDefault();
-            }
-        });
-
-        // Delete account confirmation
-        document.getElementById('delete-account-btn').addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete your account? This action cannot be undone and all data will be permanently deleted.')) {
-                if (prompt('Please enter "DELETE" to confirm') === 'DELETE') {
-                    window.location.href = 'delete_account.php';
-                }
             }
         });
     </script>
