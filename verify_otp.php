@@ -1,27 +1,23 @@
 <?php
 session_start();
-<<<<<<< HEAD
 
 require_once 'db_connection.php';
-=======
-require_once 'db_connect.php';
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
 
 // Initialize variables
 $otp = '';
 $otp_error = '';
-$success_message = '';
+$success_message = 'OTP has been sent to your email. Please check your inbox.';
 $error_message = '';
 
-<<<<<<< HEAD
-// Check if OTP was just sent
-if (isset($_SESSION['otp_sent']) && $_SESSION['otp_sent']) {
-    $success_message = 'OTP has been sent to your email. Please check your inbox.';
-    unset($_SESSION['otp_sent']); // Clear the flag after displaying
+// Debug: Log session and server time
+error_log("Session reset_email: " . ($_SESSION['reset_email'] ?? 'Not set'));
+error_log("Server time: " . date('Y-m-d H:i:s'));
+
+// Check if reset_email session variable exists
+if (!isset($_SESSION['reset_email'])) {
+    $error_message = 'Session expired. Please request a new OTP.';
 }
 
-=======
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
 // Generate CSRF token
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -32,6 +28,9 @@ if (isset($_POST['verify_btn'])) {
     $otp = trim($_POST['otp'] ?? '');
     $csrf_token = $_POST['csrf_token'] ?? '';
     $email = $_SESSION['reset_email'] ?? '';
+
+    // Debug: Log submitted data
+    error_log("Submitted OTP: $otp, Email: $email, CSRF: $csrf_token");
 
     // Verify CSRF token
     if (!isset($_SESSION['csrf_token']) || $csrf_token !== $_SESSION['csrf_token']) {
@@ -50,8 +49,12 @@ if (isset($_POST['verify_btn'])) {
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
 
+                // Debug: Log validation result
+                error_log("OTP validation result: " . mysqli_stmt_num_rows($stmt));
+
                 if (mysqli_stmt_num_rows($stmt) === 1) {
                     // OTP valid, proceed to reset
+                    $_SESSION['reset_token'] = $otp; // 设置 reset_token
                     mysqli_stmt_close($stmt);
                     // Delete used OTP
                     $delete_sql = "DELETE FROM password_reset WHERE email = ?";
@@ -59,24 +62,27 @@ if (isset($_POST['verify_btn'])) {
                         mysqli_stmt_bind_param($delete_stmt, 's', $email);
                         mysqli_stmt_execute($delete_stmt);
                         mysqli_stmt_close($delete_stmt);
+                    } else {
+                        error_log("Failed to prepare delete statement: " . mysqli_error($conn));
                     }
-<<<<<<< HEAD
-                    $_SESSION['reset_token'] = $otp; // Ensure token is available
-                    header('Location: reset_password_form.php');
-=======
-                    unset($_SESSION['reset_email']); // Clear session
-                    header('Location: reset_password_form.php'); // 跳转到重置密码页面
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
-                    exit();
+
+                    // Debug: Log redirect intention
+                    error_log("Redirecting to reset_password_form.php for Email: $email");
+                    error_log("Session after redirect: " . print_r($_SESSION, true));
+                    header('Location: reset_password_form.php'); // Ensure redirect to reset_password_form.php
+                    exit(); // Ensure script stops after redirect
                 } else {
                     $error_message = 'Invalid or expired OTP. Please request a new one.';
+                    error_log("OTP validation failed for Email: $email, OTP: $otp");
                 }
             } else {
                 $error_message = 'Database error. Please try again later.';
+                error_log("Database execute error: " . mysqli_error($conn));
             }
             mysqli_stmt_close($stmt);
         } else {
             $error_message = 'Database error. Please try again later.';
+            error_log("Database prepare error: " . mysqli_error($conn));
         }
     }
 }
@@ -139,21 +145,16 @@ mysqli_close($conn);
         }
         #verify-form {
             padding: 25px;
+            text-align: center; /* Center align form content */
         }
         .input-group {
             position: relative;
             margin-bottom: 20px;
-<<<<<<< HEAD
             text-align: left;
         }
         .input-group label {
             display: block;
-=======
-        }
-        .input-group label {
-            display: block;
             text-align: left;
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
             margin-bottom: 5px;
             color: #555;
             font-size: 14px;
@@ -182,25 +183,20 @@ mysqli_close($conn);
             width: 100%;
             padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px; /* Increased radius for modern look */
             color: #2B3990;
-            font-weight: bold;
-            font-size: 16px;
+            font-weight: 600; /* Slightly softer bold */
+            font-size: 18px; /* Larger font size */
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
+            transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+            margin: 10px auto 0; /* Center the button */
+            display: block; /* Ensure block-level for centering */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
         }
         #verify-form input[type=submit]:hover {
             background-color: #b5c500;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
         }
-<<<<<<< HEAD
-        .error-alert, .success-alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            width: 100%;
-=======
         #verify-form p {
             margin-top: 20px;
             text-align: center;
@@ -213,24 +209,24 @@ mysqli_close($conn);
         #verify-form p a:hover {
             color: #2B3990;
             text-decoration: underline;
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         }
         .error-alert {
             background-color: #fce4e4;
             border: 1px solid #e74c3c;
             color: #e74c3c;
-<<<<<<< HEAD
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
         }
         .success-alert {
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
-=======
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 20px;
             text-align: center;
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         }
         .instructions {
             margin-bottom: 20px;
@@ -253,14 +249,11 @@ mysqli_close($conn);
             <div class="instructions">
                 Enter the OTP sent to your MMU email address below to reset your password.
             </div>
-<<<<<<< HEAD
             <?php if (!empty($success_message)): ?>
                 <div class="success-alert">
                     <?php echo htmlspecialchars($success_message); ?>
                 </div>
             <?php endif; ?>
-=======
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
             <?php if (!empty($error_message)): ?>
                 <div class="error-alert">
                     <?php echo htmlspecialchars($error_message); ?>
@@ -277,11 +270,7 @@ mysqli_close($conn);
                 </div>
                 <input type="submit" name="verify_btn" value="Verify">
             </form>
-<<<<<<< HEAD
-            <p><a href="reset_password.php" style="text-decoration: none; color: #00AEEF; font-size: 14px;">Resend OTP</a></p>
-=======
             <p><a href="reset_password.php">Resend OTP</a></p>
->>>>>>> bcc8a4adc3f23035369f82c5393af8e628d8ac81
         </div>
     </div>
 </body>

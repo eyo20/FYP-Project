@@ -1,13 +1,14 @@
 <?php
 session_start();
 require_once 'db_connection.php';
-require 'vendor/autoload.php'; //PHPMailer
+require 'vendor/autoload.php'; // PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-
 if ($conn) {
     mysqli_query($conn, "SET time_zone = '+08:00'");
+    // Enable MySQL error reporting
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 }
 
 // Initialize variables
@@ -36,89 +37,103 @@ if (isset($_POST['reset_btn'])) {
     } elseif (!preg_match('/@.*\.mmu\.edu\.my$/', $email)) {
         $email_error = 'Not an MMU email address';
     } else {
-        // Check if email exists
-        $sql = "SELECT user_id FROM user WHERE email = ?";
-        if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, 's', $email);
-            if (mysqli_stmt_execute($stmt)) {
-                mysqli_stmt_store_result($stmt);
+        try {
+            // Check if email exists
+            $sql = "SELECT user_id FROM user WHERE email = ?";
+            if ($stmt = mysqli_prepare($conn, $sql)) {
+                mysqli_stmt_bind_param($stmt, 's', $email);
+                if (mysqli_stmt_execute($stmt)) {
+                    mysqli_stmt_store_result($stmt);
 
-                if (mysqli_stmt_num_rows($stmt) === 1) {
-                    // Generate OTP (6 digits)
-                    $otp = sprintf("%06d", rand(0, 999999));
+                    if (mysqli_stmt_num_rows($stmt) === 1) {
+                        // Generate OTP (6 digits)
+                        $otp = sprintf("%06d", rand(0, 999999));
 
-                    // Delete existing tokens
-                    $delete_sql = "DELETE FROM password_reset WHERE email = ?";
-                    if ($delete_stmt = mysqli_prepare($conn, $delete_sql)) {
-                        mysqli_stmt_bind_param($delete_stmt, 's', $email);
-                        mysqli_stmt_execute($delete_stmt);
-                        mysqli_stmt_close($delete_stmt);
-                    }
-
-                    // Store OTP with expires_at calculated by MySQL
-                    $insert_sql = "INSERT INTO password_reset (email, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))";
-                    if ($insert_stmt = mysqli_prepare($conn, $insert_sql)) {
-                        mysqli_stmt_bind_param($insert_stmt, 'ss', $email, $otp);
-
-                        if (mysqli_stmt_execute($insert_stmt)) {
-                            // Fetch created_at and expires_at for logging
-                            $check_sql = "SELECT created_at, expires_at FROM password_reset WHERE email = ? AND token = ?";
-                            if ($check_stmt = mysqli_prepare($conn, $check_sql)) {
-                                mysqli_stmt_bind_param($check_stmt, 'ss', $email, $otp);
-                                mysqli_stmt_execute($check_stmt);
-                                mysqli_stmt_bind_result($check_stmt, $created_at, $expires_at);
-                                mysqli_stmt_fetch($check_stmt);
-                                mysqli_stmt_close($check_stmt);
-                                error_log("OTP: $otp, Email: $email, Created: $created_at, Expires: $expires_at");
-                            }
-
-                            // Send OTP via Gmail SMTP
-                            $mail = new PHPMailer(true);
-                            try {
-                                // Server settings
-                                $mail->isSMTP();
-                                $mail->Host = 'smtp.gmail.com';
-                                $mail->SMTPAuth = true;
-                                $mail->Username = 'peerlearn.not.reply@gmail.com'; 
-                                $mail->Password = 'epqb obac nhed uflg'; 
-                                $mail->SMTPSecure = 'tls';
-                                $mail->Port = 587;
-
-                                // Recipients
-                                $mail->setFrom('peerlearn.not.reply@gmail.com', 'PeerLearn');
-                                $mail->addAddress($email);
-                                $mail->addReplyTo('no-reply@yourdomain.com', 'No Reply');
-
-                                // Content
-                                $mail->isHTML(true);
-                                $mail->Subject = 'PeerLearn - OTP for Password Reset';
-                                $mail->Body = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;"><div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;"><h2 style="color: #2B3990; text-align: center;">PeerLearn Password Reset</h2><p>Hello,</p><p>Your OTP for password reset is: <strong>' . $otp . '</strong></p><p>This OTP expires in 15 minutes.</p><p>If you didn’t request this, ignore this email.</p><p>Thank you,<br>The PeerLearn Team</p></div></body></html>';
-                                $mail->AltBody = "Your OTP for password reset is: $otp\nExpires in 15 minutes.\nIf you didnt request this, ignore this.";
-
-                                $mail->send();
-                                $_SESSION['reset_email'] = $email;
-                                header('Location: verify_otp.php');
-                                exit();
-                            } catch (Exception $e) {
-                                error_log("Mailer Error: " . $mail->ErrorInfo);
-                                $error_message = 'Failed to send OTP: ' . $e->getMessage();
-                            }
+                        // Delete existing tokens
+                        $delete_sql = "DELETE FROM password_reset WHERE email = ?";
+                        if ($delete_stmt = mysqli_prepare($conn, $delete_sql)) {
+                            mysqli_stmt_bind_param($delete_stmt, 's', $email);
+                            mysqli_stmt_execute($delete_stmt);
+                            mysqli_stmt_close($delete_stmt);
                         } else {
-                            $error_message = 'Something went wrong. Please try again later.';
+                            throw new Exception('Failed to prepare delete statement: ' . mysqli_error($conn));
                         }
-                        mysqli_stmt_close($insert_stmt);
+
+                        // Store OTP with expires_at calculated by MySQL
+                        $insert_sql = "INSERT INTO password_reset (email, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))";
+                        if ($insert_stmt = mysqli_prepare($conn, $insert_sql)) {
+                            mysqli_stmt_bind_param($insert_stmt, 'ss', $email, $otp);
+                            if (mysqli_stmt_execute($insert_stmt)) {
+                                // Check if insertion was successful
+                                if (mysqli_stmt_affected_rows($insert_stmt) === 1) {
+                                    // Fetch created_at and expires_at for logging
+                                    $check_sql = "SELECT created_at, expires_at FROM password_reset WHERE email = ? AND token = ?";
+                                    if ($check_stmt = mysqli_prepare($conn, $check_sql)) {
+                                        mysqli_stmt_bind_param($check_stmt, 'ss', $email, $otp);
+                                        mysqli_stmt_execute($check_stmt);
+                                        mysqli_stmt_bind_result($check_stmt, $created_at, $expires_at);
+                                        if (mysqli_stmt_fetch($check_stmt)) {
+                                            error_log("OTP: $otp, Email: $email, Created: $created_at, Expires: $expires_at");
+                                        } else {
+                                            error_log("Failed to fetch OTP record for Email: $email, OTP: $otp");
+                                        }
+                                        mysqli_stmt_close($check_stmt);
+                                    }
+
+                                    // Send OTP via Gmail SMTP
+                                    $mail = new PHPMailer(true);
+                                    try {
+                                        // Server settings
+                                        $mail->isSMTP();
+                                        $mail->Host = 'smtp.gmail.com';
+                                        $mail->SMTPAuth = true;
+                                        $mail->Username = 'peerlearn.not.reply@gmail.com';
+                                        $mail->Password = 'epqb obac nhed uflg';
+                                        $mail->SMTPSecure = 'tls';
+                                        $mail->Port = 587;
+
+                                        // Recipients
+                                        $mail->setFrom('peerlearn.not.reply@gmail.com', 'PeerLearn');
+                                        $mail->addAddress($email);
+                                        $mail->addReplyTo('no-reply@yourdomain.com', 'No Reply');
+
+                                        // Content
+                                        $mail->isHTML(true);
+                                        $mail->Subject = 'PeerLearn - OTP for Password Reset';
+                                        $mail->Body = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;"><div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;"><h2 style="color: #2B3990; text-align: center;">PeerLearn Password Reset</h2><p>Hello,</p><p>Your OTP for password reset is: <strong>' . $otp . '</strong></p><p>This OTP expires in 15 minutes.</p><p>If you didn’t request this, ignore this email.</p><p>Thank you,<br>The PeerLearn Team</p></div></body></html>';
+                                        $mail->AltBody = "Your OTP for password reset is: $otp\nExpires in 15 minutes.\nIf you didn't request this, ignore this.";
+
+                                        $mail->send();
+                                        $_SESSION['reset_email'] = $email;
+                                        header('Location: verify_otp.php');
+                                        exit();
+                                    } catch (Exception $e) {
+                                        error_log("Mailer Error: " . $mail->ErrorInfo);
+                                        $error_message = 'Failed to send OTP: ' . htmlspecialchars($e->getMessage());
+                                    }
+                                } else {
+                                    throw new Exception('OTP insertion failed: No rows affected.');
+                                }
+                            } else {
+                                throw new Exception('OTP insertion failed: ' . mysqli_error($conn));
+                            }
+                            mysqli_stmt_close($insert_stmt);
+                        } else {
+                            throw new Exception('Failed to prepare insert statement: ' . mysqli_error($conn));
+                        }
                     } else {
-                        $error_message = 'Database error. Please try again later.';
+                        $success_message = 'If your email exists in our system, you will receive an OTP.';
                     }
                 } else {
-                    $success_message = 'If your email exists in our system, you will receive an OTP.';
+                    throw new Exception('Failed to execute email check: ' . mysqli_error($conn));
                 }
+                mysqli_stmt_close($stmt);
             } else {
-                $error_message = 'Something went wrong. Please try again later.';
+                throw new Exception('Failed to prepare email check statement: ' . mysqli_error($conn));
             }
-            mysqli_stmt_close($stmt);
-        } else {
-            $error_message = 'Database error. Please try again later.';
+        } catch (Exception $e) {
+            error_log("Database Error: " . $e->getMessage());
+            $error_message = 'Database error: ' . htmlspecialchars($e->getMessage());
         }
     }
 }
@@ -181,10 +196,12 @@ mysqli_close($conn);
         }
         #forgot-form {
             padding: 25px;
+            text-align: center; /* Center align form content */
         }
         .input-group {
             position: relative;
             margin-bottom: 20px;
+            text-align: left;
         }
         .input-group label {
             display: block;
@@ -217,16 +234,19 @@ mysqli_close($conn);
             width: 100%;
             padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px; /* Increased radius for modern look */
             color: #2B3990;
-            font-weight: bold;
-            font-size: 16px;
+            font-weight: 600; /* Slightly softer bold */
+            font-size: 18px; /* Larger font size */
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
+            transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+            margin: 10px auto 0; /* Center the button */
+            display: block; /* Ensure block-level for centering */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
         }
         #forgot-form input[type=submit]:hover {
             background-color: #b5c500;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
         }
         #forgot-form p {
             margin-top: 20px;
