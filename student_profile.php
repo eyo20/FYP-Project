@@ -677,11 +677,11 @@ $conn->close();
 
                 <div class="profile-info">
                     <div class="info-item">
-                        <div class="info-icon">ðŸ“§</div>
+                        <div class="info-icon">Email:</div>
                         <div class="info-text"><?php echo htmlspecialchars($email); ?></div>
                     </div>
                     <div class="info-item">
-                        <div class="info-icon">ðŸ“±</div>
+                        <div class="info-icon">phone</div>
                         <div class="info-text"><?php echo $phone ? htmlspecialchars($phone) : 'Not Set'; ?></div>
                     </div>
                 </div>
