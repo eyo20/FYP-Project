@@ -3,7 +3,7 @@
     "description": "PeerLearn Final Year Project - A password reset system with PHPMailer",
     "type": "project",
     "require": {
-        "phpmailer/phpmailer": "^6.6"
+        "phpmailer/phpmailer": "^6.10"
     },
     "license": "proprietary",
     "authors": [

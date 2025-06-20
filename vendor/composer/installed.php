@@ -3,7 +3,7 @@
         'name' => 'peerlearn/fyp-project',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '64aab4467730a0bd05c95316758315b7bca08c4a',
+        'reference' => '36c35a62d43a6e5c2ec28900afd3a93df463ff32',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'peerlearn/fyp-project' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '64aab4467730a0bd05c95316758315b7bca08c4a',
+            'reference' => '36c35a62d43a6e5c2ec28900afd3a93df463ff32',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
