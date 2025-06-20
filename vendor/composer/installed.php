@@ -1,20 +1,20 @@
 <?php return array(
     'root' => array(
-        'name' => '__root__',
+        'name' => 'peerlearn/fyp-project',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'fcc87c097159a0407c24beabe1642150059ada8b',
-        'type' => 'library',
+        'reference' => '64aab4467730a0bd05c95316758315b7bca08c4a',
+        'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        '__root__' => array(
+        'peerlearn/fyp-project' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'fcc87c097159a0407c24beabe1642150059ada8b',
-            'type' => 'library',
+            'reference' => '64aab4467730a0bd05c95316758315b7bca08c4a',
+            'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,

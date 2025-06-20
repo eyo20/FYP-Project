@@ -1,5 +1,16 @@
 {
+    "name": "peerlearn/fyp-project",
+    "description": "PeerLearn Final Year Project - A password reset system with PHPMailer",
+    "type": "project",
     "require": {
-        "phpmailer/phpmailer": "^6.10"
-    }
+        "phpmailer/phpmailer": "^6.6"
+    },
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "PeerLearn",
+            "email": "peerlearn.not.reply@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
 }
