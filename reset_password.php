@@ -101,7 +101,7 @@ if (isset($_POST['reset_btn'])) {
                                         $mail->isHTML(true);
                                         $mail->Subject = 'PeerLearn - OTP for Password Reset';
                                         $mail->Body = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;"><div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;"><h2 style="color: #2B3990; text-align: center;">PeerLearn Password Reset</h2><p>Hello,</p><p>Your OTP for password reset is: <strong>' . $otp . '</strong></p><p>This OTP expires in 15 minutes.</p><p>If you didn’t request this, ignore this email.</p><p>Thank you,<br>The PeerLearn Team</p></div></body></html>';
-                                        $mail->AltBody = "Your OTP for password reset is: $otp\nExpires in 15 minutes.\nIf you didn't request this, ignore this.";
+                                        $mail->AltBody = "Your OTP for password reset is: $otp\nExpires in 15 minutes.\nIf you did not request this, ignore this.";
 
                                         $mail->send();
                                         $_SESSION['reset_email'] = $email;
