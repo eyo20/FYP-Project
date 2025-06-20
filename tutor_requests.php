@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clear_search'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     $stmt_search = $conn->prepare("
         SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
+               sr.time_slot, sr.selected_date, sr.notes, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
         FROM session_requests sr
         JOIN course c ON sr.course_id = c.id
         JOIN user u ON sr.student_id = u.user_id
@@ -332,7 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     // Default view for pending requests
     $stmt = $conn->prepare("
         SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-               sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
+               sr.time_slot, sr.selected_date, sr.notes, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
         FROM session_requests sr
         JOIN course c ON sr.course_id = c.id
         JOIN user u ON sr.student_id = u.user_id
@@ -357,7 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
 $processed_requests = [];
 $processed_query = "
     SELECT sr.request_id, sr.tutor_id, sr.student_id, sr.course_id, sr.status, sr.created_at, 
-           sr.time_slot, sr.selected_date, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
+           sr.time_slot, sr.selected_date, sr.notes, c.course_name, u.first_name, u.last_name, u.profile_image, l.location_name
     FROM session_requests sr
     JOIN course c ON sr.course_id = c.id
     JOIN user u ON sr.student_id = u.user_id
@@ -912,6 +912,14 @@ $conn->close();
                                             : 'Not specified'; ?>
                                     </div>
                                 </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Notes:</div>
+                                    <div class="detail-value">
+                                        <?php echo !empty($request['notes']) 
+                                            ? htmlspecialchars($request['notes']) 
+                                            : 'No notes provided'; ?>
+                                    </div>
+                                </div>
                             </div>
                             <div class="request-actions">
                                 <form method="post" action="tutor_requests.php">
@@ -934,7 +942,7 @@ $conn->close();
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                    <h3>No Pending Requests</h3>
+                    <h3>No Records Found</h3>
                     <p class="empty-text">You don't have any pending tutoring requests at the moment.</p>
                 </div>
             <?php endif; ?>
@@ -992,6 +1000,14 @@ $conn->close();
                                             <?php echo !empty($request['created_at']) 
                                                 ? date('M d, Y', strtotime($request['created_at'])) 
                                                 : 'Not specified'; ?>
+                                        </div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Notes:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['notes']) 
+                                                ? htmlspecialchars($request['notes']) 
+                                                : 'No notes provided'; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -1055,6 +1071,14 @@ $conn->close();
                                                 : 'Not specified'; ?>
                                         </div>
                                     </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Notes:</div>
+                                        <div class="detail-value">
+                                            <?php echo !empty($request['notes']) 
+                                                ? htmlspecialchars($request['notes']) 
+                                                : 'No notes provided'; ?>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="request-actions">
                                     <a href="messages.php?student_id=<?php echo htmlspecialchars($request['student_id'] ?? ''); ?>" class="btn btn-message"><i class="fas fa-envelope"></i> Message</a>
@@ -1066,7 +1090,7 @@ $conn->close();
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-history"></i></div>
-                    <h3>No Processed Requests</h3>
+                    <h3>No Records Found</h3>
                     <p class="empty-text">You haven't processed any tutoring requests yet.</p>
                 </div>
             <?php endif; ?>

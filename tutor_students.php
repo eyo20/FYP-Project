@@ -70,6 +70,7 @@ if ($stmt) {
 }
 
 // 获取当前预约的学生列表（状态为 confirmed）
+$current_sessions = []; // 初始化为空数组
 $current_datetime = date('Y-m-d H:i:00');
 $stmt = $conn->prepare("
     SELECT s.session_id, s.start_datetime, s.end_datetime, s.status, s.cancellation_reason,
@@ -682,6 +683,7 @@ $conn->close();
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
+        <!-- Tabs for navigating between Current Sessions, Past Sessions, and All Students -->
         <div class="tabs">
             <div class="tab active" data-tab="current-sessions">Current Sessions</div>
             <div class="tab" data-tab="past-sessions">Past Sessions</div>
@@ -690,7 +692,7 @@ $conn->close();
 
         <!-- Current Sessions Tab -->
         <div class="tab-content active" id="current-sessions">
-            <?php if (count($current_sessions) > 0): ?>
+            <?php if (!empty($current_sessions)): ?>
                 <div class="session-list">
                     <?php foreach ($current_sessions as $session): ?>
                         <?php renderSessionCard($session, $student_details); ?>
@@ -699,15 +701,15 @@ $conn->close();
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-calendar-alt"></i></div>
-                    <h3>No Current Sessions</h3>
-                    <p class="empty-text">You currently have no sessions with students.</p>
+                    <h3>No Records Found</h3>
+                    <p class="empty-text">There are no current sessions to display yet.</p>
                 </div>
             <?php endif; ?>
         </div>
 
         <!-- Past Sessions Tab -->
         <div class="tab-content" id="past-sessions">
-            <?php if (count($past_sessions) > 0): ?>
+            <?php if (!empty($past_sessions)): ?>
                 <div class="session-list">
                     <?php foreach ($past_sessions as $session): ?>
                         <?php renderSessionCard($session, $student_details); ?>
@@ -716,22 +718,22 @@ $conn->close();
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-history"></i></div>
-                    <h3>No Past Sessions</h3>
-                    <p class="empty-text">You haven't completed any sessions yet.</p>
+                    <h3>No Records Found</h3>
+                    <p class="empty-text">There are no past sessions to display yet.</p>
                 </div>
             <?php endif; ?>
         </div>
 
         <!-- All Students Tab -->
         <div class="tab-content" id="all-students">
-            <?php if (count($student_stats) > 0): ?>
+            <?php if (!empty($student_stats)): ?>
                 <div class="session-list">
                     <?php foreach ($student_stats as $student_id => $student): ?>
                         <div class="request-card view-student" data-id="<?php echo htmlspecialchars($student_id); ?>">
                             <div class="request-header">
                                 <div class="student-avatar" data-id="<?php echo htmlspecialchars($student_id); ?>">
                                     <img src="<?php echo htmlspecialchars($student_details[$student_id]['profile_image']); ?>" alt="Student" class="profile-image" 
-                                         onerror="this.src='assets/default-avatar.png'; this.onerror=null;">
+                                        onerror="this.src='assets/default-avatar.png'; this.onerror=null;">
                                     <span style="display:none;"><?php echo htmlspecialchars(substr($student['first_name'] ?? '', 0, 1) . substr($student['last_name'] ?? '', 0, 1)); ?></span>
                                 </div>
                                 <div class="request-info">
@@ -747,10 +749,6 @@ $conn->close();
                                     <div class="detail-label">Completed:</div>
                                     <div class="detail-value"><?php echo $student['completed_sessions']; ?></div>
                                 </div>
-                                <!-- <div class="detail-item">
-                                    <div class="detail-label">Cancelled:</div>
-                                    <div class="detail-value"><?php echo $student['cancelled_sessions']; ?></div>
-                                </div> -->
                                 <div class="detail-item">
                                     <div class="detail-label">Last Session:</div>
                                     <div class="detail-value">
@@ -781,8 +779,8 @@ $conn->close();
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-users"></i></div>
-                    <h3>No Students</h3>
-                    <p class="empty-text">You haven't had any sessions with students yet.</p>
+                    <h3>No Records Found</h3>
+                    <p class="empty-text">There are no students to display yet.</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -844,6 +842,14 @@ $conn->close();
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
+        });
+
+        // Ensure 'Current Sessions' tab is active on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="current-sessions"]').classList.add('active');
+            document.getElementById('current-sessions').classList.add('active');
         });
     </script>
 </body>
