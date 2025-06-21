@@ -88,7 +88,7 @@ if (isset($_POST['reset_btn'])) {
                                         $mail->Host = 'smtp.gmail.com';
                                         $mail->SMTPAuth = true;
                                         $mail->Username = 'peerlearn.not.reply@gmail.com';
-                                        $mail->Password = 'epqb obac nhed uflg';
+                                        $mail->Password = 'qlau tnlr oyin jmnu';
                                         $mail->SMTPSecure = 'tls';
                                         $mail->Port = 587;
 
