@@ -2993,3 +2993,176 @@ Certifies knowledge of cloud concepts and AWS services, enabling guidance on mod
 [20-Jun-2025 14:46:06 Europe/Berlin] Processing for user_id: 16
 [20-Jun-2025 17:00:09 Europe/Berlin] Processing for user_id: 16
 [20-Jun-2025 17:43:31 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:23:54 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:06 Europe/Berlin] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[29-Jun-2025 00:25:06 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:25:06 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:06 Europe/Berlin] POST request received at 2025-06-29 00:25:06 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:25:06 Europe/Berlin] Delete CGPA requested for user_id: 16
+[29-Jun-2025 00:25:06 Europe/Berlin] CGPA deleted for user_id: 16
+[29-Jun-2025 00:25:06 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:18 Europe/Berlin] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[29-Jun-2025 00:25:18 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 屏幕截图 2022-04-12 233141.png
+            [full_path] => 屏幕截图 2022-04-12 233141.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpAA4A.tmp
+            [error] => 0
+            [size] => 605982
+        )
+
+)
+
+[29-Jun-2025 00:25:18 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:18 Europe/Berlin] POST request received at 2025-06-29 00:25:18 for user_id: 16 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 屏幕截图 2022-04-12 233141.png
+            [full_path] => 屏幕截图 2022-04-12 233141.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpAA4A.tmp
+            [error] => 0
+            [size] => 605982
+        )
+
+)
+
+[29-Jun-2025 00:25:18 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/68606bce93bdc______________2022-04-12_233141.png
+[29-Jun-2025 00:25:18 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:32 Europe/Berlin] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[29-Jun-2025 00:25:32 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:25:32 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:25:32 Europe/Berlin] POST request received at 2025-06-29 00:25:32 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:25:32 Europe/Berlin] Delete CGPA requested for user_id: 16
+[29-Jun-2025 00:25:32 Europe/Berlin] File deleted: Uploads/credentials/68606bce93bdc______________2022-04-12_233141.png
+[29-Jun-2025 00:25:32 Europe/Berlin] CGPA deleted for user_id: 16
+[29-Jun-2025 00:25:32 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:08 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 1
+    [hourly_rate] => 23
+)
+
+[29-Jun-2025 00:26:08 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:26:08 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:08 Europe/Berlin] POST request received at 2025-06-29 00:26:08 for user_id: 16 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 1
+    [hourly_rate] => 23
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:26:08 Europe/Berlin] Processing add course
+[29-Jun-2025 00:26:08 Europe/Berlin] User ID: 16, Course ID: 1, Hourly Rate: 23
+[29-Jun-2025 00:26:08 Europe/Berlin] Duplicate course detected: tutor_id=16, course_id=1
+[29-Jun-2025 00:26:08 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:19 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 9
+    [hourly_rate] => 34
+)
+
+[29-Jun-2025 00:26:19 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:26:19 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:19 Europe/Berlin] POST request received at 2025-06-29 00:26:19 for user_id: 16 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 9
+    [hourly_rate] => 34
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:26:19 Europe/Berlin] Processing add course
+[29-Jun-2025 00:26:19 Europe/Berlin] User ID: 16, Course ID: 9, Hourly Rate: 34
+[29-Jun-2025 00:26:19 Europe/Berlin] Course added successfully for user ID: 16, course_id: 9
+[29-Jun-2025 00:26:19 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:26 Europe/Berlin] POST data received: Array
+(
+    [remove_subject] => 1
+    [course_id] => 9
+)
+
+[29-Jun-2025 00:26:26 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:26:26 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:26 Europe/Berlin] POST request received at 2025-06-29 00:26:26 for user_id: 16 - POST: Array
+(
+    [remove_subject] => 1
+    [course_id] => 9
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:26:26 Europe/Berlin] Processing remove course
+[29-Jun-2025 00:26:26 Europe/Berlin] Course removed successfully for user ID: 16
+[29-Jun-2025 00:26:26 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:40 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 9
+    [hourly_rate] => 35
+)
+
+[29-Jun-2025 00:26:40 Europe/Berlin] FILES data received: Array
+(
+)
+
+[29-Jun-2025 00:26:40 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:26:40 Europe/Berlin] POST request received at 2025-06-29 00:26:40 for user_id: 16 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 9
+    [hourly_rate] => 35
+)
+ | FILES: No FILES data
+[29-Jun-2025 00:26:40 Europe/Berlin] Processing add course
+[29-Jun-2025 00:26:40 Europe/Berlin] User ID: 16, Course ID: 9, Hourly Rate: 35
+[29-Jun-2025 00:26:40 Europe/Berlin] Course added successfully for user ID: 16, course_id: 9
+[29-Jun-2025 00:26:40 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 00:30:42 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 18:05:37 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 19:18:15 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 19:21:13 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 19:21:46 Europe/Berlin] Processing for user_id: 16
+[29-Jun-2025 19:21:59 Europe/Berlin] Processing for user_id: 16

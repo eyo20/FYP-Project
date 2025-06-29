@@ -666,7 +666,7 @@ $conn->close();
                         <div class="profile-image-placeholder" id="profile-image-placeholder"><?php echo strtoupper(substr($first_name, 0, 1)); ?></div>
                     <?php endif; ?>
                     <label for="profile_image_upload" class="edit-profile-image">
-                        <i>ðŸ“·</i>
+                        <i>📷</i>
                     </label>
                     <form id="image-upload-form" action="" method="post" enctype="multipart/form-data" style="display: none;">
                         <input type="file" id="profile_image_upload" name="profile_image" accept="image/jpeg,image/jpg,image/png,image/gif">

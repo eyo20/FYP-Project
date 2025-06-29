@@ -1135,6 +1135,7 @@ ob_end_flush();
                 </div>
                 <h2 class="profile-name"><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h2>
                 <p class="profile-role">Tutor</p>
+                <p>Certification status:</p>
                 <?php
                 $verification_status = 'Pending Verification';
                 $verification_style = 'background-color: #6c757d; color: white;';
@@ -1149,6 +1150,7 @@ ob_end_flush();
                 <div class="verified-badge" style="<?php echo $verification_style; ?>">
                     <?php echo htmlspecialchars($verification_status); ?>
                 </div>
+        
                 <div class="profile-info">
                     <div class="info-item">
                         <div class="info-icon">📧</div>

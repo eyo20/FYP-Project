@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - PeerLearn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Color Variables */
+        :root {
+            --primary-color: #2B3990;
+            --secondary-color: #00AEEF;
+            --accent-color: #C4D600;
+            --light-color: #F8F9FA;
+            --dark-color: #333333;
+            --white: #FFFFFF;
+            --logo-gradient-blue: #00AEEF;
+            --logo-gradient-green: #00A99D;
+        }
+
+        /* Container Styles */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #b1c100;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background-color: #009bd5;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 70px;
+        }
+
+        .navbar > .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0 15px;
+        }
+
+        .nav-link {
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-buttons .btn {
+            margin-left: 15px;
+        }
+
+        /* Content Section */
+        .content {
+            padding: 80px 0;
+            background-color: var(--light-color);
+        }
+
+        .content-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .content-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            margin-bottom: 30px;
+        }
+
+        .content-section {
+            margin-bottom: 30px;
+        }
+
+        .content-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .content-section p {
+            font-size: 1rem;
+            color: var(--dark-color);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 0 30px;
+            background-color: var(--dark-color);
+            color: var(--white);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .footer-contact p {
+            margin-bottom: 10px;
+        }
+
+        .footer-contact h4 {
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .footer-links h4 {
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: var(--light-color);
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .content {
+                padding: 40px 0;
+            }
+
+            .content-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 15px 0;
+            }
+
+            .logo {
+                margin-bottom: 15px;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-item {
+                margin: 5px 10px;
+            }
+
+            .content-title {
+                font-size: 1.75rem;
+            }
+
+            .content-section h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <a href="home_page.html">
+                <img src="image/fyp_peerlearn_logo.png" alt="PeerLearn Logo">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                        <a href="for_students.html" class="nav-link">FOR STUDENTS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="for_tutors.html" class="nav-link">FOR TUTORS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="learn_community.html" class="nav-link">LEARNING COMMUNITY</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="about_us.html" class="nav-link">ABOUT US</a>
+                    </li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="login.php" class="btn btn-secondary">LOGIN/REGISTER</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="content">
+        <div class="container">
+            <h1 class="content-title">Privacy Policy</h1>
+            <p class="content-subtitle">Last Updated: May 30, 2025</p>
+
+            <div class="content-section">
+                <h2>1. Information We Collect</h2>
+                <p>We collect personal information such as your name, email address, and MMU student ID when you register on PeerLearn. We also collect data on your usage of the platform, such as tutoring session details and preferences.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>2. How We Use Your Information</h2>
+                <p>Your information is used to provide and improve our services, match you with tutors, and facilitate communication. We may also use it to send you updates or notifications about PeerLearn.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>3. Sharing Your Information</h2>
+                <p>We share your information with tutors only to facilitate tutoring sessions. We do not sell or share your data with third parties for marketing purposes.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>4. Data Security</h2>
+                <p>We implement reasonable measures to protect your data, but no system is completely secure. You are responsible for maintaining the confidentiality of your account credentials.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>5. Your Rights</h2>
+                <p>You may access, update, or delete your personal information by contacting us at <a href="mailto:info@peerlearn.com" class="nav-link">info@peerlearn.com</a>. You may also opt out of non-essential communications.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>6. Cookies</h2>
+                <p>We use cookies to enhance your experience on our platform. See our <a href="cookie_policy.html" class="nav-link">Cookie Policy</a> for more details.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>7. Contact Us</h2>
+                <p>For questions about this Privacy Policy, please contact us at <a href="mailto:info@peerlearn.com" class="nav-link">info@peerlearn.com</a>.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="home_page.html">Home</a></li>
+                        <li><a href="find_tutors.php">Find a Tutor</a></li>
+                        <li><a href="register.php">Become a Tutor</a></li>
+                        <li><a href="learn_community.html">Learning Community</a></li>
+                        <li><a href="about_us.html">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Legal Information</h4>
+                    <ul>
+                        <li><a href="terms_of_use.html">Terms of Use</a></li>
+                        <li><a href="privacy_policy.html">Privacy Policy</a></li>
+                        <li><a href="cookie_policy.html">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact Us</h4>
+                    <p><a href="mailto:info@peerlearn.com">info@peerlearn.com</a></p>
+                    <p>+60 127770231</p>
+                    <p>Taman Malim Jaya, 75250 Melaka</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 PeerLearn. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
