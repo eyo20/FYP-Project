@@ -215,7 +215,7 @@ try {
     ";
     if ($search_date !== '' || $search_time_slot !== '') {
         $query .= " AND (? = '' OR DATE(s.start_datetime) = ?)
-                    AND (? = '' OR TIME_FORMAT(TIME(s.start_datetime), '%H:%i') = SUBSTRING_INDEX(?, '-', 1))";
+                    AND (? = '' OR CONCAT(TIME_FORMAT(TIME(s.start_datetime), '%H:%i'), '-', TIME_FORMAT(TIME(s.end_datetime), '%H:%i')) = ?)";
     }
     $query .= " ORDER BY s.start_datetime ASC";
     $stmt = $conn->prepare($query);
@@ -224,7 +224,7 @@ try {
         throw new Exception("Database error: Unable to fetch current sessions.");
     }
     if ($search_date !== '' || $search_time_slot !== '') {
-        $stmt->bind_param("iisssi", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+        $stmt->bind_param("iissss", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
     } else {
         $stmt->bind_param("ii", $student_id, $student_id);
     }
@@ -256,7 +256,7 @@ try {
     ";
     if ($search_date !== '' || $search_time_slot !== '') {
         $query .= " AND (? = '' OR DATE(s.start_datetime) = ?)
-                    AND (? = '' OR TIME_FORMAT(TIME(s.start_datetime), '%H:%i') = SUBSTRING_INDEX(?, '-', 1))";
+                    AND (? = '' OR CONCAT(TIME_FORMAT(TIME(s.start_datetime), '%H:%i'), '-', TIME_FORMAT(TIME(s.end_datetime), '%H:%i')) = ?)";
     }
     $query .= " ORDER BY s.start_datetime DESC";
     $stmt = $conn->prepare($query);
@@ -265,7 +265,7 @@ try {
         throw new Exception("Database error: Unable to fetch past sessions.");
     }
     if ($search_date !== '' || $search_time_slot !== '') {
-        $stmt->bind_param("iisssi", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
+        $stmt->bind_param("iissss", $student_id, $student_id, $search_date, $search_date, $search_time_slot, $search_time_slot);
     } else {
         $stmt->bind_param("ii", $student_id, $student_id);
     }
@@ -470,7 +470,7 @@ try {
                 <option value="">Select Time Slot</option>
                 <option value="08:00-10:00" <?php echo $search_time_slot === '08:00-10:00' ? 'selected' : ''; ?>>08:00 - 10:00</option>
                 <option value="10:00-12:00" <?php echo $search_time_slot === '10:00-12:00' ? 'selected' : ''; ?>>10:00 - 12:00</option>
-                <option value="12:00-15:00" <?php echo $search_time_slot === '12:00-15:00' ? 'selected' : ''; ?>>12:00 - 15:00</option>
+                <option value="12:00-15:00" <?php echo $search_time_slot === '12:00-15:00' ? 'selected' : ''; ?>>12:00 - 14:00</option>
             </select>
             <input type="hidden" name="active_tab" value="<?php echo htmlspecialchars($active_tab); ?>">
             <button type="submit" name="search" class="btn btn-search"><i class="fas fa-search"></i> Search</button>

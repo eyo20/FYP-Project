@@ -3890,3 +3890,111 @@ Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on A
 
 [30-Jun-2025 17:50:39 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/6862b24f91538_DAVID_CHONG_YUN_HIN_1231201533_ACADEMIC_TRANSCIPT__1_.pdf
 [30-Jun-2025 17:50:39 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 18:24:52 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:30:44 Europe/Berlin] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[30-Jun-2025 18:30:44 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 684f2a0fcd831_cgpa.jpeg
+            [full_path] => 684f2a0fcd831_cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpD49F.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[30-Jun-2025 18:30:44 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:30:44 Europe/Berlin] POST request received at 2025-06-30 18:30:44 for user_id: 27 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 684f2a0fcd831_cgpa.jpeg
+            [full_path] => 684f2a0fcd831_cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpD49F.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[30-Jun-2025 18:30:44 Europe/Berlin] CGPA inserted for user_id: 27, file: Uploads/credentials/6862bbb46bc8c_684f2a0fcd831_cgpa.jpeg
+[30-Jun-2025 18:30:44 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:07 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 17
+    [hourly_rate] => 20
+)
+
+[30-Jun-2025 18:31:07 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 18:31:07 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:07 Europe/Berlin] POST request received at 2025-06-30 18:31:07 for user_id: 27 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 17
+    [hourly_rate] => 20
+)
+ | FILES: No FILES data
+[30-Jun-2025 18:31:07 Europe/Berlin] Processing add course
+[30-Jun-2025 18:31:07 Europe/Berlin] User ID: 27, Course ID: 17, Hourly Rate: 20
+[30-Jun-2025 18:31:07 Europe/Berlin] Course added successfully for user ID: 27, course_id: 17
+[30-Jun-2025 18:31:07 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:21 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 20
+)
+
+[30-Jun-2025 18:31:21 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 18:31:21 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:21 Europe/Berlin] POST request received at 2025-06-30 18:31:21 for user_id: 27 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 20
+)
+ | FILES: No FILES data
+[30-Jun-2025 18:31:21 Europe/Berlin] Processing add course
+[30-Jun-2025 18:31:21 Europe/Berlin] User ID: 27, Course ID: 6, Hourly Rate: 20
+[30-Jun-2025 18:31:21 Europe/Berlin] Course added successfully for user ID: 27, course_id: 6
+[30-Jun-2025 18:31:22 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:39 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:43 Europe/Berlin] POST data received: Array
+(
+    [remove_subject] => 1
+    [course_id] => 6
+)
+
+[30-Jun-2025 18:31:43 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 18:31:43 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 18:31:43 Europe/Berlin] POST request received at 2025-06-30 18:31:43 for user_id: 27 - POST: Array
+(
+    [remove_subject] => 1
+    [course_id] => 6
+)
+ | FILES: No FILES data
+[30-Jun-2025 18:31:43 Europe/Berlin] Processing remove course
+[30-Jun-2025 18:31:43 Europe/Berlin] Course removed successfully for user ID: 27
+[30-Jun-2025 18:31:43 Europe/Berlin] Processing for user_id: 27
