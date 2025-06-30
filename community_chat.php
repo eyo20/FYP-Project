@@ -80,9 +80,9 @@ $messages = $messages_result ? $messages_result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Determine back URL based on role
 $back_url = match($current_user['role']) {
-    'student' => 'student_main_page.php',
-    'tutor' => 'tutor_main_page.php',
-    default => 'message_list.php'
+    'student' => 'messages_list.php',
+    'tutor' => 'messages_list.php',
+    default => 'messages_list.php'
 };
 
 // Display any errors

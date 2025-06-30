@@ -270,7 +270,7 @@ function getProfilePage($role) {
     <div class="wrapper">
         <section class="chat-area">
             <header>
-                <a href="<?php echo getProfilePage($current_user_role); ?>" class="back-icon">
+                <a href="messages_list.php" class="back-icon">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <img src="<?php echo htmlspecialchars($other_user_data['profile_image'] ?: 'images/default_profile.jpg'); ?>" alt="Profile" class="profile-img">
