@@ -3166,3 +3166,603 @@ Certifies knowledge of cloud concepts and AWS services, enabling guidance on mod
 [29-Jun-2025 19:21:13 Europe/Berlin] Processing for user_id: 16
 [29-Jun-2025 19:21:46 Europe/Berlin] Processing for user_id: 16
 [29-Jun-2025 19:21:59 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 14:24:47 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 14:24:58 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 15:34:15 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 15:34:25 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => Computer Science
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+)
+
+[30-Jun-2025 15:34:25 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:34:25 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 15:34:25 Europe/Berlin] POST request received at 2025-06-30 15:34:25 for user_id: 27 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => chong
+    [last_name] => hin
+    [phone] => 0127770233
+    [major] => Computer Science
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT student with over 5 years of experience in software development, network administration, and database management. Having earned my Diploma in Information Technology and pursued a Bachelor’s in Computer Science, I offer personalized guidance to fellow Diploma in IT students, focusing on programming, troubleshooting, and tools like Git and SQL. My industry roles at TechSolutions and NetCore, plus mentoring 20+ students with 20% grade improvements, enable me to bridge theory and practice, preparing you for internships and career success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2020
+Completed with a focus on software development, networking, and database management, laying a strong foundation for IT expertise.
+
+
+
+Bachelor’s Degree in Computer Science - Multimedia University (MMU), 2023
+Advanced studies in algorithms, system design, and cloud computing, enhancing practical and theoretical IT skills.
+
+
+
+Certified Associate in Python Programming (PCAP) - Python Institute, 2021
+Demonstrates proficiency in Python for coding and scripting, beneficial for teaching programming fundamentals.
+
+
+
+CompTIA Network+ Certification - CompTIA, 2022
+Validates expertise in network configuration and troubleshooting, supporting hands-on IT training.
+
+
+
+AWS Certified Cloud Practitioner - Amazon Web Services, 2023
+Certifies knowledge of cloud concepts and AWS services, enabling guidance on modern IT infrastructure.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:34:25 Europe/Berlin] Processing profile update for user_id: 27
+[30-Jun-2025 15:34:25 Europe/Berlin] Before user update for user_id: 27, first_name: chong, last_name: hin, phone: 0127770233
+[30-Jun-2025 15:34:25 Europe/Berlin] Tutor profile updated/inserted for user_id: 27
+[30-Jun-2025 15:34:25 Europe/Berlin] Processing for user_id: 27
+[30-Jun-2025 15:36:32 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:37:24 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Software Engineering
+    [year] => Degree second year
+    [bio] => I’m a committed MMU IT graduate with over 4 years of experience in web development, cybersecurity, and system administration. Having completed my Diploma in Information Technology and Bachelor’s in Software Engineering, I provide tailored support to Diploma in IT students, specializing in HTML/CSS, ethical hacking, and Linux administration. My professional stints at CyberSec Innovations and WebTech Solutions, along with mentoring 15+ students with a 25% average grade boost, help me connect academic concepts to real-world applications, setting you up for industry readiness!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Focused on web technologies, security basics, and system operations, building a robust IT skill set.
+
+
+
+Bachelor’s Degree in Software Engineering - Multimedia University (MMU), 2022: Deepened expertise in software architecture, security protocols, and DevOps practices.
+
+
+
+Certified Ethical Hacker (CEH) - EC-Council, 2020: Certifies skills in penetration testing and network security, ideal for teaching cybersecurity.
+
+
+
+Linux+ Certification - CompTIA, 2021: Validates proficiency in Linux system management, enhancing practical IT instruction.
+
+
+
+Google Cloud Digital Leader - Google Cloud, 2023: Confirms understanding of cloud solutions, supporting modern IT education.
+)
+
+[30-Jun-2025 15:37:24 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:37:24 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:37:24 Europe/Berlin] POST request received at 2025-06-30 15:37:24 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Software Engineering
+    [year] => Degree second year
+    [bio] => I’m a committed MMU IT graduate with over 4 years of experience in web development, cybersecurity, and system administration. Having completed my Diploma in Information Technology and Bachelor’s in Software Engineering, I provide tailored support to Diploma in IT students, specializing in HTML/CSS, ethical hacking, and Linux administration. My professional stints at CyberSec Innovations and WebTech Solutions, along with mentoring 15+ students with a 25% average grade boost, help me connect academic concepts to real-world applications, setting you up for industry readiness!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Focused on web technologies, security basics, and system operations, building a robust IT skill set.
+
+
+
+Bachelor’s Degree in Software Engineering - Multimedia University (MMU), 2022: Deepened expertise in software architecture, security protocols, and DevOps practices.
+
+
+
+Certified Ethical Hacker (CEH) - EC-Council, 2020: Certifies skills in penetration testing and network security, ideal for teaching cybersecurity.
+
+
+
+Linux+ Certification - CompTIA, 2021: Validates proficiency in Linux system management, enhancing practical IT instruction.
+
+
+
+Google Cloud Digital Leader - Google Cloud, 2023: Confirms understanding of cloud solutions, supporting modern IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:37:24 Europe/Berlin] Processing profile update for user_id: 16
+[30-Jun-2025 15:37:24 Europe/Berlin] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
+[30-Jun-2025 15:37:24 Europe/Berlin] Tutor profile updated/inserted for user_id: 16
+[30-Jun-2025 15:37:24 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:38:02 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:38:24 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Software Engineering
+    [year] => Degree second year
+    [bio] => I’m a committed MMU IT graduate with over 4 years of experience in web development, cybersecurity, and system administration. Having completed my Diploma in Information Technology and Bachelor’s in Software Engineering, I provide tailored support to Diploma in IT students, specializing in HTML/CSS, ethical hacking, and Linux administration. My professional stints at CyberSec Innovations and WebTech Solutions, along with mentoring 15+ students with a 25% average grade boost, help me connect academic concepts to real-world applications, setting you up for industry readiness!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Focused on web technologies, security basics, and system operations, building a robust IT skill set.
+
+
+
+Bachelor’s Degree in Software Engineering - Multimedia University (MMU), 2022: Deepened expertise in software architecture, security protocols, and DevOps practices.
+Certified Ethical Hacker (CEH) - EC-Council, 2020: Certifies skills in penetration testing and network security, ideal for teaching cybersecurity.
+Linux+ Certification - CompTIA, 2021: Validates proficiency in Linux system management, enhancing practical IT instruction.
+Google Cloud Digital Leader - Google Cloud, 2023: Confirms understanding of cloud solutions, supporting modern IT education.
+)
+
+[30-Jun-2025 15:38:24 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:38:24 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:38:24 Europe/Berlin] POST request received at 2025-06-30 15:38:24 for user_id: 16 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => mingwengg
+    [last_name] => koh
+    [phone] => 0123456789
+    [major] => Software Engineering
+    [year] => Degree second year
+    [bio] => I’m a committed MMU IT graduate with over 4 years of experience in web development, cybersecurity, and system administration. Having completed my Diploma in Information Technology and Bachelor’s in Software Engineering, I provide tailored support to Diploma in IT students, specializing in HTML/CSS, ethical hacking, and Linux administration. My professional stints at CyberSec Innovations and WebTech Solutions, along with mentoring 15+ students with a 25% average grade boost, help me connect academic concepts to real-world applications, setting you up for industry readiness!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Focused on web technologies, security basics, and system operations, building a robust IT skill set.
+
+
+
+Bachelor’s Degree in Software Engineering - Multimedia University (MMU), 2022: Deepened expertise in software architecture, security protocols, and DevOps practices.
+Certified Ethical Hacker (CEH) - EC-Council, 2020: Certifies skills in penetration testing and network security, ideal for teaching cybersecurity.
+Linux+ Certification - CompTIA, 2021: Validates proficiency in Linux system management, enhancing practical IT instruction.
+Google Cloud Digital Leader - Google Cloud, 2023: Confirms understanding of cloud solutions, supporting modern IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:38:24 Europe/Berlin] Processing profile update for user_id: 16
+[30-Jun-2025 15:38:24 Europe/Berlin] Before user update for user_id: 16, first_name: mingwengg, last_name: koh, phone: 0123456789
+[30-Jun-2025 15:38:24 Europe/Berlin] Tutor profile updated/inserted for user_id: 16
+[30-Jun-2025 15:38:24 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 15:52:31 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:52:42 Europe/Berlin] POST data received: Array
+(
+)
+
+[30-Jun-2025 15:52:42 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => javascript.png
+            [full_path] => javascript.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php69C4.tmp
+            [error] => 0
+            [size] => 269391
+        )
+
+)
+
+[30-Jun-2025 15:52:42 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:52:42 Europe/Berlin] POST request received at 2025-06-30 15:52:42 for user_id: 29 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => javascript.png
+            [full_path] => javascript.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php69C4.tmp
+            [error] => 0
+            [size] => 269391
+        )
+
+)
+
+[30-Jun-2025 15:52:42 Europe/Berlin] Processing profile image upload for user ID: 29
+[30-Jun-2025 15:52:42 Europe/Berlin] Profile image updated for user ID: 29, file: Uploads/profile_images/29_1751291562_javascript.png
+[30-Jun-2025 15:52:42 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:19 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => +601110978191
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+
+[30-Jun-2025 15:54:19 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:54:19 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:19 Europe/Berlin] POST request received at 2025-06-30 15:54:19 for user_id: 29 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => +601110978191
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:54:19 Europe/Berlin] Processing profile update for user_id: 29
+[30-Jun-2025 15:54:19 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: +601110978191
+[30-Jun-2025 15:54:19 Europe/Berlin] Invalid phone format. Use 01x-xxxxxxx (10 digits) or 011-xxxxxxxx (11 digits).
+[30-Jun-2025 15:54:19 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:29 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456789
+    [major] => 
+    [year] => 
+    [bio] => 
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+
+[30-Jun-2025 15:54:29 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:54:29 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:29 Europe/Berlin] POST request received at 2025-06-30 15:54:29 for user_id: 29 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456789
+    [major] => 
+    [year] => 
+    [bio] => 
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:54:29 Europe/Berlin] Processing profile update for user_id: 29
+[30-Jun-2025 15:54:29 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: 0123456789
+[30-Jun-2025 15:54:29 Europe/Berlin] Phone already in use!
+[30-Jun-2025 15:54:30 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:38 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => 
+    [year] => 
+    [bio] => 
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+
+[30-Jun-2025 15:54:38 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:54:38 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:54:38 Europe/Berlin] POST request received at 2025-06-30 15:54:38 for user_id: 29 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => 
+    [year] => 
+    [bio] => 
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:54:38 Europe/Berlin] Processing profile update for user_id: 29
+[30-Jun-2025 15:54:38 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: 0123456782
+[30-Jun-2025 15:54:38 Europe/Berlin] Tutor profile updated/inserted for user_id: 29
+[30-Jun-2025 15:54:38 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:55:18 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+
+[30-Jun-2025 15:55:18 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 15:55:18 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 15:55:18 Europe/Berlin] POST request received at 2025-06-30 15:55:18 for user_id: 29 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 15:55:18 Europe/Berlin] Processing profile update for user_id: 29
+[30-Jun-2025 15:55:18 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: 0123456782
+[30-Jun-2025 15:55:18 Europe/Berlin] Tutor profile updated/inserted for user_id: 29
+[30-Jun-2025 15:55:18 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:23 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 16
+    [hourly_rate] => 50
+)
+
+[30-Jun-2025 16:07:23 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 16:07:23 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:23 Europe/Berlin] POST request received at 2025-06-30 16:07:23 for user_id: 29 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 16
+    [hourly_rate] => 50
+)
+ | FILES: No FILES data
+[30-Jun-2025 16:07:23 Europe/Berlin] Processing add course
+[30-Jun-2025 16:07:23 Europe/Berlin] User ID: 29, Course ID: 16, Hourly Rate: 50
+[30-Jun-2025 16:07:23 Europe/Berlin] Course added successfully for user ID: 29, course_id: 16
+[30-Jun-2025 16:07:23 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:34 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 1
+    [hourly_rate] => 40
+)
+
+[30-Jun-2025 16:07:34 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 16:07:34 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:34 Europe/Berlin] POST request received at 2025-06-30 16:07:34 for user_id: 29 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 1
+    [hourly_rate] => 40
+)
+ | FILES: No FILES data
+[30-Jun-2025 16:07:34 Europe/Berlin] Processing add course
+[30-Jun-2025 16:07:34 Europe/Berlin] User ID: 29, Course ID: 1, Hourly Rate: 40
+[30-Jun-2025 16:07:34 Europe/Berlin] Course added successfully for user ID: 29, course_id: 1
+[30-Jun-2025 16:07:34 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:45 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+
+[30-Jun-2025 16:07:45 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 16:07:45 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 16:07:45 Europe/Berlin] POST request received at 2025-06-30 16:07:45 for user_id: 29 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Darren
+    [last_name] => New
+    [phone] => 0123456782
+    [major] => Artificial Intelligence
+    [year] => Degree second year
+    [bio] => I’m a dedicated MMU IT professional with 5 years of experience in AI development, database design, and network security. Holding a Diploma in Information Technology and a Bachelor’s in Artificial Intelligence, I provide personalized tutoring for Diploma in IT students, specializing in machine learning, SQL optimization, and firewall configuration. My work at AI Innovations and SecureNet Systems, along with mentoring 12+ students to a 30% grade improvement, equips me to link theoretical knowledge with industry practices, paving the way for your tech success!
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2019: Covered AI basics, database systems, and network security essentials.
+
+
+
+Bachelor’s Degree in Artificial Intelligence - Multimedia University (MMU), 2022: Advanced skills in neural networks, natural language processing, and AI deployment.
+
+
+
+Oracle Certified Professional: Java SE Programmer - Oracle, 2020: Demonstrates Java proficiency, key for teaching programming concepts.
+
+
+
+Cisco Certified Network Associate (CCNA) - Cisco, 2021: Certifies networking skills, ideal for hands-on security training.
+
+
+
+Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on Azure, supporting cutting-edge IT education.
+)
+ | FILES: No FILES data
+[30-Jun-2025 16:07:45 Europe/Berlin] Processing profile update for user_id: 29
+[30-Jun-2025 16:07:45 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: 0123456782
+[30-Jun-2025 16:07:45 Europe/Berlin] Tutor profile updated/inserted for user_id: 29
+[30-Jun-2025 16:07:45 Europe/Berlin] Processing for user_id: 29
