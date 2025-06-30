@@ -3766,3 +3766,127 @@ Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on A
 [30-Jun-2025 16:07:45 Europe/Berlin] Before user update for user_id: 29, first_name: Darren, last_name: New, phone: 0123456782
 [30-Jun-2025 16:07:45 Europe/Berlin] Tutor profile updated/inserted for user_id: 29
 [30-Jun-2025 16:07:45 Europe/Berlin] Processing for user_id: 29
+[30-Jun-2025 17:05:40 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:43:46 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:47:01 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:47:22 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:47:39 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:48:06 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:48:47 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:49:12 Europe/Berlin] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[30-Jun-2025 17:49:12 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 17:49:12 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:49:12 Europe/Berlin] POST request received at 2025-06-30 17:49:12 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[30-Jun-2025 17:49:12 Europe/Berlin] Delete CGPA requested for user_id: 16
+[30-Jun-2025 17:49:12 Europe/Berlin] CGPA deleted for user_id: 16
+[30-Jun-2025 17:49:12 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:49:59 Europe/Berlin] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[30-Jun-2025 17:49:59 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 684f2a0fcd831_cgpa.jpeg
+            [full_path] => 684f2a0fcd831_cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php7A96.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[30-Jun-2025 17:49:59 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:49:59 Europe/Berlin] POST request received at 2025-06-30 17:49:59 for user_id: 16 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => 684f2a0fcd831_cgpa.jpeg
+            [full_path] => 684f2a0fcd831_cgpa.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php7A96.tmp
+            [error] => 0
+            [size] => 29082
+        )
+
+)
+
+[30-Jun-2025 17:49:59 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/6862b22778625_684f2a0fcd831_cgpa.jpeg
+[30-Jun-2025 17:49:59 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:50:27 Europe/Berlin] POST data received: Array
+(
+    [delete_cgpa] => 1
+)
+
+[30-Jun-2025 17:50:27 Europe/Berlin] FILES data received: Array
+(
+)
+
+[30-Jun-2025 17:50:27 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:50:27 Europe/Berlin] POST request received at 2025-06-30 17:50:27 for user_id: 16 - POST: Array
+(
+    [delete_cgpa] => 1
+)
+ | FILES: No FILES data
+[30-Jun-2025 17:50:27 Europe/Berlin] Delete CGPA requested for user_id: 16
+[30-Jun-2025 17:50:27 Europe/Berlin] File deleted: Uploads/credentials/6862b22778625_684f2a0fcd831_cgpa.jpeg
+[30-Jun-2025 17:50:27 Europe/Berlin] CGPA deleted for user_id: 16
+[30-Jun-2025 17:50:28 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:50:39 Europe/Berlin] POST data received: Array
+(
+    [save_cgpa] => 
+)
+
+[30-Jun-2025 17:50:39 Europe/Berlin] FILES data received: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => DAVID CHONG YUN HIN_1231201533_ACADEMIC TRANSCIPT (1).pdf
+            [full_path] => DAVID CHONG YUN HIN_1231201533_ACADEMIC TRANSCIPT (1).pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\php1735.tmp
+            [error] => 0
+            [size] => 4539
+        )
+
+)
+
+[30-Jun-2025 17:50:39 Europe/Berlin] Processing for user_id: 16
+[30-Jun-2025 17:50:39 Europe/Berlin] POST request received at 2025-06-30 17:50:39 for user_id: 16 - POST: Array
+(
+    [save_cgpa] => 
+)
+ | FILES: Array
+(
+    [cgpa_file] => Array
+        (
+            [name] => DAVID CHONG YUN HIN_1231201533_ACADEMIC TRANSCIPT (1).pdf
+            [full_path] => DAVID CHONG YUN HIN_1231201533_ACADEMIC TRANSCIPT (1).pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\php1735.tmp
+            [error] => 0
+            [size] => 4539
+        )
+
+)
+
+[30-Jun-2025 17:50:39 Europe/Berlin] CGPA inserted for user_id: 16, file: Uploads/credentials/6862b24f91538_DAVID_CHONG_YUN_HIN_1231201533_ACADEMIC_TRANSCIPT__1_.pdf
+[30-Jun-2025 17:50:39 Europe/Berlin] Processing for user_id: 16

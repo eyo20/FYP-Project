@@ -1147,9 +1147,13 @@ ob_end_flush();
                     $verification_style = 'background-color: #dc3545; color: white;';
                 }
                 ?>
+                
                 <div class="verified-badge" style="<?php echo $verification_style; ?>">
                     <?php echo htmlspecialchars($verification_status); ?>
                 </div>
+
+                <p style="color: red; font-size: 12px;">Only CGPA above 3.5 and verified by admin can obtain ‘Verified’ status</p>
+            </br>
         
                 <div class="profile-info">
                     <div class="info-item">
