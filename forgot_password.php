@@ -97,7 +97,7 @@ if (isset($_POST['reset_btn'])) {
                                                 <a href="' . $reset_link . '" style="display: inline-block; background-color: #C4D600; color: #2B3990; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold;">Reset Password</a>
                                             </p>
                                             <p>This link will expire in 15 minutes.</p>
-                                            <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+                                            <p>If you not request a password reset, please ignore this email or contact support if you have concerns.</p>
                                             <p>Thank you,<br>The PeerLearn Team</p>
                                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center;">
                                                 <p>This is an automated email, please do not reply.</p>
@@ -105,7 +105,7 @@ if (isset($_POST['reset_btn'])) {
                                         </div>
                                     </body>
                                     </html>';
-                                $mail->AltBody = "Reset your PeerLearn password: $reset_link\nThis link expires in 15 minutes.\nIf you didn't request this, ignore this email.";
+                                $mail->AltBody = "Reset your PeerLearn password: $reset_link\nThis link expires in 15 minutes.\nIf you not request this, ignore this email.";
 
                                 $mail->send();
                                 $success_message = 'Password reset instructions have been sent to your email. Please check your inbox.';
