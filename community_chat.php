@@ -82,7 +82,7 @@ $messages = $messages_result ? $messages_result->fetch_all(MYSQLI_ASSOC) : [];
 $back_url = match($current_user['role']) {
     'student' => 'messages_list.php',
     'tutor' => 'messages_list.php',
-    default => 'messages_list.php'
+    default => 'admin_message.php'
 };
 
 // Display any errors
