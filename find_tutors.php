@@ -208,7 +208,7 @@ if (!$tutorResult) {
                     </select>
                 </div>
                 <div class="col-md-2 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">Filter</button>
+                    <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">Search</button>
                 </div>
             </form>
         </div>
