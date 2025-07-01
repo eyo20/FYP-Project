@@ -48,36 +48,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['confirm_password'] = "Passwords do not match";
     }
     else {
-        // Hash password
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        
-        // Check if email already exists (changed from username to email)
-        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE email = ?");
-        mysqli_stmt_bind_param($stmt, "s", $email);
+        // Check if username already exists
+        $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE username = ?");
+        mysqli_stmt_bind_param($stmt, "s", $username);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
         
         if (mysqli_stmt_num_rows($stmt) > 0) {
-            $errors['email'] = "Email already exists!";
+            $errors['username'] = "Username already exists!";
         } else {
-            // Insert new user
+            // Check if email already exists
             mysqli_stmt_close($stmt);
-            $stmt = mysqli_prepare($conn, "INSERT INTO user (username, email, password, role, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = mysqli_prepare($conn, "SELECT user_id FROM user WHERE email = ?");
+            mysqli_stmt_bind_param($stmt, "s", $email);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
             
-            if (!$stmt) {
-                $errors['general'] = "Database error: " . mysqli_error($conn);
+            if (mysqli_stmt_num_rows($stmt) > 0) {
+                $errors['email'] = "Email already exists!";
             } else {
-                mysqli_stmt_bind_param($stmt, "ssssss", $username, $email, $hashedPassword, $role, $firstName, $lastName);
+                // Hash password
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 
-                if (mysqli_stmt_execute($stmt)) {
-                    // Registration successful, redirect to login page
-                    header("Location: login.php?registered=true");
-                    exit;
+                // Insert new user
+                mysqli_stmt_close($stmt);
+                $stmt = mysqli_prepare($conn, "INSERT INTO user (username, email, password, role, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)");
+                
+                if (!$stmt) {
+                    $errors['general'] = "Database error: " . mysqli_error($conn);
                 } else {
-                    $errors['general'] = "Registration failed: " . mysqli_stmt_error($stmt);
+                    mysqli_stmt_bind_param($stmt, "ssssss", $username, $email, $hashedPassword, $role, $firstName, $lastName);
+                    
+                    if (mysqli_stmt_execute($stmt)) {
+                        // Registration successful, redirect to login page
+                        header("Location: login.php?registered=true");
+                        exit;
+                    } else {
+                        $errors['general'] = "Registration failed: " . mysqli_stmt_error($stmt);
+                    }
                 }
             }
         }
+        mysqli_stmt_close($stmt);
     }
 }
 ?>

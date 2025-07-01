@@ -1255,7 +1255,7 @@ ob_end_flush();
                             </select>
                         </div>
                         <div class="form-group">
-                            <input type="number" name="hourly_rate" class="form-control" placeholder="Hourly Rate (RM)" min="1" step="0.01" required>
+                            <input type="number" name="hourly_rate" class="form-control" placeholder="Session Rate (RM)" min="1" step="1" required>
                         </div>
                         <div class="form-group">
                             <button type="submit" class="btn btn-secondary">Add Course</button>
@@ -1270,7 +1270,7 @@ ob_end_flush();
                                     <div class="subject-info">
                                         <div class="course-name"><?php echo htmlspecialchars($course['course_name']); ?></div>
                                     </div>
-                                    <div class="subject-rate">RM<?php echo number_format($course['hourly_rate'], 2); ?>/hour</div>
+                                    <div class="subject-rate">RM<?php echo number_format($course['hourly_rate'], 2); ?>/session</div>
                                     <div class="subject-actions">
                                         <form action="" method="post" style="display: inline;">
                                             <input type="hidden" name="remove_subject" value="1">
