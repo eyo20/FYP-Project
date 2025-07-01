@@ -3998,3 +3998,179 @@ Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on A
 [30-Jun-2025 18:31:43 Europe/Berlin] Processing remove course
 [30-Jun-2025 18:31:43 Europe/Berlin] Course removed successfully for user ID: 27
 [30-Jun-2025 18:31:43 Europe/Berlin] Processing for user_id: 27
+[01-Jul-2025 06:44:29 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:45:31 Europe/Berlin] POST data received: Array
+(
+    [update_profile] => 1
+    [first_name] => Jacob
+    [last_name] => Lim
+    [phone] => 0167172933
+    [major] => Data Science
+    [year] => Degree second year
+    [bio] => I’m a passionate MMU IT alumnus with 6 years of experience in mobile app development, data analytics, and IT support. With a Diploma in Information Technology and a Bachelor’s in Data Science, I offer customized tutoring for Diploma in IT students, focusing on Android development, data visualization, and helpdesk operations. My roles at AppDev Studios and DataInsight Corp, plus guiding 18+ students to a 22% grade increase, allow me to blend practical insights with academic learning, preparing you for tech careers!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2018: Emphasized mobile programming, data handling, and IT support fundamentals.
+
+
+
+Bachelor’s Degree in Data Science - Multimedia University (MMU), 2021: Strengthened skills in statistical analysis, machine learning, and big data tools.
+
+
+
+Android ATC Certified App Developer - Android ATC, 2019: Proves expertise in Android app creation, useful for teaching mobile development.
+
+
+
+Microsoft Certified: Data Analyst Associate - Microsoft, 2022: Certifies proficiency in Power BI and data modeling, enhancing analytics instruction.
+
+
+
+ITIL Foundation Certification - AXELOS, 2023: Validates knowledge of IT service management, supporting structured IT training.
+)
+
+[01-Jul-2025 06:45:31 Europe/Berlin] FILES data received: Array
+(
+)
+
+[01-Jul-2025 06:45:31 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:45:31 Europe/Berlin] POST request received at 2025-07-01 06:45:31 for user_id: 33 - POST: Array
+(
+    [update_profile] => 1
+    [first_name] => Jacob
+    [last_name] => Lim
+    [phone] => 0167172933
+    [major] => Data Science
+    [year] => Degree second year
+    [bio] => I’m a passionate MMU IT alumnus with 6 years of experience in mobile app development, data analytics, and IT support. With a Diploma in Information Technology and a Bachelor’s in Data Science, I offer customized tutoring for Diploma in IT students, focusing on Android development, data visualization, and helpdesk operations. My roles at AppDev Studios and DataInsight Corp, plus guiding 18+ students to a 22% grade increase, allow me to blend practical insights with academic learning, preparing you for tech careers!
+
+    [qualifications] => Diploma in Information Technology - Multimedia University (MMU), 2018: Emphasized mobile programming, data handling, and IT support fundamentals.
+
+
+
+Bachelor’s Degree in Data Science - Multimedia University (MMU), 2021: Strengthened skills in statistical analysis, machine learning, and big data tools.
+
+
+
+Android ATC Certified App Developer - Android ATC, 2019: Proves expertise in Android app creation, useful for teaching mobile development.
+
+
+
+Microsoft Certified: Data Analyst Associate - Microsoft, 2022: Certifies proficiency in Power BI and data modeling, enhancing analytics instruction.
+
+
+
+ITIL Foundation Certification - AXELOS, 2023: Validates knowledge of IT service management, supporting structured IT training.
+)
+ | FILES: No FILES data
+[01-Jul-2025 06:45:31 Europe/Berlin] Processing profile update for user_id: 33
+[01-Jul-2025 06:45:31 Europe/Berlin] Before user update for user_id: 33, first_name: Jacob, last_name: Lim, phone: 0167172933
+[01-Jul-2025 06:45:31 Europe/Berlin] Tutor profile updated/inserted for user_id: 33
+[01-Jul-2025 06:45:31 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:45:39 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:45:46 Europe/Berlin] POST data received: Array
+(
+)
+
+[01-Jul-2025 06:45:46 Europe/Berlin] FILES data received: Array
+(
+    [profile_image] => Array
+        (
+            [name] => 684d7cddd881d_OIP.jpeg
+            [full_path] => 684d7cddd881d_OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpC8AF.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[01-Jul-2025 06:45:46 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:45:46 Europe/Berlin] POST request received at 2025-07-01 06:45:46 for user_id: 33 - POST: No POST data | FILES: Array
+(
+    [profile_image] => Array
+        (
+            [name] => 684d7cddd881d_OIP.jpeg
+            [full_path] => 684d7cddd881d_OIP.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpC8AF.tmp
+            [error] => 0
+            [size] => 32822
+        )
+
+)
+
+[01-Jul-2025 06:45:46 Europe/Berlin] Processing profile image upload for user ID: 33
+[01-Jul-2025 06:45:46 Europe/Berlin] Profile image updated for user ID: 33, file: Uploads/profile_images/33_1751345146_684d7cddd881d_OIP.jpeg
+[01-Jul-2025 06:45:46 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:51:00 Europe/Berlin] Processing for user_id: 29
+[01-Jul-2025 06:53:52 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:53:59 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 20
+)
+
+[01-Jul-2025 06:53:59 Europe/Berlin] FILES data received: Array
+(
+)
+
+[01-Jul-2025 06:53:59 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:53:59 Europe/Berlin] POST request received at 2025-07-01 06:53:59 for user_id: 33 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 20
+)
+ | FILES: No FILES data
+[01-Jul-2025 06:53:59 Europe/Berlin] Processing add course
+[01-Jul-2025 06:53:59 Europe/Berlin] User ID: 33, Course ID: 6, Hourly Rate: 20
+[01-Jul-2025 06:53:59 Europe/Berlin] Course added successfully for user ID: 33, course_id: 6
+[01-Jul-2025 06:53:59 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:54:09 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 23
+)
+
+[01-Jul-2025 06:54:09 Europe/Berlin] FILES data received: Array
+(
+)
+
+[01-Jul-2025 06:54:09 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:54:09 Europe/Berlin] POST request received at 2025-07-01 06:54:09 for user_id: 33 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 6
+    [hourly_rate] => 23
+)
+ | FILES: No FILES data
+[01-Jul-2025 06:54:09 Europe/Berlin] Processing add course
+[01-Jul-2025 06:54:09 Europe/Berlin] User ID: 33, Course ID: 6, Hourly Rate: 23
+[01-Jul-2025 06:54:09 Europe/Berlin] Duplicate course detected: tutor_id=33, course_id=6
+[01-Jul-2025 06:54:09 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:54:19 Europe/Berlin] POST data received: Array
+(
+    [add_subject] => 1
+    [course_id] => 2
+    [hourly_rate] => 15
+)
+
+[01-Jul-2025 06:54:19 Europe/Berlin] FILES data received: Array
+(
+)
+
+[01-Jul-2025 06:54:19 Europe/Berlin] Processing for user_id: 33
+[01-Jul-2025 06:54:19 Europe/Berlin] POST request received at 2025-07-01 06:54:19 for user_id: 33 - POST: Array
+(
+    [add_subject] => 1
+    [course_id] => 2
+    [hourly_rate] => 15
+)
+ | FILES: No FILES data
+[01-Jul-2025 06:54:19 Europe/Berlin] Processing add course
+[01-Jul-2025 06:54:19 Europe/Berlin] User ID: 33, Course ID: 2, Hourly Rate: 15
+[01-Jul-2025 06:54:19 Europe/Berlin] Course added successfully for user ID: 33, course_id: 2
+[01-Jul-2025 06:54:19 Europe/Berlin] Processing for user_id: 33

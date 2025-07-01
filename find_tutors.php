@@ -299,7 +299,7 @@ if (!$tutorResult) {
                                                     <?php
                                                     $courses = [];
                                                     while ($course = $coursesResult->fetch_assoc()) {
-                                                        $courses[] = $course['course_name'] . ' (RM' . number_format($course['hourly_rate'], 2) . '/hr)';
+                                                        $courses[] = $course['course_name'] . ' (RM' . number_format($course['hourly_rate'], 2) . '/session)';
                                                     }
                                                     echo implode(', ', $courses);
                                                     ?>
