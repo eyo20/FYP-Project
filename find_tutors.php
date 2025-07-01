@@ -29,26 +29,55 @@ $tutorQuery = "SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.profile_i
                LEFT JOIN course c ON ts.course_id = c.id
                WHERE u.role = 'tutor' AND u.is_active = 1";
 
-// Apply filters if set
+// Initialize parameters and types for prepared statement
+$params = [];
+$types = "";
+
+// Apply name filter if set
 if (!empty($searchName)) {
-    $searchName = mysqli_real_escape_string($conn, $searchName);
-    $tutorQuery .= " AND (u.first_name LIKE '%$searchName%' OR u.last_name LIKE '%$searchName%')";
+    $searchPattern = "%" . $searchName . "%";
+    $tutorQuery .= " AND (LOWER(u.first_name) LIKE LOWER(?) OR LOWER(u.last_name) LIKE LOWER(?))";
+    $params[] = $searchPattern;
+    $params[] = $searchPattern;
+    $types .= "ss";
 }
 
+// Apply course filter if set
 if ($courseFilter > 0) {
-    $tutorQuery .= " AND ts.course_id = $courseFilter";
+    $tutorQuery .= " AND ts.course_id = ?";
+    $params[] = $courseFilter;
+    $types .= "i";
 }
 
+// Apply rating filter if set
 if ($ratingFilter > 0) {
-    $tutorQuery .= " AND tp.rating >= $ratingFilter";
+    $tutorQuery .= " AND tp.rating >= ?";
+    $params[] = $ratingFilter;
+    $types .= "i";
 }
 
 $tutorQuery .= " ORDER BY tp.rating DESC, u.first_name, u.last_name";
-$tutorResult = mysqli_query($conn, $tutorQuery);
 
-// Check for query execution errors
+// Prepare and execute the query
+$stmt = $conn->prepare($tutorQuery);
+if (!$stmt) {
+    error_log("Tutor query prepare failed: " . $conn->error);
+    die("Error preparing query: " . $conn->error);
+}
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+if (!$stmt->execute()) {
+    error_log("Tutor query execution failed: " . $stmt->error);
+    die("Error executing query: " . $stmt->error);
+}
+
+$tutorResult = $stmt->get_result();
 if (!$tutorResult) {
-    die("Tutor query failed: " . mysqli_error($conn));
+    error_log("Tutor query result fetch failed: " . $conn->error);
+    die("Error fetching results: " . $conn->error);
 }
 ?>
 
@@ -179,11 +208,11 @@ if (!$tutorResult) {
         <!-- Filter Section -->
         <div class="filter-section">
             <form method="GET" action="find_tutors.php" class="row align-items-end">
-                <div class="col-md-3 mb-3">
+                <!-- <div class="col-md-3 mb-3">
                     <label for="search_name" class="form-label">Tutor Name</label>
                     <input type="text" class="form-control" id="search_name" name="search_name "
                         value="<?php echo htmlspecialchars($searchName); ?>" placeholder="Enter tutor name" style="width: 100%;height:55px ;">
-                </div>
+                </div> -->
                 <div class="col-md-3 mb-3">
                     <label for="course" class="form-label">Course</label>
                     <select class="form-control" id="course" name="course" style="width: 100%;height:55px ;">
