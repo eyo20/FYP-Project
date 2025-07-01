@@ -3998,6 +3998,7 @@ Microsoft Azure AI Fundamentals - Microsoft, 2023: Confirms expertise in AI on A
 [30-Jun-2025 18:31:43 Europe/Berlin] Processing remove course
 [30-Jun-2025 18:31:43 Europe/Berlin] Course removed successfully for user ID: 27
 [30-Jun-2025 18:31:43 Europe/Berlin] Processing for user_id: 27
+<<<<<<< HEAD
 [01-Jul-2025 06:44:29 Europe/Berlin] Processing for user_id: 33
 [01-Jul-2025 06:45:31 Europe/Berlin] POST data received: Array
 (
@@ -4174,3 +4175,14 @@ ITIL Foundation Certification - AXELOS, 2023: Validates knowledge of IT service 
 [01-Jul-2025 06:54:19 Europe/Berlin] User ID: 33, Course ID: 2, Hourly Rate: 15
 [01-Jul-2025 06:54:19 Europe/Berlin] Course added successfully for user ID: 33, course_id: 2
 [01-Jul-2025 06:54:19 Europe/Berlin] Processing for user_id: 33
+=======
+[01-Jul-2025 06:24:03 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:24:13 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:24:38 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:25:56 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:26:02 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:26:03 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:26:03 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:26:12 Europe/Berlin] Processing for user_id: 16
+[01-Jul-2025 06:26:13 Europe/Berlin] Processing for user_id: 16
+>>>>>>> e56bc822f0c63346e7f271d0e477aca1692a0946
