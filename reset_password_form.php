@@ -8,15 +8,13 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 // Initialize session variables
 $email = $_SESSION['reset_email'] ?? '';
 $token = $_SESSION['reset_token'] ?? '';
-$password_error = '';
+$errors = [];
 $success_message = '';
 $error_message = '';
 
 // Check session variables
-if (!isset($_POST['reset_btn']) && (empty($email) || empty($token))) {
+if (empty($email) || empty($token)) {
     $error_message = 'Session expired. Please request a new OTP.';
-    header("Location: reset_password.php");
-    exit();
 }
 
 // Process form submission
@@ -27,62 +25,59 @@ if (isset($_POST['reset_btn'])) {
     // Validate password
     try {
         if (empty($new_password) || empty($confirm_password)) {
-            throw new Exception('Both fields are required.');
-        }
-        if ($new_password !== $confirm_password) {
-            throw new Exception('Passwords do not match.');
-        }
-        if (strlen($new_password) < 8) {
-            throw new Exception('Password must be at least 8 characters.');
-        }
-        if (!preg_match('/[A-Z]/', $new_password)) {
-            throw new Exception('Password must contain at least one uppercase letter.');
-        }
-        if (!preg_match('/[0-9]/', $new_password)) {
-            throw new Exception('Password must contain at least one number.');
-        }
-        if (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-            throw new Exception('Password must contain at least one special character.');
+            $errors['password'] = 'Both fields are required.';
+        } elseif ($new_password !== $confirm_password) {
+            $errors['password'] = 'Passwords do not match.';
+        } elseif (strlen($new_password) < 8) {
+            $errors['password'] = 'Password must be at least 8 characters long.';
+        } elseif (!preg_match('/[A-Z]/', $new_password)) {
+            $errors['password'] = 'Password must contain at least one uppercase letter.';
+        } elseif (!preg_match('/[0-9]/', $new_password)) {
+            $errors['password'] = 'Password must contain at least one number.';
+        } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
+            $errors['password'] = 'Password must contain at least one special character.';
         }
 
-        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-        $sql = "UPDATE user SET password = ? WHERE email = ?";
-        if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, 'ss', $hashed_password, $email);
-            if (mysqli_stmt_execute($stmt)) {
-                // Verify update
-                $check_sql = "SELECT password FROM user WHERE email = ?";
-                if ($check_stmt = mysqli_prepare($conn, $check_sql)) {
-                    mysqli_stmt_bind_param($check_stmt, 's', $email);
-                    mysqli_stmt_execute($check_stmt);
-                    mysqli_stmt_bind_result($check_stmt, $db_password);
-                    mysqli_stmt_fetch($check_stmt);
-                    mysqli_stmt_close($check_stmt);
-                    if ($db_password === $hashed_password) {
-                        // Delete used OTP
-                        $delete_sql = "DELETE FROM password_reset WHERE email = ?";
-                        if ($delete_stmt = mysqli_prepare($conn, $delete_sql)) {
-                            mysqli_stmt_bind_param($delete_stmt, 's', $email);
-                            mysqli_stmt_execute($delete_stmt);
-                            mysqli_stmt_close($delete_stmt);
+        if (empty($errors)) {
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $sql = "UPDATE user SET password = ? WHERE email = ?";
+            if ($stmt = mysqli_prepare($conn, $sql)) {
+                mysqli_stmt_bind_param($stmt, 'ss', $hashed_password, $email);
+                if (mysqli_stmt_execute($stmt)) {
+                    // Verify update
+                    $check_sql = "SELECT password FROM user WHERE email = ?";
+                    if ($check_stmt = mysqli_prepare($conn, $check_sql)) {
+                        mysqli_stmt_bind_param($check_stmt, 's', $email);
+                        mysqli_stmt_execute($check_stmt);
+                        mysqli_stmt_bind_result($check_stmt, $db_password);
+                        mysqli_stmt_fetch($check_stmt);
+                        mysqli_stmt_close($check_stmt);
+                        if ($db_password === $hashed_password) {
+                            // Delete used OTP
+                            $delete_sql = "DELETE FROM password_reset WHERE email = ?";
+                            if ($delete_stmt = mysqli_prepare($conn, $delete_sql)) {
+                                mysqli_stmt_bind_param($delete_stmt, 's', $email);
+                                mysqli_stmt_execute($delete_stmt);
+                                mysqli_stmt_close($delete_stmt);
+                            } else {
+                                throw new Exception('Failed to prepare OTP deletion statement: ' . mysqli_error($conn));
+                            }
+                            $success_message = 'Password reset successfully. <a href="login.php">Click here to login</a>.';
+                            unset($_SESSION['reset_email']);
+                            unset($_SESSION['reset_token']);
                         } else {
-                            throw new Exception('Failed to prepare OTP deletion statement: ' . mysqli_error($conn));
+                            throw new Exception('Password update failed in database.');
                         }
-                        $success_message = 'Password reset successfully. <a href="login.php">Click here to login</a>.';
-                        unset($_SESSION['reset_email']);
-                        unset($_SESSION['reset_token']);
                     } else {
-                        throw new Exception('Password update failed in database.');
+                        throw new Exception('Database verification failed: ' . mysqli_error($conn));
                     }
                 } else {
-                    throw new Exception('Database verification failed: ' . mysqli_error($conn));
+                    throw new Exception('Failed to reset password: ' . mysqli_error($conn));
                 }
+                mysqli_stmt_close($stmt);
             } else {
-                throw new Exception('Failed to reset password: ' . mysqli_error($conn));
+                throw new Exception('Database preparation failed: ' . mysqli_error($conn));
             }
-            mysqli_stmt_close($stmt);
-        } else {
-            throw new Exception('Database preparation failed: ' . mysqli_error($conn));
         }
     } catch (Exception $e) {
         $error_message = $e->getMessage();
@@ -244,20 +239,20 @@ mysqli_close($conn);
                     <?php echo $success_message; ?>
                 </div>
             <?php endif; ?>
-            <?php if (empty($success_message) && empty($error_message)): ?>
+            <?php if (empty($success_message)): ?>
                 <form method="POST" action="">
                     <div class="input-group">
                         <label for="new_password">New Password</label>
-                        <input type="password" name="new_password" id="new_password" placeholder="Enter new password" required>
-                        <?php if (!empty($password_error)): ?>
-                            <div class="error-message"><?php echo htmlspecialchars($password_error); ?></div>
+                        <input type="password" name="new_password" id="new_password" placeholder="Enter 8+ chars with A-Z, 0-9 & symbol" required>
+                        <?php if (!empty($errors['password'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['password']); ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="input-group">
                         <label for="confirm_password">Confirm Password</label>
                         <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password" required>
-                        <?php if (!empty($password_error)): ?>
-                            <div class="error-message"><?php echo htmlspecialchars($password_error); ?></div>
+                        <?php if (!empty($errors['password'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['password']); ?></div>
                         <?php endif; ?>
                     </div>
                     <input type="submit" name="reset_btn" value="Reset Password">
@@ -268,4 +263,3 @@ mysqli_close($conn);
     </div>
 </body>
 </html>
-<!-- Ensure no trailing PHP code or hidden characters -->
